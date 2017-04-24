@@ -1,0 +1,2536 @@
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass report
+\begin_preamble
+\input colordvi
+\usepackage{color}
+\fancyhead{}
+\fancyfoot[CE,CO]{}
+\newtoks{\topicofnote} \global\topicofnote={}
+\newdimen\longindent \longindent=3.5truein
+\fancyhead[L]{Note re: \the\topicofnote \\ \datetoday \\ Page \thepage \hfill}
+\renewcommand{\headrulewidth}{0.0pt}
+\newenvironment{lyxlist}[1]
+{\begin{list}{}
+{\settowidth{\labelwidth}{#1}
+\setlength{\leftmargin}{\labelwidth}
+\addtolength{\leftmargin}{\labelsep}
+\renewcommand{\makelabel}[1]{##1\hfil}}}
+{\end{list}}
+\newcommand{\datetoday}{\number\day\space
+     \ifcase\month\or January\or February\or March\or April\or May\or
+     June\or July\or August\or September\or October\or November\or
+     December\fi
+     \space\number\year}
+\newcommand{\ASPmemo}{\null \vskip-1.5truein
+{\raggedright \textsf{\textsc{\large \textcolor{blue}{Advanced Study Program}}}}\par
+{\raggedright \textsf{\textsl{\textcolor{blue}{Memorandum:}}}} \par \vskip6pt
+{\color{blue}{\hrule}}\par
+\vskip0.3truein \leftline{\hskip \longindent \datetoday} \vskip0.2truein
+\thispagestyle{empty}}
+\newcommand{\attachm}[1]{\begin{lyxlist}{Attachments:00}
+\item [Attachments:] {#1}
+\end{lyxlist}}
+\newcommand{\cc}[1]{\begin{lyxlist}{Attachments:00}
+\item [cc:] {#1}
+\end{lyxlist}}
+\newcommand{\attach}[1]{\begin{lyxlist}{Attachments:00}
+\item [Attachment:] {#1}
+\end{lyxlist}}
+%usage: \encl{A\\B\\C} or \cc{ma,e1\\name2\\name3}
+\end_preamble
+\use_default_options false
+\begin_modules
+knitr
+\end_modules
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding default
+\fontencoding global
+\font_roman "times" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize 12
+\spacing single
+\use_hyperref false
+\papersize letterpaper
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 0
+\use_package mathdots 0
+\use_package mathtools 1
+\use_package mhchem 0
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2.54cm
+\topmargin 3.54cm
+\rightmargin 2.54cm
+\bottommargin 2.54cm
+\headheight 1cm
+\headsep 2cm
+\footskip 0.5cm
+\secnumdepth 2
+\tocdepth 2
+\paragraph_separation skip
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle fancy
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Standard
+\begin_inset Note Comment
+status collapsed
+
+\begin_layout Plain Layout
+set topicofnote to topic of note
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+topicofnote={Calibration Exercise}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Comment
+status collapsed
+
+\begin_layout Plain Layout
+Note goes here:
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+%
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<initialization, include=TRUE, echo=FALSE, fig.lp='fig:', fig.width=5, fig.height=
+4, fig.caption='Results from calibration, with $x$ the measurand generated
+ by a calibrator and $M$ the resulting static output from the sensor.'>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+suppressMessages (suppressWarnings (
+\end_layout
+
+\begin_layout Plain Layout
+
+  library(Ranadu, quietly=TRUE, warn.conflicts=FALSE))
+\end_layout
+
+\begin_layout Plain Layout
+
+)
+\end_layout
+
+\begin_layout Plain Layout
+
+library(knitr)
+\end_layout
+
+\begin_layout Plain Layout
+
+opts_chunk$set(echo=FALSE, include=FALSE, fig.lp="fig:")
+\end_layout
+
+\begin_layout Plain Layout
+
+opts_chunk$set(fig.width=5, fig.height=4, fig.align="center", digits=4)
+\end_layout
+
+\begin_layout Plain Layout
+
+N <- 20
+\end_layout
+
+\begin_layout Plain Layout
+
+a1 <- 5; a2 <- 3; a3 <- 0.1
+\end_layout
+
+\begin_layout Plain Layout
+
+x <- 1:20
+\end_layout
+
+\begin_layout Plain Layout
+
+set.seed(314159)
+\end_layout
+
+\begin_layout Plain Layout
+
+set.seed(12345)
+\end_layout
+
+\begin_layout Plain Layout
+
+rn <- rnorm (N, 0, 1.5)
+\end_layout
+
+\begin_layout Plain Layout
+
+M <- a1 + a2*x + a3*x^2 + rn
+\end_layout
+
+\begin_layout Plain Layout
+
+options('digits'=4)
+\end_layout
+
+\begin_layout Plain Layout
+
+fm1 <- lm (M ~ x)
+\end_layout
+
+\begin_layout Plain Layout
+
+fm2 <- lm (x ~ M)
+\end_layout
+
+\begin_layout Plain Layout
+
+fm3 <- lm (M ~ x + I(x^2))
+\end_layout
+
+\begin_layout Plain Layout
+
+fm4 <- lm (x ~ M + I(M^2))
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+The Exercise:
+\end_layout
+
+\begin_layout Standard
+Our objective is to calibrate a sensor so that we can use the calibration
+ to estimate the value 
+\begin_inset Formula $x$
+\end_inset
+
+ of a measurand from the output of the sensor 
+\begin_inset Formula $M$
+\end_inset
+
+.
+ We have available a calibrator that produces values of a measurand with
+ very small random error and no systematic error, so its contribution to
+ error in the calibration can be neglected.
+ Our sensor, on the other hand, makes individual measurements with a rather
+ large random error, characterized by the precision 
+\begin_inset Formula $\sigma_{M}$
+\end_inset
+
+=1.5.
+ The goal of calibration is to minimize systematic error in measurements
+ using this sensor.
+ We decide to make N=20 measurements equally spaced over a measurand interval
+ {
+\begin_inset Formula $x_{1}$
+\end_inset
+
+–
+\begin_inset Formula $x_{2}$
+\end_inset
+
+), and as a result we get N measurements {
+\begin_inset Formula $M_{i}$
+\end_inset
+
+} that correspond to {
+\begin_inset Formula $x_{i}$
+\end_inset
+
+}.
+ Results are as listed in the following table and shown in Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ref{fig:cal-plot}
+\end_layout
+
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\noindent
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="8">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $x$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $M$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $x$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $M$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $x$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $M$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $x$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $M$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{x[1]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{M[1]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{x[6]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{M[6]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{x[11]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{M[11]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{x[16]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{M[16]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{x[2]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{M[2]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{x[7]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{M[7]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{x[12]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{M[12]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{x[17]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{M[17]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{x[3]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{M[3]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{x[8]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{M[8]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{x[13]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{M[13]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{x[18]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{M[18]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{x[4]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{M[4]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{x[9]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{M[9]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{x[14]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{M[14]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{x[19]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{M[19]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{x[5]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{M[5]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{x[10]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{M[10]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{x[15]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{M[15]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{x[20]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{M[20]}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<cal-plot, include=TRUE, echo=FALSE, fig.height=3.8, fig.pos='htb!', fig.cap='Resul
+ts from calibration, with $x$ the measurand generated by a calibrator and
+ $M$ the resulting static output from the sensor.'>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+plotWAC(data.frame(x,M), xlab='x', type='p')
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Using these data, find a representation of this calibration in the form
+ 
+\begin_inset Formula $x=f(M)$
+\end_inset
+
+, where 
+\begin_inset Formula $f()$
+\end_inset
+
+ can be a polynomial or other function, so that the output 
+\begin_inset Formula $M$
+\end_inset
+
+ from this sensor can be used to estimate the measurand 
+\begin_inset Formula $x$
+\end_inset
+
+, under static conditions.
+\end_layout
+
+\begin_layout Section*
+Your Answer:
+\end_layout
+
+\begin_layout Standard
+Your exercise is to enter two answers:
+\end_layout
+
+\begin_layout Enumerate
+If the sensor output is 55, what should your estimate of the measurand be?
+\end_layout
+
+\begin_layout Enumerate
+How would you represent this calibration as a function of the form 
+\begin_inset Formula $x=f(M)$
+\end_inset
+
+? Enter your formula; for example 
+\begin_inset Quotes eld
+\end_inset
+
+200 + 5 * M
+\begin_inset Quotes erd
+\end_inset
+
+ (without the quote marks), and click the 
+\begin_inset Quotes eld
+\end_inset
+
+show plot
+\begin_inset Quotes erd
+\end_inset
+
+ button to see your calibration plotted and evaluated.
+ You can enter powers of M using, e.g., M**2 or M^2.
+ You can find a tool for performing basic linear-model fits to these calibration
+ data at this URL: 
+\begin_inset CommandInset href
+LatexCommand href
+name "https://williamcooper.shinyapps.io/CalibrationExercise"
+target "https://williamcooper.shinyapps.io/CalibrationExercise"
+
+\end_inset
+
+.
+ Or, use MatLab or a similar package or your own calculations for fitting.
+ Trial-and-error is instructive too.
+\end_layout
+
+\begin_layout Section*
+Our Answer:
+\end_layout
+
+\begin_layout Standard
+[enter and check yours first; you will learn more.]
+\end_layout
+
+\begin_layout Standard
+[interactive version allows selection of order of polynomial and specification
+ of number of measurements like those tabulated to average before calculating
+ the fit.]
+\end_layout
+
+\begin_layout Standard
+Question 1: 11.96
+\end_layout
+
+\begin_layout Standard
+Question 2: 
+\begin_inset Formula $x=b_{0}+b_{1}M+b_{2}M^{2}$
+\end_inset
+
+ with {
+\begin_inset Formula $b_{0},\,b_{1},\,b_{2}$
+\end_inset
+
+} = {
+\begin_inset Formula $-$
+\end_inset
+
+0.962, 0.2770, 
+\begin_inset Formula $-$
+\end_inset
+
+0.0007627}, as developed below.
+ For M=55, this leads to the answer to Question 1.
+\end_layout
+
+\begin_layout Standard
+First we consider a linear fit.
+ (That obviously won't work very well because the transfer curve shown in
+ Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ref{fig:cal-plot}
+\end_layout
+
+\end_inset
+
+ does not have a constant slope, but this approach is still instructive.)
+ A common error is to find the regression fit giving 
+\begin_inset Formula $M$
+\end_inset
+
+ as a function of 
+\begin_inset Formula $x$
+\end_inset
+
+, which for this case gives 
+\begin_inset Formula $M=a_{1}+a_{2}x$
+\end_inset
+
+ with 
+\begin_inset Formula $a_{1}$
+\end_inset
+
+=
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{coef(fm1)[1]}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset Formula $a_{2}$
+\end_inset
+
+=
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{coef(fm1)[2]}
+\end_layout
+
+\end_inset
+
+.
+ The resulting fit is shown in Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ref{fig:cal-plot2}
+\end_layout
+
+\end_inset
+
+ as the orange line.
+ However, if instead we determine the regression fit giving 
+\begin_inset Formula $x$
+\end_inset
+
+ as a function of 
+\begin_inset Formula $M$
+\end_inset
+
+, we get the result shown as the green line.
+ The orange and green lines are almost the same, because in this case the
+ correlation coefficient is high (
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{sqrt(summary(fm1)$r.squared)}
+\end_layout
+
+\end_inset
+
+, but the difference between the two regression lines increases as the correlati
+on decreases.
+ Which should we use? We will use the calibration to determine estimates
+ of the measurand 
+\begin_inset Formula $x$
+\end_inset
+
+ corresponding to measurements 
+\begin_inset Formula $M$
+\end_inset
+
+, so we want to minimize the error in 
+\begin_inset Formula $x$
+\end_inset
+
+ for a given 
+\begin_inset Formula $M$
+\end_inset
+
+.
+ That is represented best by the second regression fit giving 
+\begin_inset Formula $x$
+\end_inset
+
+ as a function of 
+\begin_inset Formula $M$
+\end_inset
+
+, the green line.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<cal-plot2, include=TRUE, echo=FALSE, fig.cap='Calibration results with
+ regression fits for $M$ as a function of $x$ (orange line) and for $x$
+ as a function of $M$ (green line).'>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+plotWAC(data.frame(x,M), xlab='x', type='p')
+\end_layout
+
+\begin_layout Plain Layout
+
+cf1 <- coef(fm1)
+\end_layout
+
+\begin_layout Plain Layout
+
+y1 <- cf1[1] + cf1[2] * x
+\end_layout
+
+\begin_layout Plain Layout
+
+lines(x, y1, col='darkorange', lwd=2)
+\end_layout
+
+\begin_layout Plain Layout
+
+cf2 <- coef(fm2)
+\end_layout
+
+\begin_layout Plain Layout
+
+# x <- cf2[1] + cf2[2] * M
+\end_layout
+
+\begin_layout Plain Layout
+
+y2 <- (x - cf2[1]) / cf2[2]
+\end_layout
+
+\begin_layout Plain Layout
+
+lines(x, y2, col='forestgreen', lty=2)
+\end_layout
+
+\begin_layout Plain Layout
+
+cf4 <- coef(fm4)
+\end_layout
+
+\begin_layout Plain Layout
+
+fm6 <- lm(x ~ M + I(M^2) + I(M^3))
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The residual standard deviation of the calibration values for 
+\begin_inset Formula $x$
+\end_inset
+
+, given 
+\begin_inset Formula $M$
+\end_inset
+
+, from that regression line is 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{summary(fm2)$sigma}
+\end_layout
+
+\end_inset
+
+.
+ That is not very good, and the deviations are systematic, so it is justified
+ to try a higher-order fit.
+ Using a linear-model fit to determine coefficients for a relationship 
+\begin_inset Formula $x=b_{1}+b_{2}M+b_{3}M^{2}$
+\end_inset
+
+ leads to coefficients 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{cf4[1]}
+\end_layout
+
+\end_inset
+
+, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{cf4[2]}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{cf4[3]}
+\end_layout
+
+\end_inset
+
+ and the fit shown in Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ref{fig:cal-plot3}
+\end_layout
+
+\end_inset
+
+.
+ Using these coefficients leads to our answer for 
+\begin_inset Formula $x$
+\end_inset
+
+ given 
+\begin_inset Formula $M=55$
+\end_inset
+
+: 11.96.
+ The residual standard deviation for the new fit is 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{summary(fm4)$sigma}
+\end_layout
+
+\end_inset
+
+, so the improvement is significant.
+ Studies of this sensor by other means indicate that its precision is about
+ 1.5 units in the measurement 
+\begin_inset Formula $M$
+\end_inset
+
+, so with a representative slope of about 
+\begin_inset Formula $b_{2}$
+\end_inset
+
+ the expected precision in estimates of the measurand 
+\begin_inset Formula $x$
+\end_inset
+
+ is expected to be about 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{cf4[2]*1.5}
+\end_layout
+
+\end_inset
+
+, so this result is reasonably consistent with the expected precision in
+ measurements.
+ That indicates that higher-order polynomial fits are probably not needed
+ or justified.
+ If a third-order polynomial is used in the fit, the residual standard deviation
+ reduces only to 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{summary(fm6)$sigma}
+\end_layout
+
+\end_inset
+
+, so inclusion of that term does not give any significant improvement in
+ the fit.
+ (The decision regarding which terms are justified is often made on the
+ basis of an analysis of variance, which in this case indicates that the
+ addition of a cubic term to the equation does not lead to statistically
+ significant improvement.)
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<cal-plot3, include=TRUE, echo=FALSE, fig.cap='Calibration results with
+ a linear-model fit of the form $x=b_1+b_2M+b_3M^2$ (red line).'>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+plotWAC(data.frame(x,M), xlab='x', type='p')
+\end_layout
+
+\begin_layout Plain Layout
+
+cf4 <- coef(fm4)
+\end_layout
+
+\begin_layout Plain Layout
+
+# x <- cf4[1] + cf4[2] * M + cf4[3] * M^2
+\end_layout
+
+\begin_layout Plain Layout
+
+y4 <- (1 / (2 * cf4[3])) * (-cf4[2] + sqrt(cf4[2]^2 - 4*cf4[3] * (cf4[1]-x)))
+\end_layout
+
+\begin_layout Plain Layout
+
+lines(x, y4, col='red')
+\end_layout
+
+\begin_layout Plain Layout
+
+y5 <- a1 + a2*x + a3*x^2
+\end_layout
+
+\begin_layout Plain Layout
+
+MP <- a1 + a2*x + a3*x^2 + rn/10
+\end_layout
+
+\begin_layout Plain Layout
+
+fm7 <- lm(x ~ MP + I(MP^2))
+\end_layout
+
+\begin_layout Plain Layout
+
+cf7 <- coef(fm7)
+\end_layout
+
+\begin_layout Plain Layout
+
+s <- sd(x - cf4[1] - cf4[2]*y5 - cf4[3]*y5^2)
+\end_layout
+
+\begin_layout Plain Layout
+
+s2 <- sd(x - cf7[1] - cf7[2]*y5 - cf7[3]*y5^2)
+\end_layout
+
+\begin_layout Plain Layout
+
+fm8 <- lm (x ~ MP + I(MP^2) + I(MP^3) + I(MP^4))
+\end_layout
+
+\begin_layout Plain Layout
+
+cf8 <- coef(fm8)
+\end_layout
+
+\begin_layout Plain Layout
+
+x2 <- 1:30
+\end_layout
+
+\begin_layout Plain Layout
+
+y5a <- a1 + a2 * x2 + a3 * x2^2
+\end_layout
+
+\begin_layout Plain Layout
+
+x8 <- cf8[1] + cf8[2]*y5a + cf8[3]*y5a^2 + cf8[4]*y5a^3 + cf8[5]*y5a^4
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+## now evaluate the error arising from use of the cf4-polynomial calibration
+ and
+\end_layout
+
+\begin_layout Plain Layout
+
+## that from simple interpolation:
+\end_layout
+
+\begin_layout Plain Layout
+
+NT <- 1000
+\end_layout
+
+\begin_layout Plain Layout
+
+Mt <- runif (NT, y5[1], y5[length(y5)])
+\end_layout
+
+\begin_layout Plain Layout
+
+xt <- cf4[1] + cf4[2] * Mt + cf4[3] * Mt^2
+\end_layout
+
+\begin_layout Plain Layout
+
+fnv <- function (x, M) {
+\end_layout
+
+\begin_layout Plain Layout
+
+  fv <- a1 + a2*x + a3*x^2 - M
+\end_layout
+
+\begin_layout Plain Layout
+
+  return (fv)
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+xr <- nleqslv::nleqslv (xt, fnv, jac=NULL, Mt) 
+\end_layout
+
+\begin_layout Plain Layout
+
+sc <- sd (xt-xr$x)
+\end_layout
+
+\begin_layout Plain Layout
+
+xi <- approx(M, x, Mt, rule=2)$y
+\end_layout
+
+\begin_layout Plain Layout
+
+si <- sd (xt-xi)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Several additional lessons can be learned from this calibration:
+\end_layout
+
+\begin_layout Enumerate
+An error in the final calibration arises from the precision of the sensor.
+ The calibration points were generated from a known polynomial, and the
+ differences between the result of calibration and that assumed polynomial
+ have standard deviation 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{s}
+\end_layout
+
+\end_inset
+
+ and so will introduce an error of this magnitude when the calibration is
+ used.
+ Furthermore, although this error arises from random errors in the calibration,
+ they become systematic errors when that calibration is used and cannot
+ be reduced by repeated measurements.
+ This is an important motivation for getting the calibration to have minimal
+ error.
+\end_layout
+
+\begin_layout Enumerate
+Did you interpolate between calibration points to estimate the value of
+ 
+\begin_inset Formula $x$
+\end_inset
+
+ corresponding to 
+\begin_inset Formula $M=55$
+\end_inset
+
+, to get 11.62? That's a good approach when the random error in the calibration
+ measurement is small.
+ However, in a case such as this where there is an underlying smooth function
+ that is distorted by random error in the calibration points, fitting to
+ a smooth curve gives a much better answer than would be obtained by simple
+ linear interpolation between the calibration points.
+ To see how large this advantage is, random measurands were selected in
+ the range of this calibration and the error evaluated for each measurement
+ as if using the above quadratic-polynomial calibration or using interpolation
+ among the measurements.
+ The standard deviation in the first case was 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{sc}
+\end_layout
+
+\end_inset
+
+ and that in the second (using interpolation) was 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{si}
+\end_layout
+
+\end_inset
+
+, showing that the result from fitting to a quadratic polynomial gives much
+ better results.
+ The fit smooths the errors that arise from the precision of the sensor.
+\end_layout
+
+\begin_layout Enumerate
+For this reason, it is very useful to make repeated independent measurements
+ at each calibration point.
+ If 100 such measurements are averaged for each value of the measurand used
+ in the calibration, the random error in the value of the measurement at
+ each point is reduced by approximately a factor of 10.
+ In this case, that reduces the standard deviation between the calibration
+ curve and the assumed-correct values to 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{s2}
+\end_layout
+
+\end_inset
+
+.
+ That's a surprisingly minor improvement.
+ The fit doesn't improve because the true calibration is higher power than
+ quadratic, although this was obscured by the large random error before
+ averaging measurements.
+ More precise calibration data can reveal this higher-order dependence.
+ If a third-order fit is used, the standard deviation is reduced to 0.0291,
+ and a fourth-order polynomial reduces the same standard deviation to 0.014,
+ with significance tests indicating that all coefficients are needed.
+ The reason is that this example was generated using the following equation:
+ 
+\begin_inset Formula $M=a_{1}+a_{2}x+a_{3}x^{2}$
+\end_inset
+
+ but, when fitted as a function 
+\begin_inset Formula $x(M)$
+\end_inset
+
+ fourth-order terms are needed to represent this dependence.
+ The result is that averaging 100 measurements per calibration value and
+ using a high-order fit leads to negligible residual error that becomes
+ a systematic error when the calibration is used.
+\end_layout
+
+\begin_layout Enumerate
+When using higher-order fits like this, there is considerable danger if
+ the resulting calibration is extrapolated beyond the range covered by the
+ original calibration.
+ Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ref{fig:cal-plot4}
+\end_layout
+
+\end_inset
+
+ shows the fourth-order calibration, as the red line, and the underlying
+ transfer curve (blue line) from which the small-precision measurements,
+ also shown, were generated.
+ The calibration represents the measurements very well, but when extrapolated
+ beyond its range of validity it can create serious errors.
+ This is always a danger when high-order functions are used to represent
+ calibrations.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<cal-plot4, include=TRUE, echo=FALSE, fig.cap='The fourth-order calibration
+ curve (red line) and the true calibration from which the test data for
+ this exercise were generated (blue line).
+ The calibration measurements obtained by averaging 100 points at each value
+ of the measurand are shown as blue dots.'>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+plotWAC(data.frame(x2, y5a), xlab='x', ylab='M')
+\end_layout
+
+\begin_layout Plain Layout
+
+points (x, MP, pch=20, col='blue')
+\end_layout
+
+\begin_layout Plain Layout
+
+lines (x8, y5a, col='red', lwd=2, lty=2)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+Some notes and credits:
+\end_layout
+
+\begin_layout Enumerate
+This exercise is based on R code.
+ A reference is “R Core Team (2017).
+ 
+\begin_inset Quotes eld
+\end_inset
+
+R: A language and environment for statistical computing.
+\begin_inset Quotes erd
+\end_inset
+
+ R Foundation for Statistical Computing, Vienna, Austria.
+ URL 
+\begin_inset CommandInset href
+LatexCommand href
+name "https://www.R-project.org/ "
+target "https://www.R-project.org/ "
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Enumerate
+RStudio (RStudio: Integrated development environment for R (Version 0.98.879),
+ 2009.
+ URL 
+\begin_inset CommandInset href
+LatexCommand href
+name "http://www.rstudio.org"
+target "http://www.rstudio.org"
+
+\end_inset
+
+.) and knitr (Y.
+ Xie.
+ 
+\begin_inset Quotes eld
+\end_inset
+
+Dynamic Documents with R and knitr.
+\begin_inset Quotes erd
+\end_inset
+
+ Chapman and Hall/CRC, Boca Raton, Florida, 2013.
+ URL
+\begin_inset CommandInset href
+LatexCommand href
+name " http://yihui.name/knitr/"
+target " http://yihui.name/knitr/"
+
+\end_inset
+
+.
+ ISBN 978-1482203530; see also Y.
+ Xie, 
+\begin_inset Quotes eld
+\end_inset
+
+knitr: A general-purpose package for dynamic report generation in R, 2014.
+\begin_inset Quotes erd
+\end_inset
+
+ URL 
+\begin_inset CommandInset href
+LatexCommand href
+name "http://yihui.name/knitr/"
+target "http://yihui.name/knitr/"
+
+\end_inset
+
+, R package version 1.6) were used in the original composition of the document.
+\end_layout
+
+\begin_layout Enumerate
+The “Shiny app” was constructed using the “shiny” package for R (Winston
+ Chang, Joe Cheng, JJ Allaire, Yihui Xie and Jonathan McPherson (2017).
+ 
+\begin_inset Quotes eld
+\end_inset
+
+shiny: Web Application Framework for R.
+\begin_inset Quotes erd
+\end_inset
+
+ R package version 1.0.0.
+ 
+\begin_inset CommandInset href
+LatexCommand href
+name "https://CRAN.R-project.org/package=shiny"
+target "https://CRAN.R-project.org/package=shiny"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Enumerate
+Fits are performed using the R function “lm()” (linear model), part of the
+ “stats” package in standard R as referenced above.
+ The techniques used are described by Chambers, J.
+ M.
+ (1992), 
+\begin_inset Quotes erd
+\end_inset
+
+Linear models. Chapter 4 of Statistical Models in S.
+\begin_inset Quotes erd
+\end_inset
+
+ eds J.
+ M.
+ Chambers and T.
+ J.
+ Hastie, Wadsworth & Brooks/Cole.
+\end_layout
+
+\begin_layout Enumerate
+You may wonder why the standard deviation reported under the “your answer”
+ tab differs from that reported in the “help with fitting” tab.
+ The difference is that the former is what is often called a population
+ standard deviation, calculated by dividing the sum of the squared deviations
+ by N before taking the square root, while the latter compensates for the
+ reduction in the number of degrees of freedom by dividing by (N-p) instead,
+ where p is the number of coefficients in the fit.
+ For the quadratic polynomial with three coefficients, these differ by a
+ factor of 
+\begin_inset Formula $\sqrt{17/20}.$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+The ‘More Info’ button in the “help with fitting” tab is designed to deliver
+ a PDF-format version of this full document to your browser.
+ In some cases this will not work, but in that case you can see the referenced
+ document 
+\begin_inset CommandInset href
+LatexCommand href
+name "at this URL"
+target "https://drive.google.com/open?id=0B1kIUH45ca5AZWI5QllIdFpFR0U"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Enumerate
+The exercise was generated using the formula 
+\begin_inset Formula $M=a_{1}+a_{2}x+a_{3}x^{2}$
+\end_inset
+
+ and then choosing Gaussian-distributed random numbers with standard deviation
+ 1.5 units in 
+\begin_inset Formula $M$
+\end_inset
+
+ to simulate the output of the sensor.
+ The actual coefficients are 
+\begin_inset Formula $a_{1}=-5,\,a_{2}=3,\,a_{3}=-0.1.$
+\end_inset
+
+ The 
+\begin_inset Quotes eld
+\end_inset
+
+true
+\begin_inset Quotes erd
+\end_inset
+
+ value for 
+\begin_inset Formula $M=55$
+\end_inset
+
+, with this formula, is 
+\begin_inset Formula $x=11.93$
+\end_inset
+
+ .
+ We have nevertheless listed the 
+\begin_inset Quotes eld
+\end_inset
+
+right
+\begin_inset Quotes erd
+\end_inset
+
+ answer to the exercise as 
+\begin_inset Formula $x=11.96$
+\end_inset
+
+ because, without knowing the underlying true transfer curve, that is the
+ best estimate using the available calibration.
+\end_layout
+
+\begin_layout Enumerate
+It is argued in this exercise that it is best to fit for 
+\begin_inset Formula $x=f(M)$
+\end_inset
+
+ because that is how the calibration will be used.
+ However, an exception is a case where there is reason to think that the
+ true response has some simple polynomial relationship for 
+\begin_inset Formula $M=F(x)$
+\end_inset
+
+.
+ In that case it may be simpler to use a fit to 
+\begin_inset Formula $M=F(x)$
+\end_inset
+
+ and then invert the relationship so obtained.
+ The reason is illustrated in the example used in this exercise: Although
+ the transfer curve is a simple quadratic relationship, for calibration
+ data having little error the required inverse formula (
+\begin_inset Formula $x=f(M)$
+\end_inset
+
+) requires high-order terms to obtain a good representation.
+ Fits to the exact data points keep getting better even up to 7th order,
+ although the residual standard deviation then becomes very small.
+ Normally, you won't know whether 
+\begin_inset Formula $x=f(M)$
+\end_inset
+
+ or 
+\begin_inset Formula $M=F(x)$
+\end_inset
+
+ is a simpler relationship, so usually fitting 
+\begin_inset Formula $x=f(M)$
+\end_inset
+
+ to the data is best.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+%
+\backslash
+attach{attachment}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+%
+\backslash
+attachm{first
+\backslash
+
+\backslash
+second}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+%
+\backslash
+cc{first attachment
+\backslash
+
+\backslash
+second
+\backslash
+
+\backslash
+3rd att}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

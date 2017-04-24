@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 5.1.6.2.0 (Linux)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changedby" content="Al Cooper"/>
+	<meta name="changed" content="2017-03-31T19:26:04.298549831"/>
+	<meta name="date" content="2017-03-31 11:07:00"/>
+	<meta name="originator" content="TeX4ht (http://www.tug.org/tex4ht/)"/>
+	<meta name="src" content="CalibrationExercise.tex"/>
+	<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+	<meta name="created" content="00:00:00">
+	<meta name="changedby" content="Al Cooper">
+	<meta name="changed" content="2017-03-31T19:13:56.211606681">
+	<!--l. 249-->
+	<style type="text/css">
+		h3.cjk { font-family: "Source Han Sans CN Regular" }
+		h3.ctl { font-family: "Lohit Devanagari" }
+	</style>
+</head>
+<body lang="en-US" dir="ltr">
+<h3 class="western">Our answers:</h3>
+<p>Question 1: 11.96<!--l. 251--> 
+</p>
+<p>Question 2: <i><b>x = b</b></i><sub><i><b>0</b></i></sub> <i><b>+b</b></i><sub><i><b>1</b></i></sub><i><b>M
++b</b></i><sub><i><b>2</b></i></sub><i><b>M</b></i><sup><i><b>2</b></i></sup>
+with {<i><b>b</b></i><sub><i><b>0</b></i></sub><i><b>, b</b></i><sub><i><b>1</b></i></sub><i><b>,
+b</b></i><sub><i><b>2</b></i></sub>} = {<i><b>-</b></i>0.962, 0.2770,
+<i><b>-</b></i>0.0007627}, as developed below. For M=55, this leads
+to the answer to Question 1.</p>
+<h3 class="western">Discussion<!--l. 255--> 
+</h3>
+<p>First we consider a linear fit. (That obviously won’t work very
+well because the transfer curve shown in previous panels does not
+have a constant slope, but this approach is still instructive.) A
+common error is to find the regression fit giving <i><b>M </b></i>as
+a function of <i><b>x</b></i>, which for this case gives <i><b>M = a</b></i><sub><i><b>1</b></i></sub>
+<i><b>+a</b></i><sub><i><b>2</b></i></sub><i><b>x </b></i>with
+<i><b>a</b></i><sub><i><b>1</b></i></sub>=-2.752 and <i><b>a</b></i><sub><i><b>2</b></i></sub>=5.1159.
+Use the “help with fitting” tab and select polynomial order 1 and
+select the “M=f(x)” checkbox. Watch the resulting fit when you
+uncheck that checkbox. Notice that it changes slightly. The change is
+small because in this case the correlation coefficient is high
+(0.9934), but the difference between the two regression lines
+increases as the correlation decreases. Which should we use? We will
+use the calibration to determine estimates of the measurand <i><b>x
+</b></i>corresponding to measurements <i><b>M</b></i>, so we want to
+minimize the error in <i><b>x </b></i>for a given <i><b>M</b></i>.
+That is represented best by the second regression fit giving <i><b>x
+</b></i>as a function of <i><b>M</b></i>. So we recommend leaving
+that check-box unchecked.<!--l. 274--> 
+</p>
+<p><!--l. 286-->The residual standard deviation of the calibration
+values for <i><b>x</b></i>, given <i><b>M</b></i>, from that
+regression line is 0.6967. That is not very good, and the deviations
+are systematic, so it is justified to try a higher-order fit. Using a
+linear-model fit to determine coefficients for a relationship <i><b>x
+= b</b></i><sub><i><b>1</b></i></sub> <i><b>+b</b></i><sub><i><b>2</b></i></sub><i><b>M
++b</b></i><sub><i><b>3</b></i></sub><i><b>M</b></i><sup><i><b>2</b></i></sup>
+leads to coefficients -0.9624, 0.277 and <i><b>-7.6267×10</b></i><sup><i><b>-4</b></i></sup>
+. Use the “help with fitting” tab with a 2<sup>nd</sup>-order
+polynomial to see this fit. Using these coefficients leads to our
+answer for <i><b>x </b></i>given <i><b>M = 55</b></i>: 11.96. The
+residual standard deviation for the new fit is 0.3266, so the
+improvement is significant. Studies of this sensor by other means
+indicate that its precision is about 1.5 units in the measurement <i><b>M</b></i>,
+so with a representative slope of about <i><b>b</b></i><sub><i><b>2</b></i></sub>
+the expected precision in estimates of the measurand <i><b>x </b></i>is
+expected to be about 0.4155. This result is reasonably consistent
+with the expected precision in measurements, and that comparison
+suggests that there won’t be much meaningful improvement with
+higher-order polynomials. 
+</p>
+<p>If a third-order polynomial is used in the fit, the residual
+standard deviation reduces only to 0.2867, so inclusion of that term
+does not give any significant improvement in the fit. (The decision
+regarding which terms are justified is often made on the basis of an
+analysis of variance, which in this case indicates that the addition
+of a cubic term to the equation does not lead to statistically
+significant improvement.) Higher-order fits can lead to problems, as
+illustrated in the “more” tab, so it is not wise to use fits that
+are higher order than needed.<!--l. 310--> 
+</p>
+<p><br/>
+<br/>
+
+</p>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 5.1.6.2.0 (Linux)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changedby" content="Al Cooper"/>
+	<meta name="changed" content="2017-04-01T01:13:04.380749429"/>
+	<meta name="date" content="2017-03-31 11:07:00"/>
+	<meta name="originator" content="TeX4ht (http://www.tug.org/tex4ht/)"/>
+	<meta name="src" content="CalibrationExercise.tex"/>
+	<!--l. 322-->
+</head>
+<body lang="en-US" dir="ltr">
+<p class="noindent">Several additional lessons can be learned from
+this calibration exercise: 
+</p>
+<ol>
+	<li/>
+<p style="margin-bottom: 0in"><a name="x1-3004x1"></a><u>An
+	error in the final calibration arises from the precision of the
+	sensor.</u> The calibration points were generated from a known
+	polynomial, and the differences between the result of calibration
+	and that assumed polynomial have standard deviation 0.1205 and so
+	will introduce an error of this magnitude when the calibration is
+	used. Furthermore, although this error arises from random errors in
+	the calibration, they become systematic errors when that calibration
+	is used and cannot be reduced by repeated measurements. This is an
+	important motivation for getting the calibration to have minimal
+	error. 
+	</p>
+	<li/>
+<p style="margin-bottom: 0in"><a name="x1-3006x2"></a><u>Did
+	you interpolate between calibration points to estimate the value of
+	</u><i><u><b>x </b></u></i><u>corresponding to </u><i><u><b>M = 55</b></u></i><u>,
+	to get 11.62?</u> That’s a good approach when the random error in
+	the calibration measurement is small. However, in a case such as
+	this where there is an underlying smooth function that is distorted
+	by random error in the calibration points, fitting to a smooth curve
+	gives a much better answer than would be obtained by simple linear
+	interpolation between the calibration points. To see how large this
+	advantage is, random measurands were selected in the range of this
+	calibration and the error evaluated for each measurement as if using
+	the above quadratic-polynomial calibration or using interpolation
+	among the measurements. The standard deviation in the first case was
+	0.1016 and that in the second (using interpolation) was 0.2404,
+	showing that the result from fitting to a quadratic polynomial gives
+	much better results. The fit smooths the errors that arise from the
+	precision of the sensor. 
+	</p>
+	<li/>
+<p style="margin-bottom: 0in"><a name="x1-3008x3"></a><u>For
+	this reason, it is very useful to make repeated independent
+	measurements at each calibration point.</u> If 100 such measurements
+	are averaged for each value of the measurand used in the
+	calibration, the random error in the value of the measurement at
+	each point is reduced by approximately a factor of 10. In this case,
+	that reduces the standard deviation between the calibration curve
+	and the assumed-correct values to 0.1166. That’s a surprisingly
+	minor improvement over the fit determined from the original
+	unaveraged data, which gave a corresponding standard deviation of
+	0.1205. The fit doesn’t improve because the true calibration is
+	higher power than quadratic, although this was obscured by the large
+	random error before averaging measurements. More precise calibration
+	data now  reveals this higher-order dependence. If a third-order fit
+	is used with the averaged calibration data, the standard deviation
+	is reduced to 0.0291, and a fourth-order polynomial reduces the same
+	standard deviation to 0.014, with significance tests indicating that
+	all coefficients are needed. The reason is that this example was
+	generated using the following equation: <i><b>M = a</b></i><sub><i><b>1</b></i></sub>
+	<i><b>+ a</b></i><sub><i><b>2</b></i></sub><i><b>x + a</b></i><sub><i><b>3</b></i></sub><i><b>x</b></i><sup><i><b>2</b></i></sup>
+	but, when fitted as a function <i><b>x(M) </b></i>fourth-order terms
+	are needed to represent this dependence. The result is that
+	averaging 100 measurements per calibration value and using a
+	high-order fit leads to negligible residual error and so to
+	negligible systematic error when the calibration is used. 
+	</p>
+	<li/>
+<p><a name="x1-3010x4"></a><u>When using higher-order fits
+	like this, there is considerable danger if the resulting calibration
+	is extrapolated beyond the range covered by the original
+	calibration.</u> Figure&nbsp;<a href="#x1-30114">4</a><!--tex4ht:ref: fig:cal-plot4 -->
+	below shows the fourth-order calibration, as the red line, and the
+	underlying transfer curve (blue line) from which the small-precision
+	measurements, also shown, were generated. The calibration represents
+	the measurements very well, but when extrapolated beyond its range
+	of validity it can create serious errors. This is always a danger
+	when high-order functions are used to represent calibrations.</p>
+</ol>
+<p style="border-top: none; border-bottom: 1.10pt double #808080; border-left: none; border-right: none; padding: 0in">
+<!--l. 378--></p>
+<p style="margin-bottom: 0in"><a name="x1-30114"></a><br/>
+
+</p>
+<p>Figure&nbsp;4: The fourth-order calibration curve (red line) and
+the true calibration from which the test data for this exercise were
+generated (blue line). The calibration measurements obtained by
+averaging 100 points at each value of the measurand are shown as blue
+dots.</p>
+<p style="border-top: none; border-bottom: 1.10pt double #808080; border-left: none; border-right: none; padding: 0in">
+<!--tex4ht:label?: x1-30114 --><!--l. 385--></p>
+</body>
+</html>

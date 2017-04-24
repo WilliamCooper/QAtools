@@ -1,0 +1,6 @@
+[1] "Coefficients:"
+            Estimate Std. Error t value  Pr(>|t|)
+(Intercept)   0.6688   0.309447   2.161 4.439e-02
+CalData$M     0.1929   0.005246  36.770 2.177e-18
+[1] "Residual standard deviation: 0.697, dof=18<br>"
+[1] "R-squared 0.987"

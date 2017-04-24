@@ -1,0 +1,582 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"  
+  "http://www.w3.org/TR/html4/loose.dtd">  
+<html > 
+<head><title></title> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"> 
+<meta name="generator" content="TeX4ht (http://www.tug.org/tex4ht/)"> 
+<meta name="originator" content="TeX4ht (http://www.tug.org/tex4ht/)"> 
+<!-- html --> 
+<meta name="src" content="CalibrationExercise.tex"> 
+<meta name="date" content="2017-04-01 10:24:00"> 
+<link rel="stylesheet" type="text/css" href="CalibrationExercise.css"> 
+</head><body 
+>
+<h3 class="likesectionHead"><a 
+ id="x1-1000"></a>The Exercise:</h3>
+<!--l. 132--><p class="noindent" >Our objective is to calibrate a sensor so that we can use the calibration to estimate the value <span 
+class="zptmcm7m-x-x-120">x </span>of a
+measurand from the output of the sensor <span 
+class="zptmcm7m-x-x-120">M</span>. We have available a calibrator that produces values of a
+measurand with very small random error and no systematic error, so its contribution to error in the
+calibration can be neglected. Our sensor, on the other hand, makes individual measurements with a
+rather large random error, characterized by the precision <span 
+class="zptmcm7m-x-x-120">&#x03C3;</span><sub><span 
+class="zptmcm7m-x-x-90">M</span></sub>=1.5. The goal of calibration is
+to minimize systematic error in measurements using this sensor. We decide to make N=20
+measurements equally spaced over a measurand interval {<span 
+class="zptmcm7m-x-x-120">x</span><sub><span 
+class="zptmcm7t-x-x-90">1</span></sub>&#8211;<span 
+class="zptmcm7m-x-x-120">x</span><sub><span 
+class="zptmcm7t-x-x-90">2</span></sub>), and as a result we get N
+measurements {<span 
+class="zptmcm7m-x-x-120">M</span><sub><span 
+class="zptmcm7m-x-x-90">i</span></sub>} that correspond to {<span 
+class="zptmcm7m-x-x-120">x</span><sub><span 
+class="zptmcm7m-x-x-90">i</span></sub>}. Results are as listed in the following table and shown in
+Fig.&#x00A0;<a 
+href="#x1-10011">1<!--tex4ht:ref: fig:cal-plot --></a>:
+<div class="center" 
+>
+<!--l. 144--><p class="noindent" >
+<div class="tabular"> <table id="TBL-1" class="tabular" 
+cellspacing="0" cellpadding="0" rules="groups" 
+><colgroup id="TBL-1-1g"><col 
+id="TBL-1-1"></colgroup><colgroup id="TBL-1-2g"><col 
+id="TBL-1-2"></colgroup><colgroup id="TBL-1-3g"><col 
+id="TBL-1-3"></colgroup><colgroup id="TBL-1-4g"><col 
+id="TBL-1-4"></colgroup><colgroup id="TBL-1-5g"><col 
+id="TBL-1-5"></colgroup><colgroup id="TBL-1-6g"><col 
+id="TBL-1-6"></colgroup><colgroup id="TBL-1-7g"><col 
+id="TBL-1-7"></colgroup><colgroup id="TBL-1-8g"><col 
+id="TBL-1-8"></colgroup><tr 
+class="hline"><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td></tr><tr  
+ style="vertical-align:baseline;" id="TBL-1-1-"><td  style="white-space:nowrap; text-align:center;" id="TBL-1-1-1"  
+class="td11"><span 
+class="zptmcm7m-x-x-120">x</span></td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-1-2"  
+class="td11">  <span 
+class="zptmcm7m-x-x-120">M   </span></td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-1-3"  
+class="td11"> <span 
+class="zptmcm7m-x-x-120">x </span></td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-1-4"  
+class="td11">  <span 
+class="zptmcm7m-x-x-120">M   </span></td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-1-5"  
+class="td11"> <span 
+class="zptmcm7m-x-x-120">x </span></td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-1-6"  
+class="td11">  <span 
+class="zptmcm7m-x-x-120">M   </span></td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-1-7"  
+class="td11"> <span 
+class="zptmcm7m-x-x-120">x </span></td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-1-8"  
+class="td11">   <span 
+class="zptmcm7m-x-x-120">M    </span></td></tr><tr 
+class="hline"><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td></tr><tr 
+class="hline"><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td></tr><tr  
+ style="vertical-align:baseline;" id="TBL-1-2-"><td  style="white-space:nowrap; text-align:center;" id="TBL-1-2-1"  
+class="td11">1</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-2-2"  
+class="td11"> 8.9783 </td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-2-3"  
+class="td11"> 6 </td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-2-4"  
+class="td11">23.8731</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-2-5"  
+class="td11">11</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-2-6"  
+class="td11">49.9256</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-2-7"  
+class="td11">16</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-2-8"  
+class="td11"> 79.8253</td>
+</tr><tr 
+class="hline"><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td></tr><tr  
+ style="vertical-align:baseline;" id="TBL-1-3-"><td  style="white-space:nowrap; text-align:center;" id="TBL-1-3-1"  
+class="td11">2</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-3-2"  
+class="td11">12.4642</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-3-3"  
+class="td11"> 7 </td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-3-4"  
+class="td11">31.8451</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-3-5"  
+class="td11">12</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-3-6"  
+class="td11"> 58.126 </td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-3-7"  
+class="td11">17</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-3-8"  
+class="td11"> 83.5705 </td></tr><tr 
+class="hline"><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td></tr><tr  
+ style="vertical-align:baseline;" id="TBL-1-4-"><td  style="white-space:nowrap; text-align:center;" id="TBL-1-4-1"  
+class="td11">3</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-4-2"  
+class="td11"> 14.736 </td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-4-3"  
+class="td11"> 8 </td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-4-4"  
+class="td11">34.9857</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-4-5"  
+class="td11">13</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-4-6"  
+class="td11">61.4559</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-4-7"  
+class="td11">18</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-4-8"  
+class="td11"> 90.9026</td>
+</tr><tr 
+class="hline"><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td></tr><tr  
+ style="vertical-align:baseline;" id="TBL-1-5-"><td  style="white-space:nowrap; text-align:center;" id="TBL-1-5-1"  
+class="td11">4</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-5-2"  
+class="td11">17.9198</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-5-3"  
+class="td11"> 9 </td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-5-4"  
+class="td11">39.6738</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-5-5"  
+class="td11">14</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-5-6"  
+class="td11">67.3803</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-5-7"  
+class="td11">19</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-5-8"  
+class="td11"> 99.7811 </td>
+</tr><tr 
+class="hline"><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td></tr><tr  
+ style="vertical-align:baseline;" id="TBL-1-6-"><td  style="white-space:nowrap; text-align:center;" id="TBL-1-6-1"  
+class="td11">5</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-6-2"  
+class="td11">23.4088</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-6-3"  
+class="td11">10</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-6-4"  
+class="td11"> 43.621 </td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-6-5"  
+class="td11">15</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-6-6"  
+class="td11">71.3742</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-6-7"  
+class="td11">20</td><td  style="white-space:nowrap; text-align:center;" id="TBL-1-6-8"  
+class="td11">105.4481</td>
+</tr><tr 
+class="hline"><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td></tr><tr  
+ style="vertical-align:baseline;" id="TBL-1-7-"><td  style="white-space:nowrap; text-align:center;" id="TBL-1-7-1"  
+class="td11"> </td>
+</tr></table></div>
+</div>
+<!--l. 206--><p class="noindent" ><hr class="figure"><div class="figure" 
+>
+                                                                                         
+                                                                                         
+<a 
+ id="x1-10011"></a>
+                                                                                         
+                                                                                         
+<br /> <div class="caption" 
+><span class="id">Figure&#x00A0;1: </span><span  
+class="content">Results from calibration, with <span 
+class="zptmcm7m-x-x-120">x </span>the measurand generated by a calibrator and <span 
+class="zptmcm7m-x-x-120">M </span>the
+resulting static output from the sensor.</span></div><!--tex4ht:label?: x1-10011 -->
+                                                                                         
+                                                                                         
+<!--l. 213--><p class="noindent" ></div><hr class="endfigure">
+                                                                                         
+                                                                                         
+<!--l. 220--><p class="noindent" >Using these data, find a representation of this calibration in the form <span 
+class="zptmcm7m-x-x-120">x </span><span 
+class="zptmcm7t-x-x-120">= </span><span 
+class="zptmcm7m-x-x-120">f</span><span 
+class="zptmcm7t-x-x-120">(</span><span 
+class="zptmcm7m-x-x-120">M</span><span 
+class="zptmcm7t-x-x-120">)</span>, where <span 
+class="zptmcm7m-x-x-120">f</span><span 
+class="zptmcm7t-x-x-120">() </span>can be a
+polynomial or other function, so that the output <span 
+class="zptmcm7m-x-x-120">M </span>from this sensor can be used to estimate the measurand
+<span 
+class="zptmcm7m-x-x-120">x</span>, under static conditions.
+<h3 class="likesectionHead"><a 
+ id="x1-2000"></a>Your Answer:</h3>
+<!--l. 227--><p class="noindent" >Your exercise is to enter two answers:
+      <ol  class="enumerate1" >
+      <li 
+  class="enumerate" id="x1-2002x1">If the sensor output is 55, what should your estimate of the measurand be?
+      </li>
+      <li 
+  class="enumerate" id="x1-2004x2">How would you represent this calibration as a function of the form <span 
+class="zptmcm7m-x-x-120">x </span><span 
+class="zptmcm7t-x-x-120">= </span><span 
+class="zptmcm7m-x-x-120">f</span><span 
+class="zptmcm7t-x-x-120">(</span><span 
+class="zptmcm7m-x-x-120">M</span><span 
+class="zptmcm7t-x-x-120">)</span>? Enter your
+      formula; for example &#8220;200 + 5 * M&#8221; (without the quote marks), and click the &#8220;show plot&#8221;
+      button to see your calibration plotted and evaluated. You can enter powers of M using, e.g.,
+      M**2 or M^2. You can find a tool for performing basic linear-model fits to these calibration
+      data at this URL: <a 
+href="https://williamcooper.shinyapps.io/CalibrationExercise" >https://williamcooper.shinyapps.io/CalibrationExercise</a>. Or, use MatLab or
+      a similar package or your own calculations for fitting. Trial-and-error is instructive too.</li></ol>
+<!--l. 241--><p class="noindent" >
+<h3 class="likesectionHead"><a 
+ id="x1-3000"></a>Our Answer:</h3>
+<!--l. 243--><p class="noindent" >[enter and check yours first; you will learn more.]
+<!--l. 245--><p class="noindent" >[interactive version allows selection of order of polynomial and specification of number of measurements
+like those tabulated to average before calculating the fit.]
+<!--l. 249--><p class="noindent" >Question 1: 11.96
+<!--l. 251--><p class="noindent" >Question 2: <span 
+class="zptmcm7m-x-x-120">x </span><span 
+class="zptmcm7t-x-x-120">= </span><span 
+class="zptmcm7m-x-x-120">b</span><sub><span 
+class="zptmcm7t-x-x-90">0</span></sub> <span 
+class="zptmcm7t-x-x-120">+</span><span 
+class="zptmcm7m-x-x-120">b</span><sub><span 
+class="zptmcm7t-x-x-90">1</span></sub><span 
+class="zptmcm7m-x-x-120">M </span><span 
+class="zptmcm7t-x-x-120">+</span><span 
+class="zptmcm7m-x-x-120">b</span><sub><span 
+class="zptmcm7t-x-x-90">2</span></sub><span 
+class="zptmcm7m-x-x-120">M</span><sup><span 
+class="zptmcm7t-x-x-90">2</span></sup> with {<span 
+class="zptmcm7m-x-x-120">b</span><sub><span 
+class="zptmcm7t-x-x-90">0</span></sub><span 
+class="zptmcm7m-x-x-120">, b</span><sub><span 
+class="zptmcm7t-x-x-90">1</span></sub><span 
+class="zptmcm7m-x-x-120">, b</span><sub><span 
+class="zptmcm7t-x-x-90">2</span></sub>} = {<span 
+class="zptmcm7y-x-x-120">-</span>0.962, 0.2770, <span 
+class="zptmcm7y-x-x-120">-</span>0.0007627}, as developed
+below. For M=55, this leads to the answer to Question 1.
+<!--l. 255--><p class="noindent" >First we consider a linear fit. (That obviously won&#8217;t work very well because the transfer curve shown in
+Fig.&#x00A0;<a 
+href="#x1-10011">1<!--tex4ht:ref: fig:cal-plot --></a> does not have a constant slope, but this approach is still instructive.) A common error is to find the
+regression fit giving <span 
+class="zptmcm7m-x-x-120">M </span>as a function of <span 
+class="zptmcm7m-x-x-120">x</span>, which for this case gives <span 
+class="zptmcm7m-x-x-120">M </span><span 
+class="zptmcm7t-x-x-120">= </span><span 
+class="zptmcm7m-x-x-120">a</span><sub><span 
+class="zptmcm7t-x-x-90">1</span></sub> <span 
+class="zptmcm7t-x-x-120">+</span><span 
+class="zptmcm7m-x-x-120">a</span><sub><span 
+class="zptmcm7t-x-x-90">2</span></sub><span 
+class="zptmcm7m-x-x-120">x </span>with <span 
+class="zptmcm7m-x-x-120">a</span><sub><span 
+class="zptmcm7t-x-x-90">1</span></sub>=-2.752 and
+<span 
+class="zptmcm7m-x-x-120">a</span><sub><span 
+class="zptmcm7t-x-x-90">2</span></sub>=5.1159. The resulting fit is shown in Fig.&#x00A0;<a 
+href="#x1-30012">2<!--tex4ht:ref: fig:cal-plot2 --></a> as the orange line. However, if instead we determine the
+regression fit giving <span 
+class="zptmcm7m-x-x-120">x </span>as a function of <span 
+class="zptmcm7m-x-x-120">M</span>, we get the result shown as the green line. The orange and green
+lines are almost the same, because in this case the correlation coefficient is high (0.9934,
+but the difference between the two regression lines increases as the correlation decreases.
+Which should we use? We will use the calibration to determine estimates of the measurand
+                                                                                         
+                                                                                         
+<span 
+class="zptmcm7m-x-x-120">x </span>corresponding to measurements <span 
+class="zptmcm7m-x-x-120">M</span>, so we want to minimize the error in <span 
+class="zptmcm7m-x-x-120">x </span>for a given <span 
+class="zptmcm7m-x-x-120">M</span>.
+That is represented best by the second regression fit giving <span 
+class="zptmcm7m-x-x-120">x </span>as a function of <span 
+class="zptmcm7m-x-x-120">M</span>, the green
+line.
+<!--l. 274--><p class="noindent" ><hr class="figure"><div class="figure" 
+>
+                                                                                         
+                                                                                         
+<a 
+ id="x1-30012"></a>
+                                                                                         
+                                                                                         
+<br /> <div class="caption" 
+><span class="id">Figure&#x00A0;2: </span><span  
+class="content">Calibration results with regression fits for <span 
+class="zptmcm7m-x-x-120">M </span>as a function of <span 
+class="zptmcm7m-x-x-120">x </span>(orange line) and for <span 
+class="zptmcm7m-x-x-120">x</span>
+as a function of <span 
+class="zptmcm7m-x-x-120">M </span>(green line).</span></div><!--tex4ht:label?: x1-30012 -->
+                                                                                         
+                                                                                         
+<!--l. 281--><p class="noindent" ></div><hr class="endfigure">
+<!--l. 286--><p class="noindent" >The residual standard deviation of the calibration values for <span 
+class="zptmcm7m-x-x-120">x</span>, given <span 
+class="zptmcm7m-x-x-120">M</span>, from that regression line is
+0.6967. That is not very good, and the deviations are systematic, so it is justified to try a higher-order fit.
+Using a linear-model fit to determine coefficients for a relationship <span 
+class="zptmcm7m-x-x-120">x </span><span 
+class="zptmcm7t-x-x-120">= </span><span 
+class="zptmcm7m-x-x-120">b</span><sub><span 
+class="zptmcm7t-x-x-90">1</span></sub> <span 
+class="zptmcm7t-x-x-120">+</span><span 
+class="zptmcm7m-x-x-120">b</span><sub><span 
+class="zptmcm7t-x-x-90">2</span></sub><span 
+class="zptmcm7m-x-x-120">M </span><span 
+class="zptmcm7t-x-x-120">+</span><span 
+class="zptmcm7m-x-x-120">b</span><sub><span 
+class="zptmcm7t-x-x-90">3</span></sub><span 
+class="zptmcm7m-x-x-120">M</span><sup><span 
+class="zptmcm7t-x-x-90">2</span></sup> leads
+to coefficients -0.9624, 0.277 and <span 
+class="zptmcm7y-x-x-120">-</span><span 
+class="zptmcm7t-x-x-120">7</span><span 
+class="zptmcm7m-x-x-120">.</span><span 
+class="zptmcm7t-x-x-120">6267</span><span 
+class="zptmcm7y-x-x-120">&#x00D7;</span><span 
+class="zptmcm7t-x-x-120">10</span><sup><span 
+class="zptmcm7y-x-x-90">-</span><span 
+class="zptmcm7t-x-x-90">4</span></sup> and the fit shown in Fig.&#x00A0;<a 
+href="#x1-30023">3<!--tex4ht:ref: fig:cal-plot3 --></a>. Using these
+coefficients leads to our answer for <span 
+class="zptmcm7m-x-x-120">x </span>given <span 
+class="zptmcm7m-x-x-120">M </span><span 
+class="zptmcm7t-x-x-120">= 55</span>: 11.96. The residual standard deviation for the
+new fit is 0.3266, so the improvement is significant. Studies of this sensor by other means
+indicate that its precision is about 1.5 units in the measurement <span 
+class="zptmcm7m-x-x-120">M</span>, so with a representative slope
+of about <span 
+class="zptmcm7m-x-x-120">b</span><sub><span 
+class="zptmcm7t-x-x-90">2</span></sub> the expected precision in estimates of the measurand <span 
+class="zptmcm7m-x-x-120">x </span>is expected to be about
+0.4155, so this result is reasonably consistent with the expected precision in measurements. That
+indicates that higher-order polynomial fits are probably not needed or justified. If a third-order
+polynomial is used in the fit, the residual standard deviation reduces only to 0.2867, so inclusion of
+that term does not give any significant improvement in the fit. (The decision regarding which
+terms are justified is often made on the basis of an analysis of variance, which in this case
+indicates that the addition of a cubic term to the equation does not lead to statistically significant
+improvement.)
+<!--l. 310--><p class="noindent" ><hr class="figure"><div class="figure" 
+>
+                                                                                         
+                                                                                         
+<a 
+ id="x1-30023"></a>
+                                                                                         
+                                                                                         
+<br /> <div class="caption" 
+><span class="id">Figure&#x00A0;3: </span><span  
+class="content">Calibration results with a linear-model fit of the form <span 
+class="zptmcm7m-x-x-120">x </span><span 
+class="zptmcm7t-x-x-120">= </span><span 
+class="zptmcm7m-x-x-120">b</span><sub><span 
+class="zptmcm7t-x-x-90">1</span></sub> <span 
+class="zptmcm7t-x-x-120">+</span><span 
+class="zptmcm7m-x-x-120">b</span><sub><span 
+class="zptmcm7t-x-x-90">2</span></sub><span 
+class="zptmcm7m-x-x-120">M </span><span 
+class="zptmcm7t-x-x-120">+</span><span 
+class="zptmcm7m-x-x-120">b</span><sub><span 
+class="zptmcm7t-x-x-90">3</span></sub><span 
+class="zptmcm7m-x-x-120">M</span><sup><span 
+class="zptmcm7t-x-x-90">2</span></sup> (red line).</span></div><!--tex4ht:label?: x1-30023 -->
+                                                                                         
+                                                                                         
+<!--l. 317--><p class="noindent" ></div><hr class="endfigure">
+<!--l. 322--><p class="noindent" >Several additional lessons can be learned from this calibration:
+      <ol  class="enumerate1" >
+      <li 
+  class="enumerate" id="x1-3004x1">An  error  in  the  final  calibration  arises  from  the  precision  of  the  sensor.  The  calibration
+      points  were  generated  from  a  known  polynomial,  and  the  differences  between  the  result
+      of  calibration  and  that  assumed  polynomial  have  standard  deviation  0.1205  and  so  will
+      introduce an error of this magnitude when the calibration is used. Furthermore, although this
+      error arises from random errors in the calibration, they become systematic errors when that
+      calibration is used and cannot be reduced by repeated measurements. This is an important
+      motivation for getting the calibration to have minimal error.
+      </li>
+      <li 
+  class="enumerate" id="x1-3006x2">Did you interpolate between calibration points to estimate the value of <span 
+class="zptmcm7m-x-x-120">x </span>corresponding to
+      <span 
+class="zptmcm7m-x-x-120">M </span><span 
+class="zptmcm7t-x-x-120">= 55</span>, to get 11.62? That&#8217;s a good approach when the random error in the calibration
+      measurement is small. However, in a case such as this where there is an underlying smooth
+      function that is distorted by random error in the calibration points, fitting to a smooth curve
+      gives a much better answer than would be obtained by simple linear interpolation between
+      the calibration points. To see how large this advantage is, random measurands were selected
+      in the range of this calibration and the error evaluated for each measurement as if using the
+      above quadratic-polynomial calibration or using interpolation among the measurements. The
+      standard deviation in the first case was 0.1016 and that in the second (using interpolation)
+      was 0.2404, showing that the result from fitting to a quadratic polynomial gives much better
+      results. The fit smooths the errors that arise from the precision of the sensor.
+      </li>
+      <li 
+  class="enumerate" id="x1-3008x3">For  this  reason,  it  is  very  useful  to  make  repeated  independent  measurements  at  each
+      calibration point. If 100 such measurements are averaged for each value of the measurand
+      used in the calibration, the random error in the value of the measurement at each point is
+      reduced by approximately a factor of 10. In this case, that reduces the standard deviation
+      between the calibration curve and the assumed-correct values to 0.1166. That&#8217;s a surprisingly
+      minor improvement. The fit doesn&#8217;t improve because the true calibration is higher power
+      than  quadratic,  although  this  was  obscured  by  the  large  random  error  before  averaging
+      measurements.  More  precise  calibration  data  can  reveal  this  higher-order  dependence.  If
+      a  third-order  fit  is  used,  the  standard  deviation  is  reduced  to  0.0291,  and  a  fourth-order
+      polynomial reduces the same standard deviation to 0.014, with significance tests indicating
+      that  all  coefficients  are  needed.  The  reason  is  that  this  example  was  generated  using  the
+      following equation: <span 
+class="zptmcm7m-x-x-120">M </span><span 
+class="zptmcm7t-x-x-120">= </span><span 
+class="zptmcm7m-x-x-120">a</span><sub><span 
+class="zptmcm7t-x-x-90">1</span></sub> <span 
+class="zptmcm7t-x-x-120">+ </span><span 
+class="zptmcm7m-x-x-120">a</span><sub><span 
+class="zptmcm7t-x-x-90">2</span></sub><span 
+class="zptmcm7m-x-x-120">x </span><span 
+class="zptmcm7t-x-x-120">+ </span><span 
+class="zptmcm7m-x-x-120">a</span><sub><span 
+class="zptmcm7t-x-x-90">3</span></sub><span 
+class="zptmcm7m-x-x-120">x</span><sup><span 
+class="zptmcm7t-x-x-90">2</span></sup> but, when fitted as a function <span 
+class="zptmcm7m-x-x-120">x</span><span 
+class="zptmcm7t-x-x-120">(</span><span 
+class="zptmcm7m-x-x-120">M</span><span 
+class="zptmcm7t-x-x-120">) </span>fourth-order
+      terms are needed to represent this dependence. The result is that averaging 100 measurements
+      per calibration value and using a high-order fit leads to negligible residual error that becomes
+      a systematic error when the calibration is used.
+      </li>
+                                                                                         
+                                                                                         
+      <li 
+  class="enumerate" id="x1-3010x4">When using higher-order fits like this, there is considerable danger if the resulting calibration
+      is extrapolated beyond the range covered by the original calibration. Figure&#x00A0;<a 
+href="#x1-30114">4<!--tex4ht:ref: fig:cal-plot4 --></a> shows the
+      fourth-order calibration, as the red line, and the underlying transfer curve (blue line) from
+      which  the  small-precision  measurements,  also  shown,  were  generated.  The  calibration
+      represents the measurements very well, but when extrapolated beyond its range of validity
+      it can create serious errors. This is always a danger when high-order functions are used to
+      represent calibrations.</li></ol>
+<!--l. 378--><p class="noindent" ><hr class="figure"><div class="figure" 
+><a 
+ id="x1-30114"></a>
+<br /> <div class="caption" 
+><span class="id">Figure&#x00A0;4: </span><span  
+class="content">The fourth-order calibration curve (red line) and the true calibration from which the
+test data for this exercise were generated (blue line). The calibration measurements obtained by
+averaging 100 points at each value of the measurand are shown as blue dots.</span></div><!--tex4ht:label?: x1-30114 -->
+<!--l. 385--><p class="noindent" ></div><hr class="endfigure">
+<h3 class="likesectionHead"><a 
+ id="x1-4000"></a>Some notes and credits:</h3>
+<!--l. 391--><p class="noindent" >
+      <ol  class="enumerate1" >
+      <li 
+  class="enumerate" id="x1-4002x1">This exercise is based on R code. A reference is &#8220;R Core Team (2017). &#8220;R: A language
+      and environment for statistical computing.&#8221; R Foundation for Statistical Computing, Vienna,
+      Austria. URL <a 
+href="https://www.R-project.org/"  >https://www.R-project.org/ </a>.
+      </li>
+      <li 
+  class="enumerate" id="x1-4004x2">RStudio  (RStudio:  Integrated  development  environment  for  R  (Version  0.98.879),  2009.
+      URL <a 
+href="http://www.rstudio.org" >http://www.rstudio.org</a>.) and knitr (Y. Xie. &#8220;Dynamic Documents with R and knitr.&#8221;
+      Chapman  and  Hall/CRC,  Boca  Raton,  Florida,  2013.  URL<a 
+ http://yihui.name/knitr/ >http://yihui.name/knitr/</a>.  ISBN
+      978-1482203530; see also Y. Xie, &#8220;knitr: A general-purpose package for dynamic report
+      generation in R, 2014.&#8221; URL <a 
+href="http://yihui.name/knitr/" >http://yihui.name/knitr/</a>, R package version 1.6) were used in
+      the original composition of the document.
+      </li>
+      <li 
+  class="enumerate" id="x1-4006x3">The  &#8220;Shiny  app&#8221;  was  constructed  using  the  &#8220;shiny&#8221;  package  for  R  (Winston  Chang,  Joe
+      Cheng,  JJ  Allaire,  Yihui  Xie  and  Jonathan  McPherson  (2017).  &#8220;shiny:  Web  Application
+      Framework for R.&#8221; R package version 1.0.0. <a 
+href="https://CRAN.R-project.org/package=shiny" >https://CRAN.R-project.org/package=shiny</a>).
+      </li>
+      <li 
+  class="enumerate" id="x1-4008x4">Fits are performed using the R function &#8220;lm()&#8221; (linear model), part of the &#8220;stats&#8221; package
+      in standard R as referenced above. The techniques used are described by Chambers, J. M.
+      (1992),&#x0103;&#8221;Linear models.&#x0103;Chapter 4 of&#x0103;Statistical Models in S.&#8221;&#x0103;eds J. M. Chambers and T.
+      J. Hastie, Wadsworth &amp; Brooks/Cole.
+                                                                                         
+                                                                                         
+      </li>
+      <li 
+  class="enumerate" id="x1-4010x5">You may wonder why the standard deviation reported under the &#8220;your answer&#8221; tab differs
+      from that reported in the &#8220;help with fitting&#8221; tab. The difference is that the former is what is
+      often called a population standard deviation, calculated by dividing the sum of the squared
+      deviations by N before taking the square root, while the latter compensates for the reduction
+      in the number of degrees of freedom by dividing by (N-p) instead, where p is the number of
+      coefficients in the fit. For the quadratic polynomial with three coefficients, these differ by a
+      factor of <img 
+src="CalibrationExercise0x.png" alt="&#x2218; ------
+  17 &#x2215;20"  class="sqrt" ><span 
+class="zptmcm7m-x-x-120">.</span>
+      </li>
+      <li 
+  class="enumerate" id="x1-4012x6">The &#8216;More Info&#8217; button in the &#8220;help with fitting&#8221; tab is designed to deliver a PDF-format
+      version of this full document to your browser. In some cases this will not work, but in that
+      case you can see the referenced document <a 
+href="https://drive.google.com/open?id=0B1kIUH45ca5AZWI5QllIdFpFR0U" >at this URL</a>.
+      </li>
+      <li 
+  class="enumerate" id="x1-4014x7">The  exercise  was  generated  using  the  formula  <span 
+class="zptmcm7m-x-x-120">M </span><span 
+class="zptmcm7t-x-x-120">= </span><span 
+class="zptmcm7m-x-x-120">a</span><sub><span 
+class="zptmcm7t-x-x-90">1</span></sub> <span 
+class="zptmcm7t-x-x-120">+ </span><span 
+class="zptmcm7m-x-x-120">a</span><sub><span 
+class="zptmcm7t-x-x-90">2</span></sub><span 
+class="zptmcm7m-x-x-120">x </span><span 
+class="zptmcm7t-x-x-120">+ </span><span 
+class="zptmcm7m-x-x-120">a</span><sub><span 
+class="zptmcm7t-x-x-90">3</span></sub><span 
+class="zptmcm7m-x-x-120">x</span><sup><span 
+class="zptmcm7t-x-x-90">2</span></sup>  and  then  choosing
+      Gaussian-distributed random numbers with standard deviation 1.5 units in <span 
+class="zptmcm7m-x-x-120">M </span>to simulate the
+      output of the sensor. The actual coefficients are <span 
+class="zptmcm7m-x-x-120">a</span><sub><span 
+class="zptmcm7t-x-x-90">1</span></sub> <span 
+class="zptmcm7t-x-x-120">= </span><span 
+class="zptmcm7y-x-x-120">-</span><span 
+class="zptmcm7t-x-x-120">5</span><span 
+class="zptmcm7m-x-x-120">, a</span><sub><span 
+class="zptmcm7t-x-x-90">2</span></sub> <span 
+class="zptmcm7t-x-x-120">= 3</span><span 
+class="zptmcm7m-x-x-120">, a</span><sub><span 
+class="zptmcm7t-x-x-90">3</span></sub> <span 
+class="zptmcm7t-x-x-120">= </span><span 
+class="zptmcm7y-x-x-120">-</span><span 
+class="zptmcm7t-x-x-120">0</span><span 
+class="zptmcm7m-x-x-120">.</span><span 
+class="zptmcm7t-x-x-120">1</span><span 
+class="zptmcm7m-x-x-120">. </span>The &#8220;true&#8221;
+      value for <span 
+class="zptmcm7m-x-x-120">M </span><span 
+class="zptmcm7t-x-x-120">= 55</span>, with this formula, is <span 
+class="zptmcm7m-x-x-120">x </span><span 
+class="zptmcm7t-x-x-120">= 11</span><span 
+class="zptmcm7m-x-x-120">.</span><span 
+class="zptmcm7t-x-x-120">93 </span>. We have nevertheless listed the &#8220;right&#8221;
+      answer to the exercise as <span 
+class="zptmcm7m-x-x-120">x </span><span 
+class="zptmcm7t-x-x-120">= 11</span><span 
+class="zptmcm7m-x-x-120">.</span><span 
+class="zptmcm7t-x-x-120">96 </span>because, without knowing the underlying true transfer
+      curve, that is the best estimate using the available calibration.
+      </li>
+      <li 
+  class="enumerate" id="x1-4016x8">It is argued in this exercise that it is best to fit for <span 
+class="zptmcm7m-x-x-120">x </span><span 
+class="zptmcm7t-x-x-120">= </span><span 
+class="zptmcm7m-x-x-120">f</span><span 
+class="zptmcm7t-x-x-120">(</span><span 
+class="zptmcm7m-x-x-120">M</span><span 
+class="zptmcm7t-x-x-120">) </span>because that is how the calibration
+      will be used. However, an exception is a case where there is reason to think that the true
+      response  has  some  simple  polynomial  relationship  for  <span 
+class="zptmcm7m-x-x-120">M </span><span 
+class="zptmcm7t-x-x-120">= </span><span 
+class="zptmcm7m-x-x-120">F </span><span 
+class="zptmcm7t-x-x-120">(</span><span 
+class="zptmcm7m-x-x-120">x</span><span 
+class="zptmcm7t-x-x-120">)</span>.  In  that  case  it  may  be
+      simpler to use a fit to <span 
+class="zptmcm7m-x-x-120">M </span><span 
+class="zptmcm7t-x-x-120">= </span><span 
+class="zptmcm7m-x-x-120">F </span><span 
+class="zptmcm7t-x-x-120">(</span><span 
+class="zptmcm7m-x-x-120">x</span><span 
+class="zptmcm7t-x-x-120">) </span>and then invert the relationship so obtained. The reason
+      is illustrated in the example used in this exercise: Although the transfer curve is a simple
+      quadratic relationship, for calibration data having little error the required inverse formula
+      (<span 
+class="zptmcm7m-x-x-120">x </span><span 
+class="zptmcm7t-x-x-120">= </span><span 
+class="zptmcm7m-x-x-120">f</span><span 
+class="zptmcm7t-x-x-120">(</span><span 
+class="zptmcm7m-x-x-120">M</span><span 
+class="zptmcm7t-x-x-120">)</span>) requires high-order terms to obtain a good representation. Fits to the exact data
+      points keep getting better even up to 7th order, although the residual standard deviation then
+      becomes very small. Normally, you won&#8217;t know whether <span 
+class="zptmcm7m-x-x-120">x </span><span 
+class="zptmcm7t-x-x-120">= </span><span 
+class="zptmcm7m-x-x-120">f</span><span 
+class="zptmcm7t-x-x-120">(</span><span 
+class="zptmcm7m-x-x-120">M</span><span 
+class="zptmcm7t-x-x-120">) </span>or <span 
+class="zptmcm7m-x-x-120">M </span><span 
+class="zptmcm7t-x-x-120">= </span><span 
+class="zptmcm7m-x-x-120">F </span><span 
+class="zptmcm7t-x-x-120">(</span><span 
+class="zptmcm7m-x-x-120">x</span><span 
+class="zptmcm7t-x-x-120">) </span>is a simpler
+      relationship, so usually fitting <span 
+class="zptmcm7m-x-x-120">x </span><span 
+class="zptmcm7t-x-x-120">= </span><span 
+class="zptmcm7m-x-x-120">f</span><span 
+class="zptmcm7t-x-x-120">(</span><span 
+class="zptmcm7m-x-x-120">M</span><span 
+class="zptmcm7t-x-x-120">) </span>to the data is best.</li></ol>
+ 
+</body></html> 
+
+                                                                                         
+
+

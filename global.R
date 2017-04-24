@@ -1,0 +1,906 @@
+
+## clear global environment that might be left from the last run
+rm(list=ls(all=TRUE))
+
+suppressMessages (
+  library(shiny, quietly=TRUE, warn.conflicts=FALSE)
+)
+suppressMessages (suppressWarnings (
+  library(Ranadu, quietly=TRUE, warn.conflicts=FALSE))
+)
+options (stringsAsFactors=FALSE)
+
+minT <- as.POSIXct(0, origin='2012-05-29', tz='UTC')
+maxT <- as.POSIXct(3600*8, origin='2012-05-29', tz='UTC')
+step <- 60
+
+## for the Resolution exercise:
+xp <- (-600:600)/100
+xpp <- (0:1000)
+ypp <- pnorm(xpp/500-1, sd=.3)
+
+BadList <- list('ORCASrf12', 'ORCASrf13')
+
+checkBad <- function (fn) {
+  if (any(grepl(fn, BadList))) {
+    return (TRUE)
+  } else {
+    return (FALSE)
+  }
+}
+
+## all possible temperature variables
+ATVARS <- c('ATX', 'AT_A', 'AT_A2', 'ATH1', 'ATH2', 'ATH3', 'ATH4', 'ATF1', 'ATF2',
+            'ATHR1', 'ATHR2', 'ATHL1', 'ATHL2', 'ATFH1', 'ATFH2')
+
+## function for minimization in 'optim':
+fr <- function (x, DF) {
+  rf <- 0.988 + with(DF, 
+                     0.053 * log10(MACHX) + 0.090* (log10(MACHX))^2 
+                     + 0.091 * (log10(MACHX))^3)
+  At <- (x[1] + (1 + x[2]) * DF$RTX + x[3] * DF$RTX^2 + 273.15) / (1 + rf * DF$MACHX^2 * DF$Ra / (2 * DF$cv))
+  dif <- with (DF, (Ra * At * DLP / Grav + DZ)^2)
+  DF$Valid[abs(dif) > 20] <- FALSE
+  ans <- sum (dif[DF$Valid], na.rm=TRUE) / length (dif[DF$Valid])
+  print (c(x, ans))
+  dif <<- dif
+  return (ans)
+}
+
+fnamePPS <- ''
+ProjectPP <- ''
+
+n <- 50000
+X1R <- rnorm(n); X2R <- rnorm(n)
+DX <- X2R - X1R
+ddd <- (-600:600)/100
+
+## for the Kalman filter:
+ALL <- FALSE
+NEXT <- FALSE
+newAK <- TRUE
+newSS <- TRUE
+simple <- FALSE
+NSTEP=10
+showPlots <- TRUE
+viewPlot <- 1
+genPlot <- TRUE
+firstRun <- TRUE
+messg <- 'waiting for run'
+progressExists <- FALSE
+
+Project <- 'CSET'
+ProjectKF <- 'CSET'
+Flight <- 1
+FlightKF <- 1
+
+getNext <- function(Project) {
+  Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), Project),
+                          sprintf ("%srf..KF.nc", Project)), decreasing = TRUE)[1]
+  if (is.na (Fl)) {
+    Flight <- 1
+  } else {
+    Flight <- sub (".*rf", '',  sub ("KF.nc", '', Fl))
+    Flight <- as.numeric(Flight)+1
+  }
+  return (Flight)
+}
+
+ShowProgress <- function(NSTEP, progress, Flight) {
+  PLOOP <- 1
+  TimeEstimate <- 1.5 * 60 * 9 * 10 / NSTEP  ## for 9-h flight
+  while (PLOOP) {
+    Sys.sleep (1)
+    PLOOP <- PLOOP + 1
+    if (PLOOP > TimeEstimate) {break}
+    M <- system('tail -n 1 ../KalmanFilter/KFlog', intern=TRUE)
+    if (grepl ('main loop', M)) {
+      PLOOP <- FALSE
+      progress$set(message = 'main-loop progress',
+                   detail = sprintf('flight %d', Flight), value=1)
+      next
+    }
+    if (grepl('IRU loop', M)) {
+      P <- sub ('.*loop ', '', sub ('% do.*', '', M))
+      # print (sprintf ('progress is %d', as.integer(P)))
+      progress$set(message = 'retrieve IRU msrmts',
+                   detail = sprintf('flight %d', Flight), value=as.integer (P))
+    }
+  }
+  PLOOP <- 1
+  while (PLOOP) {
+    Sys.sleep (1)
+    PLOOP <- PLOOP + 1
+    if (PLOOP > TimeEstimate) {break}
+    M <- system('tail -n 1 ../KalmanFilter/KFlog', intern=TRUE)
+    if (grepl ('main loop is done', M) || grepl ('generating plots', M) || grepl ('making new', M)) {
+      PLOOP <- FALSE
+      next
+    }
+    if (grepl('Kalman-loop', M)) {
+      P <- sub ('.*loop ', '', sub ('% do.*', '', M))
+      # print (sprintf ('progress is %d', as.integer(P)))
+      progress$set(message = 'main-loop progress',
+                   detail = sprintf('flight %d', Flight), value=as.integer (P))
+    }
+  }
+  PLOOP <- 1
+  while (PLOOP) {
+    Sys.sleep (0.5)
+    PLOOP <- PLOOP + 1
+    if (PLOOP > 120) {break}
+    M <- system('tail -n 1 ../KalmanFilter/KFlog', intern=TRUE)
+    if (grepl ('plots generated', M) || grepl ('making new', M)) {
+      PLOOP <- FALSE
+      next
+    }
+    if (grepl('figures', M)) {
+      P <- sub ('.*figures ', '', sub ('% do.*', '', M))
+      # print (sprintf ('progress is %d', as.integer(P)))
+      progress$set(message = 'generating figures',
+                   detail = sprintf('flight %d', Flight), value=as.integer (P))
+    }
+  }
+  progress$set(message = 'creating new netCDF file', value=0)
+  PLOOP <- 1
+  while (PLOOP) {
+    Sys.sleep (1)
+    PLOOP <- PLOOP + 1
+    if (PLOOP > 250) {break}
+    M <- system('tail -n 1 ../KalmanFilter/KFlog', intern=TRUE)
+    if (grepl ('finished', M)) {
+      PLOOP <- FALSE
+      next
+    }
+    if (grepl ('new-netcdf', M)) {
+      P <- sub ('.*new-netcdf ', '', sub ('% do.*', '', M))
+      # print (sprintf ('progress is %d', as.integer(P)))
+      progress$set(message = 'creating new netCDF file',
+                   detail = sprintf('flight %d', Flight), value=as.integer (P))
+    }
+  }
+  # PLOOP <- 1
+  # while (PLOOP) {
+  #   Sys.sleep (1)
+  #   PLOOP <- PLOOP + 1
+  #   if (PLOOP > 150) {break}
+  #   M <- system('tail -n 1 ../KalmanFilter/KFlog', intern=TRUE)
+  #   if (grepl ('finished', M)) {
+  #     PLOOP <- FALSE
+  #     next
+  #   }
+  # }
+}
+runScript <- function (ssn) {
+  if (file.exists ('../KalmanFilter/KFplots/Position.png')) {
+    system('rm ../KalmanFilter/KFplots/*png')
+  }
+  
+  ProjectDir <- ProjectKF
+  if ('HIPPO' %in% ProjectDir) {ProjectDir <- 'HIPPO'}
+  if (ALL) {
+    ## get list of files to process:
+    Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjectDir),
+                            sprintf ("%srf...nc", ProjectKF)))
+    if (!is.na (Fl[1])) {
+      for (Flt in Fl) {
+        FltKF <- sub ('.nc$', 'KF.nc', Flt)
+        if (file.exists (sprintf ("%s%s/%s",
+                                  DataDirectory (), ProjectDir, FltKF))) {next}
+        if (file.exists ('~/RStudio/KalmanFilter/KFplots/Position.png')) {
+          system('rm ~/RStudio/KalmanFilter/KFplots/*png')
+        }
+        Flight <- sub('.*rf', '', sub ('.nc$', '', Flt))
+        Flight <- as.numeric (Flight)
+        updateNumericInput (ssn, 'FlightKF', value=Flight)
+        progress$set(message = 'read data, initialize',
+                     detail = sprintf('flight %d', Flight),
+                     value=0)
+        cmd <- sprintf('cd ~/RStudio/KalmanFilter;Rscript KalmanFilter.R %s %d %s %s %s %d %s | tee -a KFlog',
+                       Project, Flight, newAK, newSS, simple, NSTEP, genPlot)
+        print (sprintf ('run commnad: %s', cmd))
+        system (cmd, wait=FALSE)
+        ShowProgress (NSTEP, progress, Flight)
+      }
+    }
+  } else if (NEXT) {
+    Flight <- getNext(ProjectKF)
+    updateNumericInput (ssn, 'FlightKF', value=Flight)
+    progress$set(message = 'read data, initialize',
+                 detail = sprintf('flight %d', Flight),
+                 value=0)
+    cmd <- sprintf('cd ~/RStudio/KalmanFilter;Rscript KalmanFilter.R %s %d %s %s %s %d %s | tee -a KFlog',
+                   ProjectKF, Flight, newAK, newSS, simple, NSTEP, genPlot)
+    system (cmd, wait=FALSE)
+    ShowProgress (NSTEP, progress, Flight)
+  } else {
+    progress$set(message = 'read data, initialize',
+                 detail = sprintf('flight %d', FlightKF),
+                 value=0)
+    cmd <- sprintf('cd ~/RStudio/KalmanFilter;Rscript KalmanFilter.R %s %d %s %s %s %d %s | tee -a KFlog',
+                   ProjectKF, FlightKF, newAK, newSS, simple, NSTEP, genPlot)
+    system (cmd, wait=FALSE)
+    ShowProgress (NSTEP, progress, FlightKF)
+  }
+  return()
+}
+
+
+qualifyPS <- function(fnPP, Vars, Flt) {
+  suppressMessages (suppressWarnings (
+    FI <- DataFileInfo (fnPP)
+  ))
+  if ('GGVSPD' %in% FI$Variables) {
+    GVSPD <- 'GGVSPD'
+  } else if ('GGVSPDB' %in% FI$Variables) {
+    GVSPD <- 'GGVSPDB'
+    Vars[which('GGVSPD' == Vars)] <- 'GGVSPDB'
+  } else if ('VSPD_A' %in% FI$Variables) {
+    GVSPD <- 'VSPD_A'
+    Vars[which('GGVSPD' == Vars)] <- 'VSPD_A'
+  } else if ('VSPD_G' %in% FI$Variables) {
+    GVSPD <- 'VSPD_G'
+    Vars[which('GGVSPD' == Vars)] <- 'VSPD_G'
+  }
+  D <- getNetCDF(fnPP, Vars, F=Flt)
+  D$DTAS <- c(0, diff(D$TASX))
+  D$DTAS <- SmoothInterp(D$DTAS, .Length=301)
+  r <- (abs(D[, GVSPD]) > 1) | (D$TASX < 90) | (abs(D$DTAS) > 0.1) | (abs(D$ROLL) > 5) | (D$QCXC < 60)
+  D$PSXC[r] <- NA; D$PS_A[r] <- NA
+  D$QCRC[r] <- NA; D$QC_A[r] <- NA
+  return (D)
+}
+
+makeDataFile <- function(Proj, Flt, Vars) {
+  ProjDir <- Proj
+  if (grepl('HIPPO', Proj)) {ProjDir <- 'HIPPO'}
+  if (Flt == 'ALL') {
+    Ft <- 1
+  } else {
+    Ft <- Flt
+  }
+  if (checkBad(sprintf ('%srf%02d', Proj, Ft))) {
+    print ('bad flight -- skipping')
+    return(data.frame())
+  }
+  fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjDir, Proj, Ft)
+  suppressMessages (suppressWarnings (
+    FI <- DataFileInfo (fname)
+  ))
+  
+  subVar <- function (AL, FI) {
+    RTN <- NA
+    for (i in 1:length(AL)) {
+      if (AL[i] %in% FI$Variables) {
+        RTN <- AL[i]
+        break
+      }
+    }
+    return (RTN)
+  }
+  
+  ## variable substitutions
+  VarsS <- Vars
+  ALTGGVSPD <- c('GGVSPD', 'GGVSPDB', 'VSPD_A', 'VSPD_G')
+  ALTATH1 <- c('ATH1', 'ATHR1', 'ATHL1')
+  ALTATF1 <- c('ATF1', 'ATFH1')
+  ALTATH2 <- c('ATH2', 'ATHR2', 'ATHL2')
+  ALTATF2 <- c('ATF2', 'ATFH2')
+  if (ALTGGVSPD[1] %in% Vars) {
+    GVSPD <- subVar (ALTGGVSPD, FI)
+    Vars[which(Vars == ALTGGVSPD[1])] <- GVSPD
+  }
+  if (ALTATH1[1] %in% Vars) {
+    ATH1 <- subVar (ALTATH1, FI)
+    Vars[which(Vars == ALTATH1[1])] <- ATH1
+  }
+  if (ALTATH2[1] %in% Vars) {
+    ATH2 <- subVar (ALTATH2, FI)
+    Vars[which(Vars == ALTATH2[1])] <- ATH2
+  }
+  if (ALTATF1[1] %in% Vars) {
+    ATF1 <- subVar (ALTATF1, FI)
+    Vars[which(Vars == ALTATF1[1])] <- ATF1
+  }
+  if (ALTATF2[1] %in% Vars) {
+    ATF2 <- subVar (ALTATF2, FI)
+    Vars[which(Vars == ALTATF2[1])] <- ATF2
+  }
+
+  if (Flt == 'ALL') {
+    ## loop through all the flights in this project:
+    Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjDir),
+                            sprintf ("%srf...nc$", Proj)))
+    if (!is.na (Fl[1])) {
+      ## eliminate any variables that are not present for all flights:
+      FltPP <- sub('.*rf', '', sub ('.nc$', '', Fl))
+      FltPP <- as.integer (FltPP)
+      for (Ft in FltPP) {
+        if (checkBad (Ftemp <- sprintf ('%srf%02d', Proj, Ft))) {
+        } else {
+          FII <- DataFileInfo (sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjDir, 
+                                        Proj, Ft))
+          im <- match (Vars, FII$Variables)
+          if (any(is.na(im))) {
+            Vars <- Vars[-which(is.na(im))]
+          }
+        }
+      }
+      D <- data.frame()
+      for (Ft in Fl) {
+        FltPP <- sub('.*rf', '', sub ('.nc$', '', Ft))
+        FltPP <- as.integer (FltPP)
+        if (checkBad(Ftemp <- sprintf ('%srf%02d', Proj, FltPP))) {
+          print (sprintf('bad flight %s -- skipping', Ftemp))
+          next
+        }
+        fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(),
+                            ProjDir, Proj, FltPP)
+        D <- rbind (D, getNetCDF (fname, Vars, F=FltPP))
+      }
+    }
+  } else {
+    D <- getNetCDF(fname, Vars, F=Ft)
+  }
+  ## rename if necessary
+  N <- names (D)
+  if (!(ALTGGVSPD[1] %in% N) && match (ALTGGVSPD, N, nomatch=0)) {
+    N[which(N == GVSPD)] <- ALTGGVSPD[1]
+  }
+  if (!(ALTATH1[1] %in% N) && match (ALTATH1, N, nomatch=0)) {
+    N[which(N == ATH1)] <- ALTATH1[1]
+  }
+  if (!(ALTATH2[1] %in% N) && match (ALTATH2, N, nomatch=0)) {
+    N[which(N == ATH2)] <- ALTATH2[1]
+  }
+  if (!(ALTATF1[1] %in% N) && match (ALTATF1, N, nomatch=0)) {
+    N[which(N == ATF1)] <- ALTATF1[1]
+  }
+  if (!(ALTATH1[1] %in% N) && match (ALTATH1, N, nomatch=0)) {
+    N[which(N == ATF2)] <- ALTATF2[1]
+  }
+  names(D) <- N
+  return (D)
+}
+
+
+## if this is set TRUE then messages will print in the console
+## indicating which functions are entered, to trace the sequence
+## of interactions when window entries are changed.
+Trace <- FALSE
+Trace <- TRUE
+
+nplots <- c(1, 3:17, 19:23)    # project default
+psq <- c(1,1, 1,2, 3,1, 4,1, 5,1, 5,2, 5,3, 5,4, 6,1, 7,1, 7,2,  #11
+         8,1, 9,1, 9,2, 10,1, 10,2, 11,1, 12,1, 13,1, 14,1, 15,1, 15,2, #22
+         16,1, 16,2, 16,3, 17,1, 19,1, 19,2, #28
+         20,1, 20,2, 20,3, 20,4, 21,1, 21,2, 21,3, 21,4, #36
+         22,1, 22,2, 22,3, 22,4, 23,1, 23,2, #42
+         24,1, 25,1, 26,1, 27,1, 28,1, 29,1, 30,1) #49
+L <- length (psq)/2
+dim(psq) <- c(2,L)
+netCDFfile <- NULL
+CCDP <- NULL
+CFSSP <- NULL
+CUHSAS <- NULL
+C1DC <- NULL
+
+testPlot <- function (k) {
+  return(k %in% nplots || nplots == 0)
+}
+
+## assemble a list of projects for which an appropriately named rf01
+## exists in the data directory:
+
+PJ <- c('ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
+        'DEEPWAVE', 'CONTRAST', 'SPRITE-II', 'MPEX', 'DC3',
+        'TORERO', 'HIPPO-5', 'HIPPO-4', 'HIPPO-3', 'HIPPO-2',
+        'HIPPO-1','PREDICT', 'START08', 'PACDEX', 'TREX')
+DataDir <- DataDirectory ()
+for (P in PJ) {
+  if (grepl('HIPPO', P)) {
+    if (grepl ('raf_data', DataDir)) {
+      fn <- sprintf ('%sHIPPO/old_nimbus/%srf01.nc', DataDirectory (), P)  
+    } else {
+      fn <- sprintf ('%sHIPPO/%srf01.nc', DataDirectory (), P)
+    }
+  } else {
+    fn <- sprintf ('%s%s/%srf01.nc', DataDirectory (), P, P)
+    if (!file.exists (fn)) {
+      fn <- sub ('\\.nc', '.Rdata', fn)
+    }
+    if (!file.exists (fn)) {
+      fn <- sprintf ('%s%s/%stf01.nc', DataDirectory (), P, P)
+    }
+    if (!file.exists (fn)) {
+      fn <- sub ('\\.nc', '.Rdata', fn)
+    }
+  }
+  if (!file.exists (fn)) {PJ[PJ==P] <- NA}
+}
+PJ <- PJ[!is.na(PJ)]
+
+## now test that there is an entry in the Configuration.R file for PJ:
+lines <- readLines ('Configuration.R')
+for (P in PJ) {
+  if (!any (grepl (P, lines))) {PJ[PJ == P] <- NA}
+}
+PJ <- PJ[!is.na(PJ)]
+rm (lines)
+
+times <- c(as.POSIXct(0, origin='2012-05-29', tz='UTC'),
+           as.POSIXct(3600*8, origin='2012-05-29', tz='UTC'))
+
+## make plot functions available
+for (np in 1:2) {
+  if (testPlot(np)) {
+    eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))
+  }
+}
+for (np in 3:30) {
+  if (file.exists (sprintf ("./PlotFunctions/RPlot%d.R", np))) {
+    eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))
+  }
+}
+# functions used later:
+hline <<- function(y, col='black', lwd=1, lty=2) {
+  abline(h=y, col=col, lwd=lwd, lty=lty)
+}
+
+formatTime <- function (time) {
+  t <- as.POSIXlt (time)
+  tt <- sprintf ("%d:%02d:%02d", t$hour, t$min, t$sec)
+  return (tt)
+}
+
+saveConfig <- function() {
+  print ('entered saveConfig')
+  file.copy('Configuration.R','Configuration.R.backup', overwrite=TRUE)
+  lines <- readLines ('Configuration.R')
+  unlink ('Configuration.R')
+  startLine <- which (grepl (sprintf ('Project == "%s"', Project), lines))
+  endLine <- which (grepl ('Project', lines[(startLine+1):length(lines)]))[1]
+  if (is.na(endLine)) {
+    endLine <- length (lines)
+  } else {
+    endLine <- endLine + startLine - 1
+    # print (sprintf ('start and end lines are %d %d', startLine, endLine))
+  }
+  linesOut <- lines[1:startLine]
+  while (grepl ('offset',lines[startLine+1])) {
+    startLine <- startLine + 1
+    linesOut <- c(linesOut, lines[startLine])
+  }
+  v <- VRPlot$PV1
+  linesOut <- c(linesOut, paste('  VRPlot <- list(PV1 = ',list(v), ')', sep=''))
+  for (i in 2:length(VRPlot)) {
+    v <- as.character(VRPlot[[i]])
+    if (i %in% c(15:16,20:22)) {
+      v <- sub ('_.*', '_', v)
+    }
+    if (length (v) > 1) {
+      linesOut <- c(linesOut, 
+                    paste(sprintf ('  VRPlot$PV%d <- ',i),list(v),sep=''))
+    } else {
+      if (is.na(v) || (length (v) == 0)) {
+        linesOut <- c(linesOut, sprintf ('  VRPlot$PV%d <- c(NA)', i))
+      } else {
+        linesOut <- c(linesOut, sprintf ('  VRPlot$PV%d <- "%s"', i, v))
+      }
+    }
+  }
+  linesOut <- c(linesOut, '}\n ')
+  linesOut <- c(linesOut, lines[endLine:(length(lines))])
+  writeLines(linesOut, 'Configuration.R')
+  print (sprintf ('saved configuration for %s in Configuration.R', Project))
+  source ('Configuration.R')
+  print (str(VRPlot))
+}
+
+savePDF <- function(Data, inp) {
+  print ('entered savePDF')
+  plotfile = sprintf("%s%s%02dPlots.pdf", inp$Project, inp$typeFlight, inp$Flight)
+  unlink (plotfile)
+  cairo_pdf (filename = plotfile, onefile=TRUE)
+  ## enable something like the next to get individual png files instead of one large pdf
+  #### png (file = sprintf ("./Figures/WINTER%s-%%02d.png", Flight))
+  print (sprintf ("saving plots to file %s", plotfile))
+  DataV <- limitData (Data, inp)
+  t1 <- times[1]
+  t <- as.POSIXlt (t1)
+  StartTime <<- as.integer (10000*t$hour+100*t$min+t$sec)
+  DataV <- DataV[(DataV$Time > times[1]) & (DataV$Time < times[2]), ]
+  ndv <- names (DataV)
+  ## guard against inf. VCSEL limits
+  if (('DP_VXL' %in% ndv) && all(is.na(DataV$DP_VXL))) {
+    DataV$DP_VXL <- rep(0, nrow(DataV))
+  }
+  if (('DP_DPR' %in% ndv) && all(is.na(DataV$DP_DPR))) {
+    DataV$DP_DPR <- rep(0, nrow(DataV))
+  }
+  if (('DP_DPL' %in% ndv) && all(is.na(DataV$DP_DPL))) {
+    DataV$DP_DPL <- rep(0, nrow(DataV))
+  }
+  for (np in 1:30) {
+    if (file.exists (sprintf ("./PlotFunctions/RPlot%d.R", np))) {
+      if (testPlot(np) && (length(VRPlot[[np]]) > 0)) {
+        print(paste('Plot',np))
+        ## eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))
+        if (np == 1) {
+          RPlot1 (DataV, sprintf ('%s%02d', inp$typeFlight, inp$Flight))
+        } else {
+          eval(parse(text=sprintf("RPlot%d(DataV)", np)))
+        }
+      }
+    }
+  }
+  dev.off()
+  #   suppressWarnings(if (length (system ('which evince', intern=TRUE)) > 0) {
+  #     system (sprintf ('evince %s', plotfile))
+  #   })
+  if (suppressWarnings(library(rstudio, logical.return=TRUE))) {
+    rstudio::viewer (plotfile, height='maximize')
+  }
+  print ('finished savePDF')
+}
+savePNG <- function(Data, inp) {
+  print ('entered savePNG')
+  #   plotfile = sprintf("%s%sPlots.pdf", inp$Project, inp$Flight)
+  #   unlink (plotfile)
+  # cairo_pdf (filename = plotfile, onefile=TRUE)
+  ## enable something like the next to get individual png files instead of one large pdf
+  png (file = sprintf ("./PNG/%s%s%02dPlot%%02d.png", inp$Project, 
+                       inp$typeFlight, inp$Flight), width=800, height=800)
+  print (sprintf ("saving png plots to subdirectory PNG"))
+  DataV <- limitData (Data, inp)
+  t1 <- times[1]
+  t <- as.POSIXlt (t1)
+  StartTime <<- as.integer (10000*t$hour+100*t$min+t$sec)
+  DataV <- DataV[(DataV$Time > times[1]) & (DataV$Time < times[2]), ]
+  for (np in 1:30) {
+    if (file.exists (sprintf ("./PlotFunctions/RPlot%d.R", np))) {
+      if (testPlot(np) && (length(VRPlot[[np]]) > 0)) {
+        print(paste('Plot',np))
+        ## eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))
+        if (np == 1) {
+          RPlot1 (DataV, sprintf ('%s%02d', inp$typeFlight, inp$Flight))
+        } else {
+          eval(parse(text=sprintf("RPlot%d(DataV)", np)))
+        }
+      }
+    }
+  }
+  dev.off()
+  #   suppressWarnings(if (length (system ('which evince', intern=TRUE)) > 0) {
+  #     system (sprintf ('evince %s', plotfile))
+  #   })
+  print ('finished savePNG')
+}
+
+saveRdata <- function (Data, inp) {
+  print ('entered saveRdata')
+  netCDFfile <- nc_open (sprintf ('%s%s/%s%s%02d.nc', DataDirectory (),
+                                  inp$Project, inp$Project, inp$typeFlight,
+                                  inp$Flight))
+  nms <- c('Time', 'TASX')
+  Time <- ncvar_get (netCDFfile, "Time")
+  TASX <- ncvar_get (netCDFfile, "TASX")
+  time_units <- ncatt_get (netCDFfile, "Time", "units")
+  tref <- sub ('seconds since ', '', time_units$value)
+  Time <- as.POSIXct(as.POSIXct(tref, tz='UTC')+Time, tz='UTC')
+  namesCDF <- names (netCDFfile$var)
+  if (length (grep ("CCDP_", namesCDF)) > 0) {
+    nm <- namesCDF[grepl("^CCDP_", namesCDF)]
+    nms <- c(nms, 'CCDP')
+    CCDP <- ncvar_get (netCDFfile, nm)
+    CellSizes <- ncatt_get (netCDFfile, nm, "CellSizes")
+    CellLimitsD <- CellSizes$value
+    attr (CCDP, 'CellLimits') <- CellLimitsD
+  }
+  if (length (grep ("CS100_", namesCDF)) > 0) {
+    nm <- namesCDF[grepl("^CS100_", namesCDF)]
+    nms <- c(nms, 'CS100')
+    CFSSP <- ncvar_get (netCDFfile, nm)
+    CellSizes <- ncatt_get (netCDFfile, nm, "CellSizes")
+    CellLimitsF <- CellSizes$value
+    attr (CFSSP, 'CellLimits') <- CellLimitsF
+  }
+  if (length (grep ("CUHSAS_", namesCDF)) > 0) {
+    nm <- namesCDF[grepl("^CUHSAS_", namesCDF)]
+    nms <- c(nms, 'CUHSAS')
+    CUHSAS <- ncvar_get (netCDFfile, nm)
+    CellSizes <- ncatt_get (netCDFfile, nm, "CellSizes")
+    CellLimitsU <- CellSizes$value
+    attr (CUHSAS, 'CellLimits') <- CellLimitsU
+  }
+  if (length (grep ("CPCASP_", namesCDF)) > 0) {
+    nm <- namesCDF[grepl("^CPCASP_", namesCDF)]
+    nms <- c(nms, 'CPCASP')
+    CUHSAS <- ncvar_get (netCDFfile, nm)
+    CellSizes <- ncatt_get (netCDFfile, nm, "CellSizes")
+    CellLimitsP <- CellSizes$value
+    attr (CUHSAS, 'CellLimits') <- CellLimitsP
+  }
+  if (length (grep ("C1DC_", namesCDF)) > 0) {
+    nm <- namesCDF[grepl("^C1DC_", namesCDF)]
+    nms <- c(nms, 'C1DC')
+    C1DC <- ncvar_get (netCDFfile, nm)
+    CellSizes <- ncatt_get (netCDFfile, nm, "CellSizes")
+    CellLimits <- CellSizes$value
+    attr (C1DC, 'CellLimits') <- CellLimits
+  }
+  fn <- sprintf ('%s%s/%s%s%02d.Rdata', DataDirectory (),
+                 inp$Project, inp$Project, inp$typeFlight,
+                 inp$Flight)
+  size.distributions <- mget (nms)
+  save (Data, size.distributions, file=fn)
+  print (sprintf ('saved data.frame and size distributions to %s', fn))
+}
+
+SeekManeuvers <- function (Data) {
+  source ("./PlotFunctions/SpeedRunSearch.R")
+  source ("./PlotFunctions/CircleSearch.R")
+  source ("./PlotFunctions/PitchSearch.R")
+  source ("./PlotFunctions/YawSearch.R")
+  source ("./PlotFunctions/ReverseHeadingSearch.R")
+  print ('list of maneuvers:')
+  PitchSearch (Data)
+  YawSearch (Data)
+  SpeedRunSearch (Data)
+  CircleSearch (Data)
+  ReverseHeadingSearch (Data)
+  print ('end of maneuver list')
+}
+
+seeManual <- function () {
+  if (suppressWarnings(library(rstudio, logical.return=TRUE))) {
+    rstudio::viewer ('DataReviewManual.pdf', height='maximize')
+  }
+}
+
+## get VRPlot and chp/shp:
+## load a starting-point version
+Project <- 'ORCAS'
+loadVRPlot <- function (Project, Production, Flight, psq) {
+  source ('Configuration.R')
+  # print (sprintf ('in loadVRPlot, Project=%s', Project))
+  # print (VRPlot)
+  # print (str(VRPlot))
+  ## this leaves VRPlot defined
+  if (length(VRPlot) < 30) {
+    nm <- names (VRPlot)
+    for (i in (length(VRPlot)+1):30) {
+      VRPlot[[i]] <- c('TASX', 'ATX')
+      nm[i] <- sprintf ('PV%d', i)
+    }
+    names(VRPlot) <- nm
+  }
+  if (grepl ('HIPPO', Project)) {
+    if (grepl ('raf_data', DataDir)) {
+      ProjectDir <- 'HIPPO/old_nimbus'
+    } else {
+      ProjectDir <- 'HIPPO'
+    }
+  } else {
+    ProjectDir <- Project
+  }
+  
+  if (Project != 'PREDICT') {
+    fn <- sprintf ('%s%s/%srf%02d.nc', DataDirectory (), ProjectDir, Project, Flight)
+  } else {
+    fn <- sprintf ('%s%s/%srf%02dHW.nc', DataDirectory (), ProjectDir, Project, Flight)
+  }
+  if (!file.exists (fn)) {
+    if (Trace) {print (sprintf ('%s not found', fn))}
+    fn <- sub ('\\.nc', '.Rdata', fn)
+  }
+  if (!file.exists (fn)) {
+    if (Trace) {print (sprintf ('%s not found', fn))}
+    fn <- sprintf ('%s%s/%stf01.nc', DataDirectory (), Project, Project)
+  }
+  if (!file.exists (fn)) {
+    if (Trace) {print (sprintf ('%s not found', fn))}
+    fn <- sub ('\\.nc', '.Rdata', fn)
+  }
+  ## if Production load production-file info
+  if (Production) {
+    print (sprintf ('production section in global, Production=%d',
+                    Production))
+    dr <- sprintf ('%s../raf/Prod_Data/%s', DataDirectory (), Project)
+    scmd <- sprintf ('ls -lt `/bin/find %s -ipath "\\./movies" -prune -o -ipath "\\./*image*" -prune -o -name %s%s%02d.Rdata`',
+                     dr, Project, 'rf', Flight)
+    fl <- system (scmd, intern=TRUE)[1]
+    if ((length (fl) > 0) && (!grepl ('total', fl))) {
+      fn <- sub ('.* /', '/', fl[1])
+    }
+  }
+  
+  if (!file.exists (fn)) {
+    if (Trace) {print (sprintf ('%s not found', fn))}
+    warning ('need tf01 or rf01 to initialize')
+    return (VRPlot)
+  }
+  # print (sprintf ('setting chp/slp from %s', fn))
+  FI <<- DataFileInfo (fn)
+  VLALL <<- FI$Variables
+  LAT <- FI$Variables[grepl ('^LAT', FI$Variables)]
+  LON <- FI$Variables[grepl ('^LON', FI$Variables)]
+  ALT <- FI$Variables[grepl ('ALT', FI$Variables)]
+  WD <- FI$Variables[grepl ('WD', FI$Variables)]
+  WS <- FI$Variables[grepl ('WS', FI$Variables) & !grepl ('FLOW', FI$Variables)]
+  AT <- FI$Variables[grepl ('^AT', FI$Variables) & !grepl ('ATTACK', FI$Variables)]
+  DP <- FI$Variables[grepl ('^DP', FI$Variables)]
+  EWW <- FI$Variables[grepl ('^EW', FI$Variables)]
+  CAVP <- FI$Variables[grepl ('CAVP', FI$Variables)]
+  PS <- FI$Variables[grepl ('^PS', FI$Variables)]
+  QC <- FI$Variables[grepl ('^QC', FI$Variables) & !grepl ('TEMP', FI$Variables)]
+  TAS <- FI$Variables[grepl ('TAS', FI$Variables)]
+  MACH <- FI$Variables[grepl ('MACH', FI$Variables)]
+  EW <- FI$Variables[grepl ('VEW', FI$Variables)]
+  NS <- FI$Variables[grepl ('VNS', FI$Variables)]
+  PITCH <- FI$Variables[grepl ('PITCH', FI$Variables)]
+  ROLL <- FI$Variables[grepl ('ROLL', FI$Variables)]
+  THDG <- FI$Variables[grepl ('THDG', FI$Variables)]
+  ACINS <- FI$Variables[grepl ('ACINS', FI$Variables)]
+  VSPD <- FI$Variables[grepl ('VSPD', FI$Variables)]
+  RAD <- FI$Variables[grepl ('^RS', FI$Variables) 
+                      | (grepl ('^IR', FI$Variables) & !grepl ('IRIG', FI$Variables))]
+  CONC <- FI$Variables[grepl ('^CONC', FI$Variables)]
+  DBAR <- FI$Variables[grepl ('DBAR', FI$Variables)]
+  LWC <- FI$Variables[grepl ('LWC', FI$Variables) & !grepl ('UFLWC', FI$Variables)]
+  if ('RICE' %in% FI$Variables) {LWC <- c(LWC, 'RICE')}
+  THETA <- FI$Variables[grepl ('THETA', FI$Variables)]
+  im <- pmatch (c ("TCNTD_", "REJDOF_", "AVGTRNS_", "CDPLSRP_"),
+                FI$Variables)
+  im <- im[!is.na(im)]
+  HSKP <- FI$Variables[im]
+  im <- match(c("CORAW_AL", "FO3_ACD", "COFLOW_AL", "INLETP_AL"),
+              FI$Variables)
+  im <- im[!is.na(im)]
+  CHEM <- FI$Variables[im]
+  im <- pmatch (c ("USHFLW_", "USMPFLW_", "UREF_", "USCAT_"),
+                FI$Variables)
+  im <- im[!is.na(im)]
+  USH <- FI$Variables[im]
+  chp <- list ()
+  slp <- list ()
+  chp[[1]] <- c(LAT,LON,WD,WS)
+  chp[[2]] <- c(ALT,'PSXC')
+  chp[[3]] <- AT
+  chp[[4]] <- chp[[3]]
+  chp[[5]] <- c(DP,'ATX',CAVP,EWW)
+  chp[[6]] <- chp[[5]]
+  chp[[7]] <- chp[[5]]
+  chp[[8]] <- chp[[5]]
+  chp[[9]] <- PS
+  chp[[10]] <- c(QC,TAS,MACH)
+  chp[[11]] <- chp[[10]]
+  chp[[12]] <- c(PS,QC,'AKRD')
+  chp[[13]] <- c(WD,WS,'WIC')
+  chp[[14]] <- chp[[13]]
+  chp[[15]] <- c(EW,NS,'GGQUAL')
+  chp[[16]] <- chp[[15]]
+  chp[[17]] <- VRPlot[[11]]
+  chp[[18]] <- c(PITCH,ROLL,THDG)
+  chp[[19]] <- c(ACINS,VSPD,ALT)
+  chp[[20]] <- RAD
+  chp[[21]] <- c(CONC)
+  if (length (USH) > 0) {chp[[21]] <- c(CONC, USH)}
+  chp[[22]] <- chp[[21]]
+  chp[[23]] <- c(DBAR,LWC,HSKP)
+  chp[[24]] <- chp[[23]]
+  chp[[25]] <- chp[[23]]
+  chp[[26]] <- c('PSXC','ATX', 'DPXC',PS,AT,DP)
+  chp[[27]] <- THETA
+  chp[[28]] <- THETA
+  chp[[29]] <- FI$Variables[grepl ('CCDP_', FI$Variables) 
+                            | grepl ('CS100_', FI$Variables)]
+  chp[[30]] <- chp[[29]]
+  chp[[31]] <- chp[[29]]
+  chp[[32]] <- chp[[29]]
+  chp[[33]] <- FI$Variables[grepl ("CUHSAS_", FI$Variables)]
+  chp[[33]] <- c(chp[[33]], FI$Variables[grepl ('CS200_', FI$Variables)])
+  chp[[34]] <- chp[[33]]
+  chp[[35]] <- chp[[33]]
+  chp[[36]] <- chp[[33]]
+  chp[[37]] <- FI$Variables[grepl ('C1DC_', FI$Variables)]
+  chp[[38]] <- chp[[37]]
+  chp[[39]] <- chp[[37]]
+  chp[[40]] <- chp[[37]]
+  chp[[41]] <- CHEM
+  chp[[42]] <- CHEM
+  chp[[43]] <- sort(FI$Variables)
+  chp[[44]] <- sort(FI$Variables)
+  chp[[45]] <- sort(FI$Variables)
+  chp[[46]] <- c('TASX', 'ATX')
+  chp[[47]] <- c('TASX', 'ATX')
+  chp[[48]] <- c('TASX', 'ATX')
+  chp[[49]] <- c('TASX', 'ATX')
+  chp <<- chp
+  for (i in c(1:20,26:28,41:49)) {
+    j <- psq[1, i]
+    sl <- as.vector(chp[[i]])
+    slp[[i]] <- sl[sl %in% VRPlot[[j]]]
+  }
+  for (i in c(21:25,29:40)) {
+    j <- psq[1, i]
+    sl <- as.vector(chp[[i]])
+    k <- pmatch (VRPlot[[j]], sl)
+    sl <- sl[k]
+    sl <- sl[!is.na(sl)]
+    slp[[i]] <- sl
+  }
+  slp <<- slp
+  PVar <<- slp[[1]]
+  return (VRPlot)
+}
+load ('CalibrationExercise/CalData.Rdata')
+options("digits"=4)
+SummarizeFit <- function(ft) {
+  options("digits"=4)
+  # print (summary(ft)$call)
+  print ("Coefficients:")
+  print (summary(ft)$coefficients)
+  print (sprintf ("Residual standard deviation: %.3f, dof=%d<br>", summary(ft)$sigma, summary(ft)$df[2]))
+  print (sprintf ("R-squared %.3f", summary(ft)$r.squared))
+}
+with (CalData, {
+  fm1 <<- lm (M ~ x);
+  fm2 <<- lm (x ~ M);
+  fm3 <<- lm (M ~ x + I(x^2));
+  fm4 <<- lm (x ~ M + I(M^2))
+})
+cf1 <- coef(fm1)
+cf2 <- coef(fm2)
+cf3 <- coef(fm3)
+cf4 <- coef(fm4)
+
+
+fn <- sprintf ('%s%s/%srf01.nc', DataDirectory (), Project, Project)
+if (!file.exists (fn)) {
+  fn <- sub ('\\.nc', '.Rdata', fn)
+}
+if (!file.exists (fn)) {
+  fn <- sprintf ('%s%s/%stf01.nc', DataDirectory (), Project, Project)
+}
+if (!file.exists (fn)) {
+  fn <- sub ('\\.nc', '.Rdata', fn)
+}
+if (!file.exists (fn)) {warning ('need tf01 or rf01 to initialize')}
+FI <- DataFileInfo (fn)
+
+limitData <- function (Data, input) {
+  DataV <- Data
+  namesV <- names(DataV)
+  namesV <- namesV[namesV != "Time"]
+  if (input$limits) {
+    t <- !is.na (DataV$TASX) & (DataV$TASX < input$minTAS)
+    t <- t | (abs(DataV$ROLL) > input$maxROLL)
+    t <- t | (DataV$GGALT/1000 < input$minZ)
+    t <- t | (DataV$VSPD > input$maxROC)
+    t[is.na(t)] <- FALSE
+    DataV[t, namesV] <- NA
+  }
+  return (DataV)
+}
+
+makeVRPlot <- function (slp, psq) {
+  VR <- list(PV1=c(slp[[1]], slp[[2]]))
+  VR$PV2 <- VR$PV1
+  for (j in 3:30) {
+    V <- vector()
+    for (i in j:(length(psq)/2)) {
+      if (psq[1,i] == j) {
+        V <- (c (V, as.vector(slp[[i]])))
+      }
+    }
+    if (j %in% 15:16) {
+      V <- sub ('_.*$', '_', V)
+    }
+    VR[j] <- list(V)
+  }
+  names(VR) <- sprintf ('PV%d', 1:30)
+  return (VR)
+}
+
+VRPlot <- loadVRPlot(Project, FALSE, 1, psq)

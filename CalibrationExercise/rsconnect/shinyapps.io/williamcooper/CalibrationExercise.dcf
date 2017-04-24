@@ -1,0 +1,11 @@
+name: CalibrationExercise
+title: CalibrationExercise
+account: williamcooper
+server: shinyapps.io
+appId: 168807
+bundleId: 773045
+url: https://williamcooper.shinyapps.io/CalibrationExercise/
+when: 1491032744.13518
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: CalibrationExercise.pdf|TransferFunctionInfo.html

@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 5.1.6.2.0 (Linux)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changedby" content="Al Cooper"/>
+	<meta name="changed" content="2017-04-01T10:32:04.500945734"/>
+	<meta name="date" content="2017-04-01 10:24:00"/>
+	<meta name="originator" content="TeX4ht (http://www.tug.org/tex4ht/)"/>
+	<meta name="src" content="CalibrationExercise.tex"/>
+	<style type="text/css">
+		h3.cjk { font-family: "Source Han Sans CN Regular" }
+		h3.ctl { font-family: "Lohit Devanagari" }
+	</style>
+</head>
+<body lang="en-US" dir="ltr">
+<h3 class="western"><a name="x1-4000"></a>Some notes and credits:</h3>
+<ol>
+	<li/>
+<p style="margin-bottom: 0in"><a name="x1-4002x1"></a><!--l. 391-->This
+	exercise is based on R code. A reference is “R Core Team (2017).
+	“R: A language and environment for statistical computing.” R
+	Foundation for Statistical Computing, Vienna, Austria. URL
+	<a href="https://www.R-project.org/">https://www.R-project.org/ </a>.
+		</p>
+	<li/>
+<p style="margin-bottom: 0in"><a name="x1-4004x2"></a>RStudio
+	(RStudio: Integrated development environment for R (Version
+	0.98.879), 2009. URL <a href="http://www.rstudio.org/">http://www.rstudio.org</a>.)
+	and knitr (Y. Xie. “Dynamic Documents with R and knitr.” Chapman
+	and Hall/CRC, Boca Raton, Florida, 2013.
+	URLhttp://yihui.name/knitr/. ISBN 978-1482203530; see also Y. Xie,
+	“knitr: A general-purpose package for dynamic report generation in
+	R, 2014.” URL <a href="http://yihui.name/knitr/">http://yihui.name/knitr/</a>,
+	R package version 1.6) were used in the original composition of the
+	document. 
+	</p>
+	<li/>
+<p style="margin-bottom: 0in"><a name="x1-4006x3"></a>The
+	“Shiny app” was constructed using the “shiny” package for R
+	(Winston Chang, Joe Cheng, JJ Allaire, Yihui Xie and Jonathan
+	McPherson (2017). “shiny: Web Application Framework for R.” R
+	package version 1.0.0. <a href="https://CRAN.R-project.org/package=shiny">https://CRAN.R-project.org/package=shiny</a>).
+		</p>
+	<li/>
+<p style="margin-bottom: 0in"><a name="x1-4008x4"></a>Fits are
+	performed using the R function “lm()” (linear model), part of
+	the “stats” package in standard R as referenced above. The
+	techniques used are described by Chambers, J. M. (1992), “Linear
+	models. Chapter 4 of Statistical Models in S.” Eds J. M. Chambers
+	and T. J. Hastie, Wadsworth &amp; Brooks/Cole. 
+	</p>
+	<li/>
+<p style="margin-bottom: 0in"><a name="x1-4010x5"></a>You may
+	wonder why the standard deviation reported under the “your answer”
+	tab differs from that reported in the “help with fitting” tab.
+	The difference is that the former is what is often called a
+	population standard deviation, calculated by dividing the sum of the
+	squared deviations by N before taking the square root, while the
+	latter compensates for the reduction in the number of degrees of
+	freedom by dividing by (N-p) instead, where p is the number of
+	coefficients in the fit. For the quadratic polynomial with three
+	coefficients, these differ by a factor of 
+	<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEMAAAAYCAYAAAChg0BHAAAB10lEQVR4nNVYW66EIAzVZLbILFIW6YVJa2ptS9GCuf0ZgtjH4fQxfvZ9XyJlXdctVOEcyQWH/BmgOA3QOUNiwQBWfCvKkXpnSTgzZgBRQE8j7ISBAawQHRzgfOK2qo26X+x8rRern9qZUGbwgAEgdFx7JulZNRsQNN87dJV17QiZB4yFve7TNT0TAobECrInOY97d9hyun20A0EmsJcoGxEsBBkB4SwJYwZnBRopBrXzF6r2tmUIPqNt+M3ADppKl7Qi+4c8BsOqFZoY9SM1UuQCVqsWSWkF8mMtZUcIMyKKoxdUyiinXTEl67uctY/AuMOK0UJS55SGHuCeMqPZyjp1tVLEy4RbF6SCYfVjfH7XqKDLE4BrhlhIQeU2Wuy4gEHbk8M59SY7xbTlAYt3FiLY3k86pMIqMgP68K6xw3mTPdIC1rSHgQlDX5IKJdG5mHMGUSgOTMT5kFphtD7NL+n9RNZUWrGcdKo1Q2OH13k+Exg1yHXrxjNtUKPD2DFxLgSY3nFcnNo8rPAyx3FOtQfBuuoW0yGC7wFjI7n3Xz/cuMQEAwBAWv1+A+eKpsz+hOgdutJbrJgJfhMMLKRluQXOFV6ZOup7mfHK/4/Z31JdYMyk6pvyB5U1RhrGQAFiAAAAAElFTkSuQmCC" name="Image1" alt="∘ ------  17 ∕20" align="bottom" width="58" height="21" border="0"/>
+<i><b>.</b></i>
+		</p>
+	<li/>
+<p style="margin-bottom: 0in"><a name="x1-4012x6"></a>The
+	‘More Info’ button in the “help with fitting” tab is
+	designed to deliver a PDF-format version of this full document to
+	your browser. In some cases this will not work, but in that case you
+	can see the referenced document <a href="https://drive.google.com/open?id=0B1kIUH45ca5AZWI5QllIdFpFR0U">at
+	this URL</a>. 
+	</p>
+	<li/>
+<p style="margin-bottom: 0in"><a name="x1-4014x7"></a>The
+	exercise was generated using the formula <i><b>M = a</b></i><sub><i><b>1</b></i></sub>
+	<i><b>+ a</b></i><sub><i><b>2</b></i></sub><i><b>x + a</b></i><sub><i><b>3</b></i></sub><i><b>x</b></i><sup><i><b>2</b></i></sup>
+	and then choosing Gaussian-distributed random numbers with standard
+	deviation 1.5 units in <i><b>M </b></i>to simulate the output of the
+	sensor. The actual coefficients are <i><b>a</b></i><sub><i><b>1</b></i></sub>
+	<i><b>= -5, a</b></i><sub><i><b>2</b></i></sub> <i><b>= 3, a</b></i><sub><i><b>3</b></i></sub>
+	<i><b>= -0.1. </b></i>The “true” value for <i><b>M = 55</b></i>,
+	with this formula, is <i><b>x = 11.93 </b></i>. We have nevertheless
+	listed the “right” answer to the exercise as <i><b>x = 11.96
+	</b></i>because, without knowing the underlying true transfer curve,
+	that is the best estimate using the available calibration. 
+	</p>
+	<li/>
+<p><a name="x1-4016x8"></a>It is argued in this exercise that
+	it is best to fit for <i><b>x = f(M) </b></i>because that is how the
+	calibration will be used. However, an exception is a case where
+	there is reason to think that the true response has some simple
+	polynomial relationship for <i><b>M = F (x)</b></i>. In that case it
+	may be simpler to use a fit to <i><b>M = F (x) </b></i>and then
+	invert the relationship so obtained. The reason is illustrated in
+	the example used in this exercise: Although the transfer curve is a
+	simple quadratic relationship, for calibration data having little
+	error the required inverse formula (<i><b>x = f(M)</b></i>) requires
+	high-order terms to obtain a good representation. Fits to the exact
+	data points keep getting better even up to 7th order, although the
+	residual standard deviation then becomes very small. Normally, you
+	won’t know whether <i><b>x = f(M) </b></i>or <i><b>M = F (x) </b></i>is
+	a simpler relationship, so usually fitting <i><b>x = f(M) </b></i>to
+	the data is best.</p>
+</ol>
+</body>
+</html>

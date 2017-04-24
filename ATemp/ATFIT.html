@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 5.1.6.2.0 (Linux)"/>
+	<meta name="author" content="Al Cooper"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changedby" content="Al Cooper"/>
+	<meta name="changed" content="2017-04-21T11:52:28.661850041"/>
+	<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+	<meta name="created" content="2017-04-17T10:16:29.240356146">
+	<meta name="changedby" content="Al Cooper">
+	<meta name="changed" content="2017-04-19T16:09:37.657504862">
+	<style type="text/css">
+		@page { margin: 0.79in }
+		p { margin-bottom: 0.1in; line-height: 120% }
+		a:link { so-language: zxx }
+	</style>
+</head>
+<body lang="en-US" dir="ltr">
+<p align="center" style="margin-top: 0.17in; margin-bottom: 0.08in; line-height: 100%; page-break-after: avoid">
+<font face="Liberation Sans, sans-serif"><font size="6" style="font-size: 28pt"><b>Info
+for AT plots</b></font></font></p>
+<p>[esc to dismiss, or click the button at the bottom]</p>
+<p>This tab tests ATX by assuming that the avionics temperature AT_A
+has been consistent over projects. If that is the case, a prediction
+of ATX based on AT_A should test for consistency in a new project. A
+fit to an apparently very good project (CSET) has been used to
+predict ATX via a quadratic polynomial called ATFIT, which has
+residual standard deviation from AT_A of about 0.3 <sup>o</sup>C.
+This is similar to our estimated uncertainty in ATX, so this formula
+provides a stringent prediction of ATX that should be able to detect
+any significant error in new projects. 
+</p>
+<p>The drop-down menu, flight number, and “All” checkbox in the
+top panel allow selection of any flight in the data archives. The
+“All” checkbox requires reading all the data files for a given
+project, so it will take longer (up to a minute or so before plots
+will appear).</p>
+<p>The measurements entering these plots have some restrictions
+applied to avoid large departures that are usually not indicative of
+real problems. The restrictions are: rate of climb between -1 and 1
+m/s (because PS_A has delayed response), TASX &gt; 90 (to avoid
+possible periods with flaps), and the rate of change in TASX &lt; 0.1
+m/s per second (also to avoid problems with the slow response of
+PS_A).</p>
+<p>There is some variation in selection of the probe used for ATX.
+For the reference plots from CSET, ATX was ATH1, but different
+choices have been made for various projects so that will introduce
+some variation in these plots. In rare cases where AT_A has been
+used, the results will be relatively poor. Otherwise, is proper
+calibrations are used for other probes, there should be reasonable
+consistency with the CSET results. 
+</p>
+<p>The standard deviation in the first plot will ideally be about
+0.3<sup>o</sup>C, but standard deviations of two or three times this
+may indicate variable conditions instead of real problems. When
+departures exceed about 1<sup>o</sup>C, either in offset or standard
+deviation, this is an indication of some problem. The second plot
+shows the dependence of the difference on PCXC, with the number on
+the right showing the number of measurements included at each level
+in the plot. Larger deviations are expected where there are small
+numbers of observations. Systematic departures with pressure may
+indicate problems that should be investigated. No error bar is
+displayed if the limits would extend beyond the range of the plot,
+although normally the plot range will be extended to prevent that.</p>
+<p><br/>
+<br/>
+
+</p>
+<p><br/>
+<br/>
+
+</p>
+<p><br/>
+<br/>
+
+</p>
+</body>
+</html>

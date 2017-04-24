@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 5.1.6.2.0 (Linux)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changedby" content="Al Cooper"/>
+	<meta name="changed" content="2017-04-03T00:15:59.293960099"/>
+	<meta name="date" content="2017-04-02 23:14:00"/>
+	<meta name="originator" content="TeX4ht (http://www.tug.org/tex4ht/)"/>
+	<meta name="src" content="Resolution.tex"/>
+	<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"  
+  "http://www.w3.org/TR/html4/loose.dtd">
+	<!-- html -->
+	<style type="text/css">
+		h3.cjk { font-family: "Source Han Sans CN Regular" }
+		h3.ctl { font-family: "Lohit Devanagari" }
+	</style>
+</head>
+<body lang="en-US" dir="ltr">
+<h3 class="western"><a name="x1-1000"></a>Exercise Objective</h3>
+<p class="noindent"><!--l. 130-->The term “resolution” has many
+definitions, some conflicting. This exercise seeks to clarify why
+characterizing the resolution is difficult, and it will explain some
+of the varying usages of this term. An interactive display is used to
+clarify some of the concepts and avoid numerical evaluation of
+probabilities on the part of the reader. A backup document with plots
+but without the interactive exercise is included at <a href="https://drive.google.com/open?id=0B1kIUH45ca5AS1lVY05rNUtRbFU">this
+URL</a>.<!--l. 138--> 
+</p>
+<p class="noindent"><u>The smallest difference between measurements
+that indicates that the corresponding measurands are different,
+</u>normally using single measurements of each measurand. The
+resolution will be limited primarily by the precision of the
+measurement. Consider first the case where two measurands <i><b>x</b></i><sub><i><b>1</b></i></sub>
+and <i><b>x</b></i><sub><i><b>2</b></i></sub> are the same. If
+measurements of each (<i><b>M</b></i><sub><i><b>1</b></i></sub> and
+<i><b>M</b></i><sub><i><b>2</b></i></sub>) have a random error
+characterized by <i><b>σ</b></i><sub><i><b>M</b></i></sub> and the
+random errors in repeated measurements are independent, then the
+expected standard deviation arising from random error in the
+difference <i><b>y </b></i>between the two measurements is <i><b>σ</b></i><sub><i><b>y</b></i></sub>
+<i><b>=<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAATCAIAAADqEDFSAAABqUlEQVR4nGP5//8/AyHw8+dPdnZ2gspYCKoAguXLlycmJuJRAHEQYbNevXolLi5OjJWEzTp69KiTkxMxQUHYrA8fPvDz81PHXcjA39//+fPnoqKib9++tbe3b2ho4OTkJNYsoKMEBQXh3F+/fp06dQrI+PTpk56eHjB+J0yYQKxZwMCysrKCc8vKyiAMPj4+FxeXbdu2kWDWy5cvxcTE4FxHR0c4+8+fP2xsbMiK0c36/fv3vXv31NXV8dsBBFeuXHF3d8dp1sOHDydOnHj58uXdu3cDud++fePm5sZq0MmTJx8/flxaWorTLC4urt7eXmAE3b17V1lZ+dixYxYWFpgGASMxKytr3bp1EhISOM0CRjaQTEtLmzNnTnt7O9CZwADGNCg8PBzofGtrazQpLGEfEhICNKi5uRlTCpi4EhISgHGno6ODKYvFLA4ODmCgrlmzBq1sePr0qZubW15e3hMwgAgCAwSeXLGnifT0dGdn5z179iALnj9//tq1axkZGciC9+/fV1BQwGcWME0Ak6iGhgayoI+PD/4cjjOtrlq1Co820swiAwAAXkSnnyma27wAAAAASUVORK5CYII=" name="Object1" hspace="8" width="25" height="19"/>
+σ</b></i><sub><i><b>M</b></i></sub>.
+The two measurements will differ by less than <i><b>σ</b></i><sub><i><b>y</b></i></sub>
+in about 68.3% of cases, as is appropriate for a confidence level
+corresponding to one standard deviation. Figure&nbsp;<a href="#x1-30011">1</a><!--tex4ht:ref: fig:plot1 -->
+shows the probability distribution functions for the two measurements
+(as the blue line) and that for the difference (as the red line).</p>
+<p class="noindent">To see this case, go to the “show PDFs” tab
+and set the first slider to zero.<!--l. 183--> 
+</p>
+<p class="noindent"><!--l. 195-->However, to find the resolution, a
+different limit is needed because in that case we want to find the
+minimum separation between measurands <i><b>y</b></i><sup>′</sup> <i><b>=
+x</b></i><sub><i><b>1</b></i></sub><sup>′</sup><i><b>-x</b></i><sub><i><b>2</b></i></sub><sup>′</sup>
+that leads to a statistically significant conclusion that the two are
+<i>different</i>. (Here the primed quantities refer to the measurands
+and unprimed quantities to the measurements.) If the two measurements
+are within 
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAAVCAYAAADb2McgAAABEklEQVR4nMWWiw3DIAxEQcpSHYTs0bXCWt2D2pVdXdwQLJXPSRFUoPBy+NOtlBJmK8aYaEitfcS287gNJ7rWk56Hd/MqyBc9OzmVPZunQ8pVBy8ga4WTDHkC1BjVGLRact3oIgEeQZKI5pzF2cJOhRQgC/iBgoxPPMcPme6kHi5QWX/LmMXNU0hMg7QuInBLU51EqCXZzU7VsvPKxco+DYG+iXMX8Cincz/lifU3JAS8lhJbA70uaqb3hwTxy48rN1su2ky36gbJB9BhfMjXTY+LtTaJHzsiuzE2q60OABPMUWPqpHSOoqDhxkVZPyrLeXTH0Stn6FjbJBDVdVR3SHDTXaxbGtVx3H9oPRoC2ROQ9QbHcaqHePqm1wAAAABJRU5ErkJggg==" name="Image2" alt="√ --  2" align="bottom" width="36" height="18" border="0"/>
+<i><b>σ</b></i><sub><i><b>x</b></i></sub>
+we cannot conclude that the two measurands are different because
+equal measurands would result in a separation between measurements of
+less than 
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAVCAYAAAA0GqweAAABA0lEQVR4nM2WYQ7DIAhGNekV7SHLIZ1ssHx1Uklm2fhTl7r6+hToVmtN/xzbLxbNOR+OadTkUThggyvtUpzT4wHTC25nO57JoYBiL3nhOKINMuAJTre8Qe+jP4RvMdqTZCky5nJCPWgYoMD0cE8gSJzCY3yJUIO6sACR/pYricXTMQgB7O0h7CzCDCJQeBazISsLR/aMebrt65Lk6nBjOI19lKCvAeFwa7noa5zXnmb0WkAIfvAxsjiz12f0LYD88LYQL/C26LFntT580dVZjGfRbF8AV2CMsb4OSkeoCpku7Ml965uQ7uwkus0MnK1JAmDex1gKCBbdhXgWd3QS98eoJx77IKf+pJBDRwAAAABJRU5ErkJggg==" name="Image3" alt="√ --  2" align="bottom" width="35" height="18" border="0"/>
+<i><b>σ</b></i><sub><i><b>x</b></i></sub>
+in about 68.3% of cases. To find the separation between measurements
+required to allow us to have 68.3% confidence that the measurands are
+different, we need to find the minimum separation between measurands
+that leads to a measured difference exceeding 
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAVCAYAAAA0GqweAAABG0lEQVR4nM2WAQ6DIAxFIfFSO4jeY9mt5CC7yO7BWteajhTpstr4EyKRis8PLU611nRlTdEvzDnPcLlDu41iwbwcDghCwCe0lyU4FJDcQ2ce1meiHUTA0t4k8BnAl3YsfIkB4gsQ4Nb0Acc+ZmyRoGGABKLBbUDsIjbs84eEOijdI6DC9+hayMV9K4QAau61wD2FOdjCWOBQLoDokJaBPJYU9zqxvOw+SdLb2K2sbiWlDP0FKDY2lwo1Sy1ziYz2AxTCSVfNRYt7bUa7A+LE8BKcfHfR6p44/lr3t4/1zmK5F9WjS4GbRV/Ktw7SaVAZMg3co5i1M1zOOkl4mbd/uaNAAjiMQbkCChetZWWoM06S5Ye6N5Q7oCcc6g1K+abDJ6dYNgAAAABJRU5ErkJggg==" name="Image4" alt="√ --  2" align="bottom" width="35" height="18" border="0"/>
+<i><b>σ</b></i><sub><i><b>x</b></i></sub>
+in about 68.3% of cases.<!--l. 209--> 
+</p>
+<p>Explore this using the top slider in the “show PDFs” tab<!--l. 224-->,
+to find the separation at which the probability “P2” of finding a
+difference outside  
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAVCAYAAAA0GqweAAABG0lEQVR4nM2WAQ6DIAxFIfFSO4jeY9mt5CC7yO7BWteajhTpstr4EyKRis8PLU611nRlTdEvzDnPcLlDu41iwbwcDghCwCe0lyU4FJDcQ2ce1meiHUTA0t4k8BnAl3YsfIkB4gsQ4Nb0Acc+ZmyRoGGABKLBbUDsIjbs84eEOijdI6DC9+hayMV9K4QAau61wD2FOdjCWOBQLoDokJaBPJYU9zqxvOw+SdLb2K2sbiWlDP0FKDY2lwo1Sy1ziYz2AxTCSVfNRYt7bUa7A+LE8BKcfHfR6p44/lr3t4/1zmK5F9WjS4GbRV/Ktw7SaVAZMg3co5i1M1zOOkl4mbd/uaNAAjiMQbkCChetZWWoM06S5Ye6N5Q7oCcc6g1K+abDJ6dYNgAAAABJRU5ErkJggg==" name="Image1" alt="√ --  2" align="bottom" width="35" height="18" border="0"/>
+<i><b>σ</b></i><sub><i><b>x</b></i></sub>
+ is about 68.3%.  Note that, at a separation of <i><b>d=</b></i><i><b>σ</b></i><sub><i><b>x</b></i></sub><i><b>
+</b></i><i><b>(</b></i><span style="font-style: normal"><span style="font-weight: normal">or
+a slider setting of 1), the probability is only about 43%, so at a
+separation between measurands equal to the precision of the sensor
+the probability is still far below the desired limit. You have to
+increase the slider to about 2 to get the desired probability. For
+this reason, the one-standard-deviation confidence limit for
+resolution is about twice the precision.</span></span></p>
+<p><span style="font-style: normal"><span style="font-weight: normal">Sometimes
+it is desired to quote a resolution that gives confidence at the
+two-standard-deviation limit that the measurands are different. To
+find this limit, move the second slider to 2 and repeat the exercise,
+this time seeking P2 about equal to 0.95. You will find that the
+required separation between measurands is </span></span><span style="font-style: normal"><span style="font-weight: normal">more
+than five times the precision. </span></span>
+</p>
+</body>
+</html>
