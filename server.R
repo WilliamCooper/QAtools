@@ -146,7 +146,24 @@ server <- function(input, output, session) {
                               '## This selects the entire column',
                               '## and returns a vector, not a data.frame.',
                               '## Equivalent to Data[, 2].',
-                              ' ', ' ', ' ', sep='<br/>')}
+                              ' ', ' ', sep='<br/>')}
+    if (RT == 7) {tx <- paste('attach(Data); ATX[5]', txw[2],
+                              '## This call makes all the variables in',
+                              '## the data.frame available as independent',
+                              '## variables. Although it is sometimes very',
+                              '## useful, it is dangerous because',
+                              '## confusion may arise among same-name',
+                              '## variables in different environments.', sep='<br/>'
+    )}
+    if (RT == 8) {tx <- paste('with(Data, ATX[5]', txw[2],
+                              '## This is usually better than "attach"',
+                              '## because it isolates the scope to the',
+                              '## enclosing ( ). However, assignments in',
+                              '## the ( ) must use <<- if you want to',
+                              '## use them outside the ( ); try:',
+                              '##   with(Data, X <- ATX[5])',
+                              '##   print (X)', sep='<br/>' 
+                              )}
     pre(HTML(tx))
   })
   

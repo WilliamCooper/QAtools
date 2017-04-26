@@ -88,7 +88,9 @@ ui <- fluidPage (
                                                                                                 'Data[5, 2]'=3,
                                                                                                 'Data[5, ]'=4, 
                                                                                                 'Data[5, "ATX"]'=5, 
-                                                                                                'Data$ATX'=6 
+                                                                                                'Data$ATX'=6,
+                                                                                                'attach(Data); ATX[5]'=7,
+                                                                                                'with(Data, print(ATX[5])'=8
                                                                                               ), width='800px'),
                                                                                               htmlOutput ('txtS2c1'),
                                                                                               includeHTML('~/RStudio/RSessions/RSessions/Session2/Session2c2.html'),
