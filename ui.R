@@ -14,6 +14,18 @@ ui <- fluidPage (
                          includeHTML ('Information.html')),
                tabPanel ('Background',
                          tabsetPanel (id='whichBg', type='pills',
+                                      tabPanel ('Suggested checks',
+                                                tabsetPanel (id='whichsugg', type='pills',
+                                                             tabPanel ('PSXC/QCXC'),
+                                                             tabPanel ('ATX'),
+                                                             tabPanel ('Humidity'),
+                                                             tabPanel ('INS performance'),
+                                                             tabPanel ('WIC'),
+                                                             tabPanel ('WD/WS'),
+                                                             tabPanel ('LWC'),
+                                                             tabPanel ('...')
+                                                             )
+                                                ),
                                       tabPanel ('R sessions (tutorial)',
                                                 tabsetPanel (id='whichTab', type='pills',
                                                              tabPanel ('TOC',

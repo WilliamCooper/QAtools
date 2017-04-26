@@ -1406,7 +1406,7 @@ server <- function(input, output, session) {
     DataPP <<- Data
     # with(Data, plotWAC(data.frame(Time, PSXC-PS_A), ylim=c(-2,2), ylab='PSXC-PS_A'))
     M <- with(Data,
-              sprintf('mean and std dev: %.2f +/- %.2f hPa', 
+              sprintf('mean and std dev: %.2f +/- %.2f deg. C', 
                       mean(ATX-ATFIT, na.rm=TRUE), sd(ATX-ATFIT, na.rm=TRUE)))
     b <- ceiling(with(Data, (max(ATX-ATFIT, na.rm=TRUE)-min(ATX-ATFIT, na.rm=TRUE))*20))
     with(Data, hist (ATX-ATFIT, breaks=b, xlim=c(-2,2), xlab='ATX-ATFIT [deg. C]',
