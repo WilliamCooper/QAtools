@@ -47,6 +47,34 @@ fr <- function (x, DF) {
   return (ans)
 }
 
+SeekManeuvers <- function (Data) {
+  source ("./PlotFunctions/SpeedRunSearch.R")
+  source ("./PlotFunctions/CircleSearch.R")
+  source ("./PlotFunctions/PitchSearch.R")
+  source ("./PlotFunctions/YawSearch.R")
+  source ("./PlotFunctions/ReverseHeadingSearch.R")
+  print ('list of maneuvers:')
+  PitchSearch (Data)
+  YawSearch (Data)
+  SpeedRunSearch (Data)
+  CircleSearch (Data)
+  ReverseHeadingSearch (Data)
+  print ('end of maneuver list')
+}
+
+ProjectSeekManeuvers <- function (inp) {
+  ProjectPP <- inp$ProjectPP
+  if (grepl ('HIPPO', ProjectPP)) {
+    ProjDir <- 'HIPPO'
+  } else {
+      ProjDir <- ProjectPP
+  }
+  print (ProjectPP)
+  Data <- getNetCDF (sprintf ('%s%s/%srf01.nc', DataDirectory (), ProjDir, ProjectPP),
+                     standardVariables (c('PITCH', 'SSRD', 'THDG', 'ROLL')))
+  SeekManeuvers (Data)
+}
+
 fnamePPS <- ''
 ProjectPP <- ''
 

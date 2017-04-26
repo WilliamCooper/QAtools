@@ -226,6 +226,7 @@ server <- function(input, output, session) {
     updateNumericInput (session, 'plot', value=vp)
   })
   
+  observeEvent (input$Tmaneuvers, ProjectSeekManeuvers (inp=input))
   observeEvent (input$reconfigure, saveConfig ())
   observeEvent (input$savePDF,
                 savePDF (Data=data(), inp=input))
@@ -1758,6 +1759,63 @@ server <- function(input, output, session) {
   
   output$RS3dpng <- renderImage ({
     list(src = sprintf('~/RStudio/RSessions/RSessions/Session3/S%02d.png', input$S3dframe),
+         contentType = 'image/png',
+         width = 800,
+         height = 600,
+         alt = "RSessions image goes here")
+  }, deleteFile = FALSE)
+  
+  output$RS4png <- renderImage ({
+    list(src = sprintf('~/RStudio/RSessions/RSessions/Session4/S%02d.png', input$S4frame),
+         contentType = 'image/png',
+         width = 800,
+         height = 600,
+         alt = "RSessions image goes here")
+  }, deleteFile = FALSE)
+  output$RS5png <- renderImage ({
+    list(src = sprintf('~/RStudio/RSessions/RSessions/Session5/S%02d.png', input$S5frame),
+         contentType = 'image/png',
+         width = 800,
+         height = 600,
+         alt = "RSessions image goes here")
+  }, deleteFile = FALSE)
+  output$RS5apng <- renderImage ({
+    list(src = sprintf('~/RStudio/RSessions/RSessions/Session5/S%02d.png', input$S5aframe),
+         contentType = 'image/png',
+         width = 800,
+         height = 600,
+         alt = "RSessions image goes here")
+  }, deleteFile = FALSE)
+  output$RS5bpng <- renderImage ({
+    list(src = sprintf('~/RStudio/RSessions/RSessions/Session5/S%02d.png', input$S5bframe),
+         contentType = 'image/png',
+         width = 800,
+         height = 600,
+         alt = "RSessions image goes here")
+  }, deleteFile = FALSE)
+  output$RS5cpng <- renderImage ({
+    list(src = sprintf('~/RStudio/RSessions/RSessions/Session5/S%02d.png', input$S5cframe),
+         contentType = 'image/png',
+         width = 800,
+         height = 600,
+         alt = "RSessions image goes here")
+  }, deleteFile = FALSE)
+  output$RS6png <- renderImage ({
+    list(src = sprintf('~/RStudio/RSessions/RSessions/Session6/S%02d.png', input$S6frame),
+         contentType = 'image/png',
+         width = 800,
+         height = 600,
+         alt = "RSessions image goes here")
+  }, deleteFile = FALSE)
+  output$RS7png <- renderImage ({
+    list(src = sprintf('~/RStudio/RSessions/RSessions/Session7/S%02d.png', input$S7frame),
+         contentType = 'image/png',
+         width = 800,
+         height = 600,
+         alt = "RSessions image goes here")
+  }, deleteFile = FALSE)
+  output$RS8png <- renderImage ({
+    list(src = sprintf('~/RStudio/RSessions/RSessions/Session8/S%02d.png', input$S8frame),
          contentType = 'image/png',
          width = 800,
          height = 600,

@@ -18,7 +18,7 @@ ui <- fluidPage (
                                                 tabsetPanel (id='whichTab', type='pills',
                                                              tabPanel ('TOC',
                                                                        includeHTML('~/RStudio/RSessions/RSessions/TOC/TOC.html')),
-                                                             tabPanel ('Session1',
+                                                             tabPanel ('Getting Started',
                                                                        tabsetPanel (id='S1tab', type='pills',
                                                                                     tabPanel ('Getting Started',
                                                                                               includeHTML('~/RStudio/RSessions/RSessions/Session1/Session1a.html')),
@@ -54,7 +54,7 @@ ui <- fluidPage (
                                                                                               includeHTML ('~/RStudio/RSessions/RSessions/Session1/Session1d.html')),
                                                                                     tabPanel ('Getting Ranadu',
                                                                                               includeHTML ('~/RStudio/RSessions/RSessions/Session1/Session1e.html')))),
-                                                             tabPanel ('Session2',
+                                                             tabPanel ('Objects and the data.frame',
                                                                        tabsetPanel (id='S2tab', type='pills',
                                                                                     tabPanel ('Vectors and Matrices',
                                                                                               includeHTML('~/RStudio/RSessions/RSessions/Session2/Session2a.html'),
@@ -84,13 +84,13 @@ ui <- fluidPage (
                                                                                               ),
                                                                                     tabPanel ('Some Basic Operations',
                                                                                               includeHTML ('~/RStudio/RSessions/RSessions/Session2/Session2d.html')))),
-                                                             tabPanel ('Session3',
+                                                             tabPanel ('Basics',
                                                                        tabsetPanel (id='S3tab', type='pills',
                                                                                     tabPanel ('R as a Calculator',
                                                                                               fluidRow (
                                                                                                 column (3, numericInput ('S3aframe', label='frame #',
                                                                                                             2, min=1, max=3, step=1)),
-                                                                                                column (4, helpText ('Suggestion: Place cursor in "frame #" entry box, then',
+                                                                                                column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
                                                                                                                      'use the up/down arrow keys to step through the frames.'))),
                                                                                               imageOutput('RS3apng')
                                                                                               ),
@@ -98,7 +98,7 @@ ui <- fluidPage (
                                                                                               fluidRow (
                                                                                                 column (3, numericInput ('S3bframe', label='frame #',4,
                                                                                                             min=4, max=12, step=1)),
-                                                                                                column (4, helpText ('Suggestion: Place cursor in "frame #" entry box, then',
+                                                                                                column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
                                                                                                           'use the up/down arrow keys to step through the frames.'))),
                                                                                               imageOutput('RS3bpng')
                                                                                     ),
@@ -106,7 +106,7 @@ ui <- fluidPage (
                                                                                               fluidRow (
                                                                                                 column (3, numericInput ('S3cframe', label='frame #',13,
                                                                                                                          min=13, max=16, step=1)),
-                                                                                                column (4, helpText ('Suggestion: Place cursor in "frame #" entry box, then',
+                                                                                                column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
                                                                                                                      'use the up/down arrow keys to step through the frames.'))),
                                                                                               imageOutput('RS3cpng')
                                                                                               ),
@@ -114,18 +114,92 @@ ui <- fluidPage (
                                                                                               fluidRow (
                                                                                                 column (3, numericInput ('S3dframe', label='frame #',17,
                                                                                                                          min=17, max=21, step=1)),
-                                                                                                column (4, helpText ('Suggestion: Place cursor in "frame #" entry box, then',
+                                                                                                column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
                                                                                                                      'use the up/down arrow keys to step through the frames.'))),
                                                                                               imageOutput('RS3dpng')
                                                                                               )
                                                                        )
                                                              ),
-                                                             tabPanel ('Session4'),
-                                                             tabPanel ('Session5'),
-                                                             tabPanel ('Session6'),
-                                                             tabPanel ('Session7'),
-                                                             tabPanel ('Session8'),
-                                                             tabPanel ('Session9')
+                                                             tabPanel ('R packages',
+                                                                       tabsetPanel (id='S4tab', type='pills',
+                                                                                    tabPanel ('All',
+                                                                                              fluidRow (
+                                                                                                column (3, numericInput ('S4frame', label='frame #',2,
+                                                                                                                         min=1, max=11, step=1)),
+                                                                                                column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
+                                                                                                                     'use the up/down arrow keys to step through the frames.'))),
+                                                                                              imageOutput('RS4png')
+                                                                                              ))),
+                                                             tabPanel ('Plotting',
+                                                                       tabsetPanel (id='S5tab', type='pills',
+                                                                                    tabPanel ('All',
+                                                                                              fluidRow (
+                                                                                                column (3, numericInput ('S5frame', label='frame #',2,
+                                                                                                                         min=1, max=15, step=1)),
+                                                                                                column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
+                                                                                                                     'use the up/down arrow keys to step through the frames.'))),
+                                                                                              imageOutput('RS5png')
+                                                                                    ),
+                                                                                    tabPanel ('Base Graphics',
+                                                                                              fluidRow (
+                                                                                                column (3, numericInput ('S5aframe', label='frame #',3,
+                                                                                                                         min=3, max=9, step=1)),
+                                                                                                column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
+                                                                                                                     'use the up/down arrow keys to step through the frames.'))),
+                                                                                              imageOutput('RS5apng')
+                                                                                              ),
+                                                                                    tabPanel ('plotWAC',
+                                                                                              fluidRow (
+                                                                                                column (3, numericInput ('S5bframe', label='frame #',8,
+                                                                                                                         min=8, max=9, step=1)),
+                                                                                                column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
+                                                                                                                     'use the up/down arrow keys to step through the frames.'))),
+                                                                                              imageOutput('RS5bpng')
+                                                                                             ),
+                                                                                    tabPanel ('ggplot',
+                                                                                              fluidRow (
+                                                                                                column (3, numericInput ('S5cframe', label='frame #',10,
+                                                                                                                         min=10, max=15, step=1)),
+                                                                                                column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
+                                                                                                                     'use the up/down arrow keys to step through the frames.'))),
+                                                                                              imageOutput('RS5cpng')
+                                                                                              )
+                                                                                    )
+                                                                       ),
+                                                             tabPanel ('Fitting',
+                                                                       tabsetPanel (id='S6tab', type='pills',
+                                                                                    tabPanel ('All',
+                                                                                              fluidRow (
+                                                                                                column (3, numericInput ('S6frame', label='frame #',2,
+                                                                                                                         min=1, max=21, step=1)),
+                                                                                                column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
+                                                                                                                     'use the up/down arrow keys to step through the frames.'))),
+                                                                                              imageOutput('RS6png')
+                                                                                    ))
+                                                                       ),
+                                                             tabPanel ('Reproducible Research',
+                                                                       tabsetPanel (id='S7tab', type='pills',
+                                                                                    tabPanel ('All',
+                                                                                              fluidRow (
+                                                                                                column (3, numericInput ('S7frame', label='frame #',2,
+                                                                                                                         min=1, max=13, step=1)),
+                                                                                                column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
+                                                                                                                     'use the up/down arrow keys to step through the frames.'))),
+                                                                                              imageOutput('RS7png')
+                                                                                    ))
+                                                                       ),
+                                                             tabPanel ('Data Review',
+                                                                       tabsetPanel (id='S8tab', type='pills',
+                                                                                    tabPanel ('All',
+                                                                                              fluidRow (
+                                                                                                column (3, numericInput ('S8frame', label='frame #',2,
+                                                                                                                         min=1, max=13, step=1)),
+                                                                                                column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
+                                                                                                                     'use the up/down arrow keys to step through the frames.'))),
+                                                                                              imageOutput('RS8png')
+                                                                                    ))
+                                                                       ),
+                                                             tabPanel ('Shiny apps')
                                                 )
                                                 
                                                 ),
@@ -367,6 +441,9 @@ ui <- fluidPage (
                                                )),
                                       tabPanel ('Maneuver study',
                                                 tabsetPanel (id='whichMan', type='pills',
+                                                             tabPanel ('search for maneuvers',
+                                                                       actionButton ('Tmaneuvers', 'Search')
+                                                                       ),
                                                              tabPanel ('Speed Run'),
                                                              tabPanel ('Pitch'),
                                                              tabPanel ('Yaw'),
