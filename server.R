@@ -1153,29 +1153,44 @@ server <- function(input, output, session) {
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
     fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
-    VL <- c('PSXC', 'PS_A', 'QCXC', 'QC_A', 'TASX', 'GGVSPD', 'ADIFR', 'QCF', 'ROLL')
+    VL <- c('PSXC', 'PS_A', 'QCXC', 'QC_A', 'TASX', 'GGALT', 'ADIFR', 'QCF', 'ROLL')
     # print (sprintf('entered PSplot, inputs %s %s %s', input$ProjectPP, input$FlightPP, input$AllPP))
-    if (input$AllPP) {
-      ## loop through all the flights in this project:
-      Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjectPPDir),
-                              sprintf ("%srf...nc$", input$ProjectPP)))
-      if (!is.na (Fl[1])) {
-        Data <- data.frame()
-        for (Flt in Fl) {
-          FltPP <- sub('.*rf', '', sub ('.nc$', '', Flt))
-          FltPP <- as.integer (FltPP)
-          fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), 
-                              ProjectPPDir, input$ProjectPP, FltPP)
-          Data <- rbind (Data, qualifyPS(fnamePP, VL, FltPP))
-        }
-      }
-      fnamePP <<- 'All'
+    
+    RdataFile <- sprintf ('Data/dataPQ%s.Rdata', input$ProjectPP)
+    if (file.exists (RdataFile)) {
+      load (RdataFile)
     } else {
-      fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), 
-                          ProjectPPDir, input$ProjectPP, input$FlightPP)
-      Data <- qualifyPS (fnamePP, VL, input$FlightPP)
-      fnamePP <<- fnamePP
+      DataPP <- makeDataFile (input$ProjectPP, 'ALL', VL)
+      DataPP <- qualifyData (DataPP)
+      save (DataPP, file=RdataFile)
     }
+    if (input$AllPP) {
+      Data <- DataPP
+    } else {
+      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+    }
+    
+    # if (input$AllPP) {
+    #   ## loop through all the flights in this project:
+    #   Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjectPPDir),
+    #                           sprintf ("%srf...nc$", input$ProjectPP)))
+    #   if (!is.na (Fl[1])) {
+    #     Data <- data.frame()
+    #     for (Flt in Fl) {
+    #       FltPP <- sub('.*rf', '', sub ('.nc$', '', Flt))
+    #       FltPP <- as.integer (FltPP)
+    #       fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), 
+    #                           ProjectPPDir, input$ProjectPP, FltPP)
+    #       Data <- rbind (Data, qualifyPS(fnamePP, VL, FltPP))
+    #     }
+    #   }
+    #   fnamePP <<- 'All'
+    # } else {
+    #   fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), 
+    #                       ProjectPPDir, input$ProjectPP, input$FlightPP)
+    #   Data <- qualifyPS (fnamePP, VL, input$FlightPP)
+    #   fnamePP <<- fnamePP
+    # }
     cf <- c(-2.2717351e+00, 1.0044060e+00, 1.7229198e-02, -3.1450368e-06) # ORCAS only
     cf <- c(-2.6239872e+00, 1.0063093e+00, 1.6020764e-02, -4.6657542e-06)  #CSET+ORCAS+DEEPWAVE
     Data$PSFIT <- with(Data, cf[1] + PS_A * (cf[2] + cf[4] * PS_A) + cf[3] * QC_A)
@@ -1196,18 +1211,26 @@ server <- function(input, output, session) {
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
     fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), input$ProjectPP, input$ProjectPP, input$FlightPP)
-    VL <- c('PSXC', 'PS_A', 'QCXC', 'QC_A', 'TASX', 'GGVSPD', 'ADIFR', 'QCF', 'ROLL')
-    if (input$AllPP) {
-      ## DataPP is already in global environment
-    } else if (fname != fnamePP) {
-      Data <- qualifyPS (fnamePP, VL, input$Flight) 
-      DataPP <<- Data
-      fnamePP <<- fname
+    VL <- c('PSXC', 'PS_A', 'QCXC', 'QC_A', 'TASX', 'GGALT', 'ADIFR', 'QCF', 'ROLL')
+
+    RdataFile <- sprintf ('Data/dataPQ%s.Rdata', input$ProjectPP)
+    if (file.exists (RdataFile)) {
+      load (RdataFile)
+    } else {
+      DataPP <- makeDataFile (input$ProjectPP, 'ALL', VL)
+      DataPP <- qualifyData (DataPP)
+      save (DataPP, file=RdataFile)
     }
+    if (input$AllPP) {
+      Data <- DataPP
+    } else {
+      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+    }
+
     cf <- c(-2.2717351e+00, 1.0044060e+00, 1.7229198e-02, -3.1450368e-06) #CSET only
     cf <- c(-2.6239872e+00, 1.0063093e+00, 1.6020764e-02, -4.6657542e-06)  #CSET+ORCAS+DEEPWAVE
-    DataPP$PSFIT <- with(DataPP, cf[1] + PS_A * (cf[2] + cf[4] * PS_A) + cf[3] * QC_A)
-    bs <- with(DataPP, binStats(data.frame(PSXC-PSFIT, PSXC), bins=10))
+    Data$PSFIT <- with(Data, cf[1] + PS_A * (cf[2] + cf[4] * PS_A) + cf[3] * QC_A)
+    bs <- with(Data, binStats(data.frame(PSXC-PSFIT, PSXC), bins=10))
     g <- ggplot(data=bs)
     g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma, 
                                   xmax=ybar+sigma), na.rm=TRUE) 
@@ -1229,38 +1252,28 @@ server <- function(input, output, session) {
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
     fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
-    VL <- c('PSXC', 'PS_A', 'QCXC', 'QC_A', 'TASX', 'GGVSPD', 'ADIFR', 'QCF', 'ROLL')
-    # print (sprintf('entered PSplot, inputs %s %s %s', input$ProjectPP, input$FlightPP, input$AllPP))
-    # print (sprintf ('QCplot %s %s %d', fnamePP, input$ProjectPP, input$FlightPP))
-    if (input$AllPP) {
-      ## loop through all the flights in this project:
-      Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjectPPDir),
-                              sprintf ("%srf...nc$", input$ProjectPP)))
-      if (!is.na (Fl[1])) {
-        Data <- data.frame()
-        for (Flt in Fl) {
-          FltPP <- sub('.*rf', '', sub ('.nc$', '', Flt))
-          FltPP <- as.integer (FltPP)
-          fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), 
-                              ProjectPPDir, input$ProjectPP, FltPP)
-          Data <- rbind (Data, qualifyPS(fnamePP, VL, FltPP))
-        }
-      }
-      fnamePP <<- 'All'
-      DataPP <<- Data
+    VL <- c('PSXC', 'PS_A', 'QCXC', 'QC_A', 'TASX', 'GGALT', 'ADIFR', 'QCF', 'ROLL')
+    RdataFile <- sprintf ('Data/dataPQ%s.Rdata', input$ProjectPP)
+    if (file.exists (RdataFile)) {
+      load (RdataFile)
     } else {
-      fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), 
-                          ProjectPPDir, input$ProjectPP, input$FlightPP)
-      DataPP <<- qualifyPS (fnamePP, VL, input$FlightPP)
-      fnamePP <<- fnamePP
+      DataPP <- makeDataFile (input$ProjectPP, 'ALL', VL)
+      DataPP <- qualifyData (DataPP)
+      save (DataPP, file=RdataFile)
     }
+    if (input$AllPP) {
+      Data <- DataPP
+    } else {
+      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+    }
+
     cfq <- c(2.7809637e+00, 9.7968460e-01, -6.7437126e-03, 4.8584555e-06)
-    DataPP$QCFIT <- with(DataPP, cfq[1] + PS_A * (cfq[3] + cfq[4] * PS_A) + cfq[2] * QC_A)
-    M <- with(DataPP,
+    Data$QCFIT <- with(Data, cfq[1] + PS_A * (cfq[3] + cfq[4] * PS_A) + cfq[2] * QC_A)
+    M <- with(Data,
               sprintf('mean and std dev: %.2f +/- %.2f hPa', 
                       mean(QCXC-QCFIT, na.rm=TRUE), sd(QCXC-QCFIT, na.rm=TRUE)))
-    b <- ceiling(with(DataPP, (max(QCXC-QCFIT, na.rm=TRUE)-min(QCXC-QCFIT, na.rm=TRUE))*20))
-    with(DataPP, hist (QCXC-QCFIT, breaks=b, xlim=c(-2,2), xlab='QCXC-QCFIT [hPa]',
+    b <- ceiling(with(Data, (max(QCXC-QCFIT, na.rm=TRUE)-min(QCXC-QCFIT, na.rm=TRUE))*20))
+    with(Data, hist (QCXC-QCFIT, breaks=b, xlim=c(-2,2), xlab='QCXC-QCFIT [hPa]',
                        freq=FALSE, main=M))
   })
   
@@ -1268,17 +1281,24 @@ server <- function(input, output, session) {
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
     fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), input$ProjectPP, input$ProjectPP, input$FlightPP)
-    VL <- c('PSXC', 'PS_A', 'QCXC', 'QC_A', 'TASX', 'GGVSPD', 'ADIFR', 'QCF', 'ROLL')
-    if (input$AllPP) {
-      ## DataPP is already in global environment
-    } else if (fname != fnamePP) {
-      Data <- qualifyPS (fnamePP, VL, input$Flight) 
-      DataPP <<- Data
-      fnamePP <<- fname
+    VL <- c('PSXC', 'PS_A', 'QCXC', 'QC_A', 'TASX', 'GGALT', 'ADIFR', 'QCF', 'ROLL')
+    RdataFile <- sprintf ('Data/dataPQ%s.Rdata', input$ProjectPP)
+    if (file.exists (RdataFile)) {
+      load (RdataFile)
+    } else {
+      DataPP <- makeDataFile (input$ProjectPP, 'ALL', VL)
+      DataPP <- qualifyData (DataPP)
+      save (DataPP, file=RdataFile)
     }
+    if (input$AllPP) {
+      Data <- DataPP
+    } else {
+      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+    }
+
     cfq <- c(2.7809637e+00, 9.7968460e-01, -6.7437126e-03, 4.8584555e-06)
-    DataPP$QCFIT <- with(DataPP, cfq[1] + PS_A * (cfq[3] + cfq[4] * PS_A) + cfq[2] * QC_A)
-    bs <- with(DataPP, binStats(data.frame(QCXC-QCFIT, QCXC), bins=10))
+    Data$QCFIT <- with(Data, cfq[1] + PS_A * (cfq[3] + cfq[4] * PS_A) + cfq[2] * QC_A)
+    bs <- with(Data, binStats(data.frame(QCXC-QCFIT, QCXC), bins=10))
     g <- ggplot(data=bs)
     g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma, 
                                   xmax=ybar+sigma), na.rm=TRUE) 
@@ -1366,29 +1386,21 @@ server <- function(input, output, session) {
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
     fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
-    VL <- standardVariables (c('AT_A', 'PS_A', 'QC_A', 'TAS_A', 'GGVSPD', 'ROLL'))
-    # print (sprintf('entered PSplot, inputs %s %s %s', input$ProjectPP, input$FlightPP, input$AllPP))
-    if (input$AllPP) {
-      ## loop through all the flights in this project:
-      Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjectPPDir),
-                              sprintf ("%srf...nc$", input$ProjectPP)))
-      if (!is.na (Fl[1])) {
-        Data <- data.frame()
-        for (Flt in Fl) {
-          FltPP <- sub('.*rf', '', sub ('.nc$', '', Flt))
-          FltPP <- as.integer (FltPP)
-          fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), 
-                              ProjectPPDir, input$ProjectPP, FltPP)
-          Data <- rbind (Data, qualifyPS(fnamePP, VL, FltPP))
-        }
-      }
-      fnamePP <<- 'All'
+    VL <- standardVariables (c('AT_A', 'PS_A', 'QC_A', 'TAS_A', 'GGALT', 'ROLL'))
+    RdataFile <- sprintf ('Data/dataATA%s.Rdata', input$ProjectPP)
+    if (file.exists (RdataFile)) {
+      load (RdataFile)
     } else {
-      fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), 
-                          ProjectPPDir, input$ProjectPP, input$FlightPP)
-      Data <- qualifyPS (fnamePP, VL, input$FlightPP)
-      fnamePP <<- fnamePP
+      DataPP <- makeDataFile (input$ProjectPP, 'ALL', VL)
+      DataPP <- qualifyData (DataPP)
+      save (DataPP, file=RdataFile)
     }
+    if (input$AllPP) {
+      Data <- DataPP
+    } else {
+      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+    }
+
     cfA <- c(0.28178716560, 1.01636832046, -0.00012560891)  ## const, AT_A, AT_A^2
     Data$ATFIT <- with(Data, cfA[1] + AT_A * (cfA[2] + cfA[3] * AT_A))
     DataPP <<- Data
@@ -1408,17 +1420,24 @@ server <- function(input, output, session) {
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
     fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), input$ProjectPP, input$ProjectPP, input$FlightPP)
-    VL <- standardVariables (c('AT_A', 'PS_A', 'QC_A', 'TAS_A', 'GGVSPD', 'ROLL'))
-    if (input$AllPP) {
-      ## DataPP is already in global environment
-    } else if (fname != fnamePP) {
-      Data <- qualifyPS (fnamePP, VL, input$Flight) 
-      DataPP <<- Data
-      fnamePP <<- fname
+    VL <- standardVariables (c('AT_A', 'PS_A', 'QC_A', 'TAS_A', 'GGALT', 'ROLL'))
+    RdataFile <- sprintf ('Data/dataATA%s.Rdata', input$ProjectPP)
+    if (file.exists (RdataFile)) {
+      load (RdataFile)
+    } else {
+      DataPP <- makeDataFile (input$ProjectPP, 'ALL', VL)
+      DataPP <- qualifyData (DataPP)
+      save (DataPP, file=RdataFile)
     }
+    if (input$AllPP) {
+      Data <- DataPP
+    } else {
+      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+    }
+
     cfA <- c(0.28178716560, 1.01636832046, -0.00012560891)  ## const, AT_A, AT_A^2
-    DataPP$ATFIT <- with(DataPP, cfA[1] + AT_A * (cfA[2] + cfA[3] * AT_A))
-    bs <- with(DataPP, binStats(data.frame(ATX-ATFIT, PSXC), bins=10))
+    Data$ATFIT <- with(Data, cfA[1] + AT_A * (cfA[2] + cfA[3] * AT_A))
+    bs <- with(Data, binStats(data.frame(ATX-ATFIT, PSXC), bins=10))
     g <- ggplot(data=bs)
     g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma, 
                                   xmax=ybar+sigma), na.rm=TRUE) 

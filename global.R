@@ -271,9 +271,17 @@ qualifyPS <- function(fnPP, Vars, Flt) {
     Vars[which('GGVSPD' == Vars)] <- 'VSPD_G'
   }
   D <- getNetCDF(fnPP, Vars, F=Flt)
+  D <- qualifyData (D)
+  return (D)
+}
+
+qualifyData <- function(D) {
   D$DTAS <- c(0, diff(D$TASX))
   D$DTAS <- SmoothInterp(D$DTAS, .Length=301)
-  r <- (abs(D[, GVSPD]) > 1) | (D$TASX < 90) | (abs(D$DTAS) > 0.1) | (abs(D$ROLL) > 5) | (D$QCXC < 60)
+  GVSPD <- SmoothInterp (c(0, diff(D$GGALT)), .Length=5)
+  
+  r <- (abs(GVSPD) > 1) | (D$TASX < 90) | (abs(D$DTAS) > 0.1) | (abs(D$ROLL) > 5) | (D$QCXC < 60)
+  r[is.na(r)] <- TRUE
   D$PSXC[r] <- NA; D$PS_A[r] <- NA
   D$QCRC[r] <- NA; D$QC_A[r] <- NA
   return (D)
