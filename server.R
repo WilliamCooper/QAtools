@@ -68,6 +68,16 @@ server <- function(input, output, session) {
     Dstats
   })
   
+  output$txtCalc1 <- renderUI({
+    y <- NA
+    {options(digits=5)
+    e <- paste ('y <- round(', input$cformula, ', 6)', sep='')
+    try(eval (parse (text=e)), silent=TRUE)
+    if (!is.na(y[1])) {
+      pre(HTML(y))
+    }}
+  })
+  
   output$txtS2a <- renderUI({
     RT <- input$selS2a
     if (length(RT) == 0 || RT == 1) {
@@ -243,7 +253,13 @@ server <- function(input, output, session) {
     updateNumericInput (session, 'plot', value=vp)
   })
   
-  observeEvent (input$Tmaneuvers, ProjectSeekManeuvers (inp=input))
+  observeEvent (input$Tmaneuvers, {
+    msg <- 'This takes several minutes and cannot be interrupted. Click OK to continue.'
+    showNotification(msg, action = NULL, duration = 5, closeButton = TRUE,
+                     id = 'noticeMan', type = "warning")
+    ProjectSeekManeuvers (inp=input)
+  })
+  
   observeEvent (input$reconfigure, saveConfig ())
   observeEvent (input$savePDF,
                 savePDF (Data=data(), inp=input))
@@ -579,6 +595,7 @@ server <- function(input, output, session) {
       if (Trace) {print ('entered display')}
       # VRPlot <<- VRPlot
       Data <- data()
+      DataRef <<- Data
       if (length (Data) < 2) {
         warning (sprintf ('variable error in (%s)', fname))
         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
@@ -772,7 +789,7 @@ server <- function(input, output, session) {
     else if (pcterror < 2) {print (sprintf ('That\'s within 2%% - try again'))}
     else if (pcterror < 5) {print (sprintf ('That\'s within 5%% - way off!'))}
   })
-  
+   
   output$chksum <- renderPrint ({
     reac$updatefit
     y <- NA

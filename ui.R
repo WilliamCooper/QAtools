@@ -456,6 +456,8 @@ ui <- fluidPage (
                                       tabPanel ('Maneuver study',
                                                 tabsetPanel (id='whichMan', type='pills',
                                                              tabPanel ('search for maneuvers',
+                                                                       selectInput (inputId='ProjectM', label='Project',
+                                                                                    choices=PJ, selected='CSET', width='100px'),
                                                                        actionButton ('Tmaneuvers', 'Search')
                                                                        ),
                                                              tabPanel ('Speed Run'),
@@ -465,7 +467,16 @@ ui <- fluidPage (
                                                              tabPanel ('Reverse Heading')
                                                              )
                                                 ),
-                                      tabPanel ('Calculator'),
+                                      tabPanel ('Calculator',
+                                                fluidRow (
+                                                column(6,textInput ('cformula', 'R expression', placeholder='sin(28*pi/180)')),
+                                                column(6, helpText(h4('DataRef as defined in the "Review" tab is available:',
+                                                          'Select a project and flight there, then try',
+                                                          'formatTime(DataRef$Time[1])',
+                                                          'DataRef$ATX[nrow(DataRef)/2]',
+                                                          'etc., here.')))),
+                                                htmlOutput ('txtCalc1')
+                                                ),
                                       tabPanel('Other Programs'
                                                # actionButton (inputId='Ran', label = 'Start Ranadu')
                                       ))),

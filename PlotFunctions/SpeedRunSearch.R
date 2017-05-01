@@ -1,11 +1,12 @@
-SpeedRunSearch <- function (data, File=' ') {
+SpeedRunSearch <- function (data) {
+  rtn <- NA
   ## needs TASX, GGALT
   del <- 75
   tol <- .3
   delz <- 20
   DataT <- data[!is.na(data$Time) & !is.na(data$TASX) & !is.na(data$GGALT), ]
   L <- dim(DataT)[1]
-  if (L == 0) {return()}
+  if (L == 0) {return(rtn)}
   r <- 1:L
   for (i in (del+1):(L-del)) {
     if ((!is.na(DataT$TASX[i]) && abs (DataT$TASX[i+del]-DataT$TASX[i]) < tol*del) ||
@@ -36,16 +37,19 @@ SpeedRunSearch <- function (data, File=' ') {
         slow <- min (DataT$TASX[s[startSpeedRun]:s[j]], na.rm=TRUE)
         fast <- max (DataT$TASX[s[startSpeedRun]:s[j]], na.rm=TRUE)
         if ((fast-slow > 40) && (fast > 180)) {
-          print (sprintf( "%s possible speed run:      %s--%s, %f to %f m/s", 
-                          File, 
+          rt <- sprintf( "%s %s speed run       %s %s %f %f", 
+                          attr(data, 'project'), attr(data, 'FlightNumber'),
                           strftime(startTime, format="%H%M%S", tz='UTC'),
                           strftime (endTime, format="%H%M%S", tz='UTC'),
-                          slow, fast))
+                          slow, fast)
+	  if (is.na(rtn[1])) {rtn <- rt}
+	  else {rtn <- c(rtn, rt)}
         }
         startTime <- DataT$Time[s[j+1]]
         startSpeedRun <- j+1
       }
     }
   }
+  return (rtn)
 }
 

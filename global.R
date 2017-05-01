@@ -47,6 +47,28 @@ fr <- function (x, DF) {
   return (ans)
 }
 
+SeekManvrs <- function (Data) {
+  source ("./PlotFunctions/SpeedRunSearch.R")
+  source ("./PlotFunctions/CircleSearch.R")
+  source ("./PlotFunctions/PitchSearch.R")
+  source ("./PlotFunctions/YawSearch.R")
+  source ("./PlotFunctions/ReverseHeadingSearch.R")
+  # print ('list of maneuvers:')
+  lst <- vector('character')
+  lt <- PitchSearch (Data)
+  if (!is.na(lt[1]))  {lst <- lt}
+  lt <- YawSearch (Data)
+    if (!is.na(lt[1])) {lst <- c(lst, lt)}
+  lt <- SpeedRunSearch (Data) 
+    if (!is.na(lt[1])) {lst <- c(lst, lt)}
+  lt <- CircleSearch (Data)
+    if (!is.na(lt[1])) {lst <- c(lst, lt)}
+  lt <- ReverseHeadingSearch (Data)
+    if (!is.na(lt[1])) {lst <- c(lst, lt)}
+  # print ('end of maneuver list')
+  return (lst)
+}
+
 SeekManeuvers <- function (Data) {
   source ("./PlotFunctions/SpeedRunSearch.R")
   source ("./PlotFunctions/CircleSearch.R")
@@ -63,16 +85,45 @@ SeekManeuvers <- function (Data) {
 }
 
 ProjectSeekManeuvers <- function (inp) {
-  ProjectPP <- inp$ProjectPP
-  if (grepl ('HIPPO', ProjectPP)) {
+  Project <- inp$ProjectM
+  if (grepl ('HIPPO', Project)) {
     ProjDir <- 'HIPPO'
   } else {
-      ProjDir <- ProjectPP
+      ProjDir <- Project
   }
-  print (ProjectPP)
-  Data <- getNetCDF (sprintf ('%s%s/%srf01.nc', DataDirectory (), ProjDir, ProjectPP),
-                     standardVariables (c('PITCH', 'SSRD', 'THDG', 'ROLL')))
-  SeekManeuvers (Data)
+  # print (ProjectPP)
+  Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjDir),
+                          sprintf ("%srf...nc$", Project)))
+  Fl <- c(Fl, sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjDir),
+                          sprintf ("%stf...nc$", Project))))
+  # print (Fl)
+  if (!is.na (Fl[1])) {
+    print (sprintf ('Maneuvers for project %s', Project))
+    lst <- vector('character')
+    for (Flt in Fl) {
+      print (sprintf('checking %s', Flt))
+      if (grepl ('tf', Flt)) {
+        Flight <- sub (".*tf", '', sub(".nc", '', Flt))
+        Type <- 'tf'
+      } else if (grepl ('rf', Flt)) {
+        Flight <- sub (".*rf", '', sub(".nc", '', Flt))
+        Type <- 'rf'
+      }
+      Flight <- as.integer(Flight)
+      # print (Flt)
+      if (!checkBad(sprintf('%s%s%02d', Project, Type, Flight))) {
+        Data <- getNetCDF (sprintf ('%s%s/%s%s%02d.nc', DataDirectory (), ProjDir, 
+                                    Project, Type, Flight),
+                           standardVariables (c('PITCH', 'SSRD', 'THDG', 'ROLL')))
+        lt <- SeekManvrs (Data)
+        if(!is.na(lt[1])) {lst <- c(lst,lt)}
+      }
+    }
+    print (lst)
+    print (sprintf ('End of list for project %s', Project))
+    save(lst, file=sprintf('maneuvers/maneuvers%s', Project))
+  }
+
 }
 
 fnamePPS <- ''

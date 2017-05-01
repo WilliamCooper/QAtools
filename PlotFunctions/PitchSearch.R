@@ -1,49 +1,50 @@
 PitchSearch <- function (data) {
+  rtn <- NA
   ## needs PITCH, GGALT
-  valid <- (!is.na(data$Time)) & (!is.na(data$PITCH))
-  valid[is.na (data$GGALT)] <- FALSE
-  valid[data$TASX < 150] <- FALSE
-  DataT <- data[valid, ]
-  ## look for high 5-min pitch variance
-  del <- 300	# calculate variance over 5 min (typical pitch maneuver)
-  Ptest <- 10
-  delz <- 50
-  L <- dim(DataT)[1]
-  r <- 1:L
-  cb <- vector ("numeric", del)
-  kcb <- 1
-  DataT$Pvar <- rep (0, L)
-  for (i in 1:L) {
-    cb[kcb] <- DataT$PITCH[i]
-    kcb <- (kcb + 1) %% del
-    DataT$Pvar[i] <- var(cb)
-    if (DataT$Pvar[i] < Ptest) {r[i] <- NA}
-    if (i < L-10) {
-      if (abs (DataT$GGALT[i] - DataT$GGALT[i+10]) > delz) {
-        r[i] <- NA
-      } 
-    } else {r[i] <- NA}
+  ## Avoid leading sequence of NA in PITCH:
+  ip <- which(!is.na(data$PITCH))[1]
+  if (length(ip) > 0 && ip[1] != 1) {
+    data$PITCH[1:ip] <- 0
   }
-  # plotWAC (DataT[, c("Time", "Pvar", "PITCH")])
-  ## require Pvar > 10 for 60 s
-  r[L] <- L 	# this forces consideration of the last segment
-  s <- r[!is.na(r)]
-  if (length (s) > 60) {
-    # look for breaks:
-    startPitch <- s[1]
-    startTime <- DataT$Time[s[1]]
-    for (j in 1:(length(s)-1)) {
-      if (s[j+1]-s[j] > 3) {
-        endTime <- DataT$Time[s[j]]
-        if (s[j] - startPitch > 60) {
-          print (sprintf( "possible pitch maneuver: %s--%s", 
-                          strftime(startTime-250, format="%H%M%S", tz='UTC'),
-                          strftime (endTime-100, format="%H%M%S", tz='UTC')))
-        }
-        startTime <- DataT$Time[s[j+1]]
-        startPitch <- s[j+1]
-      }
+  ## filter to isolate fluctuations with 15--30 s period
+  data$P <- zoo::na.approx(as.vector(data$PITCH), maxgap=1000, na.rm=FALSE)
+  data$P[is.na(data$P)] <- 0
+  data$PF <- signal::filter (signal::butter (3, 2/15), data$P) - signal::filter (signal::butter (3, 2/30), data$P)
+  ## also calculate a mean climb rate, expect < 5 m/s
+  data$dh <- SmoothInterp(c(0, diff(data$GGALT)), .Length=121)
+  data$VAR <- zoo::rollapply(as.vector(data$PF), width=60, FUN=var, fill=NA)
+  ## look for variance > 2 for 90 s and peak value > 4 in that interval:
+  iv <- which(data$VAR > 2)
+  if (length(iv) < 1) {
+    return (rtn)
+  }
+  ivn <- which(data$VAR <= 2)
+  ivd <- c(1, diff(iv))
+  ivs <- c(iv[1], iv[ivd > 5])
+  if (length(ivs) < 1) {
+    return (rtn)
+  }
+  ive <- vector('numeric')
+  for (i in 1:length(ivs)) {ive[i] <- which(ivn > ivs[i])[1]}
+  # with(data, plotWAC(data.frame(Time, PF, VAR)))
+  for (i in 1:length(ivs)) {
+    r <- ivs[i]:ivn[ive[i]]
+    # print (mean (data$GGALT[r], na.rm=TRUE))
+    if(abs(mean(data$dh[r], na.rm=TRUE)) > 5) {next}
+    if(mean(data$GGALT[r], na.rm=TRUE) < 1000) {next}
+    startTime <- data$Time[r[1]]
+    endTime <- data$Time[r[length(r)]]
+    rt <- sprintf( "%s %s pitch maneuver  %s--%s", 
+                   attr(data, 'project'), attr(data, 'FlightNumber'),
+                   strftime(startTime-300, format="%H%M%S", tz='UTC'),
+                   strftime (endTime+300, format="%H%M%S", tz='UTC'))
+    if (is.na(rtn[1])) {
+      rtn <- rt
+    } else {
+      rtn <- c(rtn, rt)
     }
+    # points(data$Time[r], rep(2, length(r)), pch=20, col='forestgreen')
   }
+  return (rtn)
 }
 
