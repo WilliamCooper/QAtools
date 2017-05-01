@@ -28,13 +28,14 @@ PitchSearch <- function (data) {
   for (i in 1:length(ivs)) {ive[i] <- which(ivn > ivs[i])[1]}
   # with(data, plotWAC(data.frame(Time, PF, VAR)))
   for (i in 1:length(ivs)) {
+    if (is.na(ive[i])) {next}
     r <- ivs[i]:ivn[ive[i]]
     # print (mean (data$GGALT[r], na.rm=TRUE))
     if(abs(mean(data$dh[r], na.rm=TRUE)) > 5) {next}
     if(mean(data$GGALT[r], na.rm=TRUE) < 1000) {next}
     startTime <- data$Time[r[1]]
     endTime <- data$Time[r[length(r)]]
-    rt <- sprintf( "%s %s pitch maneuver  %s--%s", 
+    rt <- sprintf( "%s %s pitch maneuver  %s--%s",
                    attr(data, 'project'), attr(data, 'FlightNumber'),
                    strftime(startTime-300, format="%H%M%S", tz='UTC'),
                    strftime (endTime+300, format="%H%M%S", tz='UTC'))
