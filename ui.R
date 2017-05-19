@@ -336,7 +336,7 @@ ui <- fluidPage (
                          fluidRow (
                            column (2,                                      
                                    selectInput (inputId='ProjectPP', label='Project',
-                                                choices=PJ, selected='CSET', width='100px')),
+                                                choices=PJ, selected='ARISTO2017', width='100px')),
                            column(2,
                                   numericInput (inputId='FlightPP', label='Flight', value=1,
                                                 min=1, max=99, step=1, width='80px')),
@@ -408,7 +408,90 @@ ui <- fluidPage (
                                                                          column(6, plotOutput (outputId='INShdg'))
                                                                        )
                                                                        )
-                                                             ))
+                                                             )),
+                                      tabPanel ('Maneuver study',
+                                                tabsetPanel (id='whichMan', type='pills',
+                                                             tabPanel ('search for maneuvers',
+                                                                       selectInput (inputId='ProjectM', label='Project',
+                                                                                    choices=PJ, selected='CSET', width='100px'),
+                                                                       actionButton ('Tmaneuvers', 'Search')
+                                                             ),
+                                                             tabPanel ('Speed Run',
+                                                                       sidebarLayout (
+                                                                         sidebarPanel (h4('select speed run'),
+                                                                                       radioButtons('selSR', label=NULL, choices=c('none'='0')),
+                                                                                       fluidRow (
+                                                                                         column(8, selectInput('plotTypeSR', label='type of plot', 
+                                                                                                               choices=CHP)),
+                                                                                         column(4, actionButton('infoSR', label='Info'))
+                                                                                       ),
+                                                                                       sliderInput('sliderSR', label='set delay [ms]', min=-5000, max=5000, step=50, value=0),
+                                                                                       selectInput('varSR', label='other variable (type-3 plot)', 
+                                                                                                   choices=sort((DataFileInfo(sprintf ('%s%s/%srf01.nc', DataDirectory(), ProjectM, ProjectM)))$Variables), selected='RTX')
+                                                                         ),
+                                                                         mainPanel(
+                                                                           plotOutput (outputId='plotSR')
+                                                                         )
+                                                                       )
+                                                             ),
+                                                             tabPanel ('Pitch',
+                                                                       sidebarLayout (
+                                                               sidebarPanel (h4('select pitch maneuver'),
+                                                                             radioButtons('selPM', label=NULL, choices=c('none'='0')),
+                                                                             fluidRow (
+                                                                               # column(8, selectInput('plotTypePM', label='type of plot', 
+                                                                                #                      choices=CHP)),
+                                                                               column(4, actionButton('infoPM', label='Info')),
+                                                                               column(6, selectInput('setPMT', label='set time for:',
+                                                                                                     choices=c('pitches', 'environment'),
+                                                                                                     selected='environment'))
+                                                                             ),
+                                                                             sliderInput('sliderPM', label='set interval', min=minT, max=maxT, 
+                                                                                         step=10, value=c(minT, maxT),
+                                                                                         timeFormat='%T',
+                                                                                         timezone='+0000'
+                                                                                         ),
+                                                                             sliderInput('sliderPitchPM', label='PITCH delay [ms]', min=-300, max=100,
+                                                                                         step=10, value=0),
+                                                                             sliderInput('sliderROCPM', label='ROC delay [ms]', min=-200, max=200,
+                                                                                         step=10, value=0)
+
+                                                               ),
+                                                               mainPanel(
+                                                                 plotOutput (outputId='plotPM',
+                                                                             brush=brushOpts(id='plot2_brush', delay=3000, delayType='debounce', resetOnNew=TRUE))
+                                                               )
+                                                             )
+                                                             ),
+                                                             tabPanel ('Yaw',
+                                                                       sidebarLayout (
+                                                                         sidebarPanel (h4('select yaw maneuver'),
+                                                                           radioButtons('selYM', label=NULL, choices=c('none'='0')),
+                                                                           fluidRow (
+                                                                           column(4, actionButton('infoYM', label='Info')),
+                                                                           column(6, selectInput('setYMT', label='set time for:',
+                                                                                               choices=c('environment', 'yaws'),
+                                                                                               selected='environment'))
+                                                                           ),
+                                                                           sliderInput('sliderYM', label='set interval', min=minT, max=maxT, 
+                                                                                   step=10, value=c(minT, maxT),
+                                                                                   timeFormat='%T',
+                                                                                   timezone='+0000'
+                                                                           ),
+                                                                           sliderInput('sliderTHDGYM', label='THDG delay [ms]', min=-300, max=300,
+                                                                                   step=10, value=0)
+                                                                       
+                                                             ),
+                                                             mainPanel(
+                                                               plotOutput (outputId='plotYM',
+                                                                           brush=brushOpts(id='plot3_brush', delay=3000, delayType='debounce', resetOnNew=TRUE))
+                                                             )
+                                                )
+                                                                       ),
+                                                             tabPanel ('Circle'),
+                                                             tabPanel ('Reverse Heading')
+                                                )
+                                      )
                          )),
                tabPanel ('Tools',
                          tabsetPanel (id='whichTool', type='pills',
@@ -453,20 +536,6 @@ ui <- fluidPage (
                                                             htmlOutput (outputId='fittext'),
                                                             tableOutput (outputId='coeftable'))
                                                )),
-                                      tabPanel ('Maneuver study',
-                                                tabsetPanel (id='whichMan', type='pills',
-                                                             tabPanel ('search for maneuvers',
-                                                                       selectInput (inputId='ProjectM', label='Project',
-                                                                                    choices=PJ, selected='CSET', width='100px'),
-                                                                       actionButton ('Tmaneuvers', 'Search')
-                                                                       ),
-                                                             tabPanel ('Speed Run'),
-                                                             tabPanel ('Pitch'),
-                                                             tabPanel ('Yaw'),
-                                                             tabPanel ('Circle'),
-                                                             tabPanel ('Reverse Heading')
-                                                             )
-                                                ),
                                       tabPanel ('Calculator',
                                                 fluidRow (
                                                 column(6,textInput ('cformula', 'R expression', placeholder='sin(28*pi/180)')),

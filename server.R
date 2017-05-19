@@ -71,11 +71,11 @@ server <- function(input, output, session) {
   output$txtCalc1 <- renderUI({
     y <- NA
     {options(digits=5)
-    e <- paste ('y <- round(', input$cformula, ', 6)', sep='')
-    try(eval (parse (text=e)), silent=TRUE)
-    if (!is.na(y[1])) {
-      pre(HTML(y))
-    }}
+      e <- paste ('y <- round(', input$cformula, ', 6)', sep='')
+      try(eval (parse (text=e)), silent=TRUE)
+      if (!is.na(y[1])) {
+        pre(HTML(y))
+      }}
   })
   
   output$txtS2a <- renderUI({
@@ -123,7 +123,7 @@ server <- function(input, output, session) {
     load('~/RStudio/RSessions/RSessions/Session2/DataS2b.Rdata')
     load('~/RStudio/RSessions/RSessions/Session2/txw.Rdata')
     blkline <- '                           '
-
+    
     # Data$ATX[5]
     if (RT == 2) {tx <- paste(txw[1], txw[2],  
                               ' ', '## 5th row in column ATX',
@@ -150,7 +150,7 @@ server <- function(input, output, session) {
                               '## and you can use a vector of names',
                               '## to select multiple columns',
                               ' ', ' ', ' ', sep='<br/>'
-                              )}
+    )}
     # Data$ATX
     if (RT == 6) {tx <- paste(txw[14], txw[15], txw[16], ' ',
                               '## This selects the entire column',
@@ -173,7 +173,7 @@ server <- function(input, output, session) {
                               '## use them outside the ( ); try:',
                               '##   with(Data, X <- ATX[5])',
                               '##   print (X)', sep='<br/>' 
-                              )}
+    )}
     pre(HTML(tx))
   })
   
@@ -185,9 +185,9 @@ server <- function(input, output, session) {
     # draw the histogram with the specified number of bins
     hist(x, breaks = bins, col = 'darkgray', border = 'white')
   })
-
-
-
+  
+  
+  
   output$ui2 <- renderUI ({
     #     print (sprintf ('entered ui2 with plot %d', input$plot))
     #     print (chp[[input$plot]]);print (slp[[input$plot]])
@@ -272,6 +272,81 @@ server <- function(input, output, session) {
   observeEvent (input$maneuvers, SeekManeuvers (data ()))
   observeEvent (input$manual, seeManual ())
   
+  observe ({
+    print (c('observe: ProjectPP is', input$ProjectPP))
+    if (!exists('Maneuvers')) {
+      load ('Maneuvers.Rdata')
+      Maneuvers <<- Maneuvers
+    }
+    countPM <<- 0
+    countYM <<- 0
+    itemYM <<- 0
+    PM <<- Maneuvers [Maneuvers$Project == input$ProjectPP & Maneuvers$Type == 'pitch', ]
+    YM <<- Maneuvers [Maneuvers$Project == input$ProjectPP & Maneuvers$Type == 'yaw', ]
+    SR <<- Maneuvers [Maneuvers$Project == input$ProjectPP & Maneuvers$Type == 'speed run', ]
+    chSR <- vector('character');chPM <<- vector('character');chYM <<- vector('character')
+    if (nrow(SR) > 0) {
+      for (i in 1:nrow(SR)) {
+        print (s <- sprintf ('%s %d-%d', SR$Flight[i], SR$Start[i], SR$End[i]))
+        chSR[i] <- sprintf ('%d', i)
+        names(chSR)[i] <- s
+      }
+      updateRadioButtons(session, inputId='selSR', choices=chSR)
+    } else {
+      updateRadioButtons(session, inputId='selSR', choices='none')
+    }
+    if (nrow(PM) > 0) {
+      for (i in 1:nrow(PM)) {
+        print (s <- sprintf ('%s %d-%d', PM$Flight[i], PM$Start[i], PM$End[i]))
+        chPM[i] <- sprintf ('%d', i)
+        names(chPM)[i] <- s
+      }
+      updateRadioButtons(session, inputId='selPM', choices=chPM)
+    } else {
+      updateRadioButtons(session, inputId='selPM', choices='none')
+    }
+    print (sprintf ('yaw maneuvers for project %s', input$ProjectPP))
+    if (nrow(YM) > 0) {
+      for (i in 1:nrow(YM)) {
+        print (s <- sprintf ('%s %d-%d', YM$Flight[i], YM$Start[i], YM$End[i]))
+        chYM[i] <- sprintf ('%d', i)
+        names(chYM)[i] <- s
+      }
+      updateRadioButtons(session, inputId='selYM', choices=chYM, selected='1')
+      # updateSliderInput (session, inputId='sliderYM', min=YM$Start[1], max=YM$End[1])
+    } else {
+      updateRadioButtons(session, inputId='selYM', choices='none')
+    }
+  }, priority=10)
+  
+  observe ({
+    item <- input$selYM
+    if (item != 'none' && !is.na(item)) {
+      item <- as.integer(item)
+      print (sprintf ('item %s nrow(YM)=%d', input$selYM, nrow(YM)))
+      if (is.na(item) || nrow(YM) < 1) {
+        itemYM <<- item <- 0
+        DYM <<- data.frame()
+      }
+      ProjDir <- input$ProjectPP
+      if (!is.na(item) && item != 'none' && item != 0 && length(item) > 0 && item <= nrow(YM)) {
+        itemYM <<- item
+        print (c('item, YM', item, YM[item,]))
+        if (grepl('HIPPO', ProjDir)) {ProjDir <- 'HIPPO'}
+        VL <- c('TASX', 'GGALT', 'SSRD', 'BDIFR', 'QCF', 'WDC', 'WSC', 'THDG', 'VYC',
+                'GGVNS', 'GGVEW')
+        START <- AddT (as.integer (YM$Start[item]), -120)
+        END <- AddT (as.integer (YM$End[item]), 120)
+        DYM <<- dataDYM(ProjDir, input$ProjectPP, YM$Flight[item], VL, START, END)
+        minT <- DYM$Time[1]; maxT <- DYM$Time[nrow(DYM)]
+        # mint <- as.POSIXlt (minT, tz='UTC'); maxT <- as.POSIXlt (maxT, tz='UTC')
+        updateSliderInput (session, 'sliderYM', min=minT, max=maxT, value=c(minT, maxT))
+        print ( sprintf ('updating time slider, limits are %s %s', minT, maxT))
+        # print (str(DYM))
+      }
+    }
+  }, priority=0)
+  
   observe ({                              ## typeFlight
     if (Trace) {print (sprintf ('entered typeFlight observer with value %s', input$typeFlight))}
     typeFlight <<- input$typeFlight
@@ -281,13 +356,15 @@ server <- function(input, output, session) {
   observe ({
     if (input$ProjectPP != ProjectPP) {
       ProjectPP <<- input$ProjectPP
-        FlightPP <- input$FlightPP
-        FLT <- ifelse (input$AllPP, 1, FlightPP)
-        ProjDir <- ProjectPP
-        if (grepl('HIPPO', ProjectPP)) {ProjDir <- 'HIPPO'}
-        fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjDir, ProjectPP, FLT)
-        FI <- DataFileInfo (fnamePP)
-        VT <- c(ATVARS[ATVARS %in% FI$Variables])
+      countPM <- 0
+      countYM <- 0
+      FlightPP <- input$FlightPP
+      FLT <- ifelse (input$AllPP, 1, FlightPP)
+      ProjDir <- ProjectPP
+      if (grepl('HIPPO', ProjectPP)) {ProjDir <- 'HIPPO'}
+      fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjDir, ProjectPP, FLT)
+      FI <- DataFileInfo (fnamePP)
+      VT <- c(ATVARS[ATVARS %in% FI$Variables])
       updateSelectInput (session, inputId='ATsel', selected='ATX')
       updateSelectInput (session, inputId='ATsc', choices=VT)
     }
@@ -376,6 +453,30 @@ server <- function(input, output, session) {
     times <<- c(T1, T2)
   } )
   
+  observeEvent (input$plot2_brush, {
+    xmin <- as.integer(input$plot2_brush$xmin)
+    xmax <- as.integer(input$plot2_brush$xmax)
+    T1 <- as.POSIXlt(xmin, origin='1970-01-01', tz='UTC')
+    T2 <- as.POSIXlt(xmax, origin='1970-01-01', tz='UTC')
+    TB1 <- T1$hour*10000 + T1$min*100 + T1$sec
+    TB2 <- T2$hour*10000 + T2$min*100 + T2$sec
+    #   print (sprintf ('brush times are %d %d', TB1, TB2))
+    updateSliderInput (session, 'sliderPM', value=c(T1, T2))
+    # times <<- c(T1, T2)
+  } )
+  
+  observeEvent (input$plot3_brush, {
+    xmin <- as.integer(input$plot3_brush$xmin)
+    xmax <- as.integer(input$plot3_brush$xmax)
+    T1 <- as.POSIXlt(xmin, origin='1970-01-01', tz='UTC')
+    T2 <- as.POSIXlt(xmax, origin='1970-01-01', tz='UTC')
+    TB1 <- T1$hour*10000 + T1$min*100 + T1$sec
+    TB2 <- T2$hour*10000 + T2$min*100 + T2$sec
+    #   print (sprintf ('brush times are %d %d', TB1, TB2))
+    updateSliderInput (session, 'sliderYM', value=c(T1, T2))
+    # times <<- c(T1, T2)
+  } )
+  
   observeEvent (input$resetT, {
     step <- 60
     Data <- data ()
@@ -401,6 +502,33 @@ server <- function(input, output, session) {
       includeHTML('PSXC/PSFIT.html'),
       title = "Expected Results",
       size='l',
+      easyClose = TRUE
+    ))
+  })
+  
+  observeEvent (input$infoSR, {
+    showModal(modalDialog(
+      includeHTML('maneuvers/SRMan.html'),
+      title = 'Expected Results',
+      size = 'l',
+      easyClose = TRUE
+    ))
+  })  
+  
+  observeEvent (input$infoPM, {
+    showModal(modalDialog(
+      includeHTML('maneuvers/PitchManeuver.html'),
+      title = 'Expected Results',
+      size = 'l',
+      easyClose = TRUE
+    ))
+  })
+  
+  observeEvent (input$infoYM, {
+    showModal(modalDialog(
+      includeHTML('maneuvers/YawManeuver.html'),
+      title = 'Expected Results',
+      size = 'l',
       easyClose = TRUE
     ))
   })
@@ -789,7 +917,7 @@ server <- function(input, output, session) {
     else if (pcterror < 2) {print (sprintf ('That\'s within 2%% - try again'))}
     else if (pcterror < 5) {print (sprintf ('That\'s within 5%% - way off!'))}
   })
-   
+  
   output$chksum <- renderPrint ({
     reac$updatefit
     y <- NA
@@ -1246,7 +1374,7 @@ server <- function(input, output, session) {
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
     fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), input$ProjectPP, input$ProjectPP, input$FlightPP)
     VL <- c('PSXC', 'PS_A', 'QCXC', 'QC_A', 'TASX', 'GGALT', 'ADIFR', 'QCF', 'ROLL')
-
+    
     RdataFile <- sprintf ('Data/dataPQ%s.Rdata', input$ProjectPP)
     if (file.exists (RdataFile)) {
       load (RdataFile)
@@ -1260,7 +1388,7 @@ server <- function(input, output, session) {
     } else {
       Data <- DataPP[DataPP$RF == input$FlightPP, ]
     }
-
+    
     cf <- c(-2.2717351e+00, 1.0044060e+00, 1.7229198e-02, -3.1450368e-06) #CSET only
     cf <- c(-2.6239872e+00, 1.0063093e+00, 1.6020764e-02, -4.6657542e-06)  #CSET+ORCAS+DEEPWAVE
     Data$PSFIT <- with(Data, cf[1] + PS_A * (cf[2] + cf[4] * PS_A) + cf[3] * QC_A)
@@ -1300,7 +1428,7 @@ server <- function(input, output, session) {
     } else {
       Data <- DataPP[DataPP$RF == input$FlightPP, ]
     }
-
+    
     cfq <- c(2.7809637e+00, 9.7968460e-01, -6.7437126e-03, 4.8584555e-06)
     Data$QCFIT <- with(Data, cfq[1] + PS_A * (cfq[3] + cfq[4] * PS_A) + cfq[2] * QC_A)
     M <- with(Data,
@@ -1308,7 +1436,7 @@ server <- function(input, output, session) {
                       mean(QCXC-QCFIT, na.rm=TRUE), sd(QCXC-QCFIT, na.rm=TRUE)))
     b <- ceiling(with(Data, (max(QCXC-QCFIT, na.rm=TRUE)-min(QCXC-QCFIT, na.rm=TRUE))*20))
     with(Data, hist (QCXC-QCFIT, breaks=b, xlim=c(-2,2), xlab='QCXC-QCFIT [hPa]',
-                       freq=FALSE, main=M))
+                     freq=FALSE, main=M))
   })
   
   output$QCSplot <- renderPlot ({
@@ -1329,7 +1457,7 @@ server <- function(input, output, session) {
     } else {
       Data <- DataPP[DataPP$RF == input$FlightPP, ]
     }
-
+    
     cfq <- c(2.7809637e+00, 9.7968460e-01, -6.7437126e-03, 4.8584555e-06)
     Data$QCFIT <- with(Data, cfq[1] + PS_A * (cfq[3] + cfq[4] * PS_A) + cfq[2] * QC_A)
     bs <- with(Data, binStats(data.frame(QCXC-QCFIT, QCXC), bins=10))
@@ -1434,7 +1562,7 @@ server <- function(input, output, session) {
     } else {
       Data <- DataPP[DataPP$RF == input$FlightPP, ]
     }
-
+    
     cfA <- c(0.28178716560, 1.01636832046, -0.00012560891)  ## const, AT_A, AT_A^2
     Data$ATFIT <- with(Data, cfA[1] + AT_A * (cfA[2] + cfA[3] * AT_A))
     DataPP <<- Data
@@ -1468,7 +1596,7 @@ server <- function(input, output, session) {
     } else {
       Data <- DataPP[DataPP$RF == input$FlightPP, ]
     }
-
+    
     cfA <- c(0.28178716560, 1.01636832046, -0.00012560891)  ## const, AT_A, AT_A^2
     Data$ATFIT <- with(Data, cfA[1] + AT_A * (cfA[2] + cfA[3] * AT_A))
     bs <- with(Data, binStats(data.frame(ATX-ATFIT, PSXC), bins=10))
@@ -1500,7 +1628,7 @@ server <- function(input, output, session) {
     TCN <- c('ATH1', 'ATH2', 'ATH3', 'ATH4', 'ATF1', 'ATF2', 'AT_A', 'AT_A2', 
              'ATFH1', 'ATFH2', 'ATHR1', 'ATHR2')
     FI <- DataFileInfo (fnamePP)
-
+    
     VL <- c(VL, TCN[which(TCN %in% FI$Variables)])
     
     RdataFile <- sprintf ('Data/dataATHeq%s.Rdata', input$ProjectPP)
@@ -1513,7 +1641,7 @@ server <- function(input, output, session) {
     ch <- c('ATX', sort (TCN[which(TCN %in% names(DataPP))]))
     updateSelectInput (session, 'ATsel', label=NULL, 
                        choices=ch, selected=ATsel)
-   
+    
     # if (input$AllPP) {
     #   if (fnamePPS == sprintf('ALL%s', input$ProjectPP)) {
     #     Data <- DataPP
@@ -1672,7 +1800,7 @@ server <- function(input, output, session) {
       save (DataPP, file=RdataFile)
     }
     ch <- c('ATX', sort (TCN[which(TCN %in% names(DataPP))]))
-
+    
     if (input$AllPP) {
       Data <- DataPP
     } else {
@@ -1685,7 +1813,7 @@ server <- function(input, output, session) {
     DBS1 <- data.frame(Data[, ATsc[1]] - Data[, ATsc[2]], Data$ATX)
     bs1 <- binStats (DBS1, bins=15)
     # plotWAC(bs$ybar, bs$xc, xlab='DT')
-
+    
     g <- ggplot(data=bs1)
     g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma,
                                   xmax=ybar+sigma), na.rm=TRUE)
@@ -1696,14 +1824,14 @@ server <- function(input, output, session) {
       DBS2 <- data.frame(Data[, ATsc[1]] - Data[, ATsc[3]], Data$ATX)
       bs2 <- binStats (DBS2, bins=15)
       g <- g + geom_errorbarh (data=bs2, aes (y=xc, x=ybar, xmin=ybar-sigma,
-                                    xmax=ybar+sigma), na.rm=TRUE)
+                                              xmax=ybar+sigma), na.rm=TRUE)
       g <- g + geom_point (data=bs2, aes (x=bs2$ybar, y=bs2$xc), size=3, colour='forestgreen', na.rm=TRUE)
     }
     if (length(ATsc) > 3) {
       DBS3 <- data.frame(Data[, ATsc[1]] - Data[, ATsc[4]], Data$ATX)
       bs3 <- binStats (DBS3, bins=15)    
       g <- g + geom_errorbarh (data=bs3, aes (y=xc, x=ybar, xmin=ybar-sigma,
-                                    xmax=ybar+sigma), na.rm=TRUE)
+                                              xmax=ybar+sigma), na.rm=TRUE)
       g <- g + geom_point (data=bs3, aes(x=bs3$ybar, y=bs3$xc), size=3, colour='darkorange', na.rm=TRUE)
     }
     xlow <- floor(min (bs1$ybar-bs1$sigma, na.rm=TRUE))
@@ -1741,23 +1869,23 @@ server <- function(input, output, session) {
   })
   
   output$INSroll <- renderPlot ({
-  VL <- c('PITCH', 'PITCH_IRS2', 'ROLL', 'ROLL_IRS2', 'THDG', 'THDG_IRS2', 'TASX')
-  RdataFile <- sprintf ('Data/dataINS%s.Rdata', input$ProjectPP)
-  if (file.exists (RdataFile)) {
-    load (RdataFile)
-  } else {
-    DataPP <- makeDataFile (input$ProjectPP, 'ALL', VL)
-    save (DataPP, file=RdataFile)
-  }
-  if (input$AllPP) {
-    Data <- DataPP
-  } else {
-    Data <- DataPP[DataPP$RF == input$FlightPP, ]
-  }
-  g <- ggplot(data=Data) + geom_histogram (aes(ROLL-ROLL_IRS2, ..density..), fill='blue', binwidth=0.01)
-  g <- g + ggtitle(sprintf ('mean %.2f +/- %.2f', mean(Data$ROLL-Data$ROLL_IRS2, na.rm=TRUE),
-                            sd(Data$ROLL-Data$ROLL_IRS2, na.rm=TRUE)))
-  g + theme_WAC() + theme (plot.title=element_text(size=14))
+    VL <- c('PITCH', 'PITCH_IRS2', 'ROLL', 'ROLL_IRS2', 'THDG', 'THDG_IRS2', 'TASX')
+    RdataFile <- sprintf ('Data/dataINS%s.Rdata', input$ProjectPP)
+    if (file.exists (RdataFile)) {
+      load (RdataFile)
+    } else {
+      DataPP <- makeDataFile (input$ProjectPP, 'ALL', VL)
+      save (DataPP, file=RdataFile)
+    }
+    if (input$AllPP) {
+      Data <- DataPP
+    } else {
+      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+    }
+    g <- ggplot(data=Data) + geom_histogram (aes(ROLL-ROLL_IRS2, ..density..), fill='blue', binwidth=0.01)
+    g <- g + ggtitle(sprintf ('mean %.2f +/- %.2f', mean(Data$ROLL-Data$ROLL_IRS2, na.rm=TRUE),
+                              sd(Data$ROLL-Data$ROLL_IRS2, na.rm=TRUE)))
+    g + theme_WAC() + theme (plot.title=element_text(size=14))
   })
   
   output$INShdg <- renderPlot ({
@@ -1774,7 +1902,19 @@ server <- function(input, output, session) {
     } else {
       Data <- DataPP[DataPP$RF == input$FlightPP, ]
     }
-    Data$DTHDG <- Data$THDG - Data$THDG_IRS2
+    Data$DTHDG <- Data$THDG - Data$THDG_IRS2Cp <- SpecificHeats (Data$EWX / Data$PSXC)[, 1]
+    Data$X <- Data$TASX^2 / (2 * Cp)
+    # Data$RTHR1 <- ShiftInTime (Data$RTHR1, .shift=-2300)
+    r <- setRange(Data, 41449, 42329)
+    cf <- coef(lm (RTHR1 ~ X, data=Data[r,]))
+    xp <- c(7,25)
+    yp <- cf[1] + cf[2] * xp
+    d <- data.frame(xp=xp, yp=yp)
+    Xlab <- expression(paste(V^2,'/(2',c[p],')', sep=''))
+    g <- ggplot (data=Data[r, ], aes(x=X, y=RTHR1)) + geom_point(colour='blue') 
+    g <- g + geom_path(data=d, aes(x=xp, y=yp), colour='darkorange', lwd=1.5, lty=2) 
+    g + ylab('Recovery Temperature [K]') + xlab(Xlab) + theme_WAC()
+    
     rp <- !is.na(Data$DTHDG) & Data$DTHDG > 180
     rn <- !is.na(Data$DTHDG) & Data$DTHDG < -180
     Data$DTHDG[rp] <- Data$DTHDG[rp] - 360
@@ -1784,6 +1924,231 @@ server <- function(input, output, session) {
     g <- g + ggtitle(sprintf ('mean %.2f +/- %.2f', mean(Data$DTHDG, na.rm=TRUE),
                               sd(Data$DTHDG, na.rm=TRUE)))
     g + theme_WAC() + theme (plot.title=element_text(size=14))
+  })
+  
+  output$plotYM <- renderPlot ({
+    # print ('entered plotYM with selYM, Proj, setYMT, sliderYM, sliderTHDGYM=')
+    # isolate (print (c(input$selYM, input$ProjectPP, input$setYMT, 
+    #                   input$sliderYM[1], input$sliderYM[2], input$sliderTHDGYM)))
+    # item <- as.integer(input$selYM)
+    # if (length(item) < 1) {return('no plot selected')}
+    # itemx <<- item
+    # if (is.na(itemx) || length(itemx) < 1 || itemx == 0) {return('no plot selected')}
+    # if (itemx != itemYM) {
+    #   countYM <<- 1
+    #   itemYM <<- item
+    # }
+    # ProjDir <- input$ProjectPP
+    # if (grepl('HIPPO', ProjDir)) {ProjDir <- 'HIPPO'}
+    # VL <- c('TASX', 'GGALT', 'SSRD', 'BDIFR', 'QCF', 'WDC', 'WSC', 'THDG', 'VYC')
+    # START <- AddT (as.integer (YM$Start[item]), -120)
+    # END <- AddT (as.integer (YM$End[item]), 120)
+    # DYM <- dataDYM(ProjDir, input$ProjectPP, YM$Flight[item], VL, START, END)
+    # print (c('nrow(DYM)', nrow(DYM), START, END))
+    # print (sprintf ('time range is %s--%s', DYM$Time[1], DYM$Time[nrow(DYM)]))
+    print (sprintf ('entry to plotYM, selYM is %s, length(DYM) is %d', input$selYM, length(DYM)))
+    if (input$selYM == 'none') {
+      plot (0.5, 0.5, type='n')
+      title ('no maneuver for this selection')
+    } else {
+      if (countYM == 1) {
+        minT <<- DYM$Time[1]; maxT <<- DYM$Time[nrow(DYM)]
+        # mint <- as.POSIXlt (minT, tz='UTC'); maxT <- as.POSIXlt (maxT, tz='UTC')
+        updateSliderInput (session, 'sliderYM', min=minT, max=maxT, value=c(minT, maxT))
+        # print (c('updating time slider, limits are:', minT, maxT))
+        r1YM <<- 1; r2YM <<- nrow(DYM); r3YM <<- 1; r4YM <<- r2YM
+        countYM <<- countYM + 1
+      }
+      if (input$setYMT == 'environment') {
+        r1YM <<- which(DYM$Time >= input$sliderYM[1])[1]
+        r2YM <<- which(DYM$Time >= input$sliderYM[2])[1]
+        print (sprintf (' start time=%s, end time is %s', DYM$Time[r1YM], DYM$Time[r2YM]))
+        r3YM <<- r1YM
+        r4YM <<- r2YM
+        print (sprintf ('e new r1/4 range %d:%d %d:%d', r1YM, r2YM, r3YM, r4YM))
+      } else {
+        r3YM <<- which(DYM$Time >= input$sliderYM[1])[1]
+        r4YM <<- which(DYM$Time >= input$sliderYM[2])[1]
+        if (is.na(r3YM) || (r3YM < r1YM)) {r3YM <<- r1YM}
+        if (is.na(r4YM) || (r4YM > r2YM)) {r4YM <<- r2YM}
+        print (sprintf ('new r3/4 range %d:%d', r3YM, r4YM))
+      }
+      if (is.na(r1YM)) {r1YM <<- 1}
+      if (is.na(r2YM)) {r2YM <<- nrow(DYM)}
+      if (is.na(r3YM)) {r3YM <<- 1}
+      if (is.na(r4YM)) {r4YM <<- nrow(DYM)}
+      r <- r1YM:r2YM
+      rp <- r3YM:r4YM
+      re <- r[-which(r %in% rp)]
+      # print (c('re ', re))
+      DYM$selected <- rep(0, nrow(DYM))
+      if (length(re) > 0) {DYM$selected[re] <- NA}
+      ## adjust for time shifts:
+      if (input$sliderTHDGYM != 0) {
+        DYMP <- DYM
+        DYMP$THDG <- ShiftInTime(DYM$THDG, .shift=input$sliderTHDGYM)
+        ## adjust WDC/WSC
+        fys <- function (D) {
+          x <- with(D, atan2((TASX*cos((THDG+SSRD)*pi/180)-GGVNS), 
+                             (TASX*sin((THDG+SSRD)*pi/180)-GGVEW))*180/pi)
+          x[x < 0] <- x[x < 0] + 360
+          return(x)
+        }
+        fys2 <- function (D) {
+          x <- with(D, sqrt((TASX*cos((THDG+SSRD)*pi/180)-GGVNS)^2 + 
+                              (TASX*sin((THDG+SSRD)*pi/180)-GGVEW)^2))
+          return(x)
+        }
+        WDC <- DYM$WDC + fys(DYMP) - fys(DYM)
+        WSC <- DYM$WSC + fys2(DYMP) - fys2(DYM)
+      } else {
+        WDC <- DYM$WDC
+        WSC <- DYM$WSC
+      }
+      psibar <- mean(DYM$THDG[r], na.rm=TRUE) * pi/180
+      psi <- DYM$THDG * pi / 180
+      delta <- WDC * pi / 180
+      DYM$Lat <- WSC * (sin (psibar - pi/2) * sin(delta) + cos(psibar - pi/2)*cos(delta))
+      DYM$Lat <- DYM$Lat - mean(DYM$Lat[r], na.rm=TRUE)
+      DYM$VYC <- DYM$VYC - mean(DYM$VYC[r], na.rm=TRUE)
+      DYM$SScomp <- DYM$TASX * DYM$SSRD * pi / 180
+      # print (summary(r))
+      # print (summary(rp))
+      if (length(r) > 2) {
+        with(DYM[r,], plotWAC(data.frame(Time, SScomp, Lat, selected), col=c('blue', 'red', 'forestgreen'), 
+                              ylab='Sideslip-induced crosswind [m/s]', 
+                              lwd=c(2,2,2), lty=c(1,2,1), ylim=c(-4,4)))
+        cvf <- ccf(DYM$Lat[rp], DYM$SScomp[rp], plot=FALSE)
+        Rmax <- max(abs(cvf$acf), na.rm=TRUE)
+        sdSS <- sd(DYM$SScomp[rp], na.rm=TRUE)
+        sdLat <- sd(DYM$Lat[rp], na.rm=TRUE)
+        sdLate <- sd(DYM$Lat[re], na.rm=TRUE)
+        text(DYM$Time[r[1]], 1, labels=sprintf ('          sd ratio %.2f', sdLat/sdLate))
+        sdTrans <- Rmax * sd (DYM$Lat[rp], na.rm=TRUE)
+        transmission <- sdTrans / sdSS
+        title(sprintf ('transmission %.1f%% SS comp. std dev %.2f transmitted std dev %.2f m/s HDG shift %d',
+                       transmission*100, sdSS, sdTrans, input$sliderTHDGYM), cex=0.8)
+        # print (summary(DYM$Lat[rp])); print (summary (DYM$SScomp[r]))
+      }
+      # DG <- with(DYM, data.frame(Time, SSRD, VYC))
+      # ggplotWAC(DG)
+    }
+  })
+    
+  output$plotPM <- renderPlot ({
+    item <- as.integer(input$selPM)
+    if (length(item) < 1) {return('no plot selected')}
+    itemx <<- as.integer(input$selPM)
+    if (is.na(itemx) || length(itemx) < 1 || itemx == 0) {return('no plot selected')}
+    if (itemx != itemPM) {
+      countPM <<- 1
+      itemPM <<- item
+    }
+    ProjDir <- input$ProjectPP
+    if (grepl('HIPPO', ProjDir)) {ProjDir <- 'HIPPO'}
+    VL <- c('TASX', 'PSXC', 'GGALT', 'PITCH', 'ADIFR', 'QCF', 'AKRD', 'WIC')
+    START <- AddT (as.integer (PM$Start[item]), -120)
+    END <- AddT (as.integer (PM$End[item]), 120)
+    DPM <- dataDPM(ProjDir, input$ProjectPP, PM$Flight[item], VL, START, END)
+    if (countPM == 1) {
+      minT <- DPM$Time[1]; maxT <- DPM$Time[nrow(DPM)]
+      updateSliderInput (session, 'sliderPM', min=minT, max=maxT)
+      r1PM <<- 1; r2PM <<- nrow(DPM); r3PM <<- 1; r4PM <<- r2PM
+      countPM <<- countPM + 1
+    }
+    if (input$setPMT == 'environment') {
+      r1PM <<- which(DPM$Time >= input$sliderPM[1])[1]
+      r2PM <<- which(DPM$Time >= input$sliderPM[2])[1]
+    } else {
+      r3PM <<- which(DPM$Time >= input$sliderPM[1])[1]
+      r4PM <<- which(DPM$Time >= input$sliderPM[2])[1]
+      # print (sprintf ('new r3/4 range %d:%d', r3PM, r4PM))
+    }
+    if (is.na(r1PM)) {r1PM <<- 1}
+    if (is.na(r2PM)) {r2PM <<- nrow(DPM)}
+    # DPM$ROC <- c(0, diff(DPM$GGALT)) ## done in dataDPM now
+    DPM$selected <- rep(-10, nrow(DPM))
+    DPM$selected[c(1:r3PM, r4PM:nrow(DPM))] <- NA
+    ## adjust for time shifts:
+    if (input$sliderPitchPM != 0) {
+      P <- ShiftInTime(DPM$PITCH, .shift=input$sliderPitchPM)
+      DPM$WIC <- DPM$WIC - DPM$TASX * (P - DPM$PITCH) * pi / 180
+    }
+    if (input$sliderROCPM != 0) {
+      R <- ShiftInTime(DPM$ROC, .shift=input$sliderROCPM)
+      DPM$WIC <- DPM$WIC + R - DPM$ROC
+    }
+    DG <- with(DPM[(r1PM:r2PM),], data.frame(Time, PITCH, ROC, WIC, selected))
+    r <- r1PM:r2PM
+    rp <- r3PM:r4PM
+    re <- r[-rp]
+    VAR <- var(DPM$WIC[rp], na.rm=TRUE)
+    SDWIC <- sd(DPM$WIC[rp], na.rm=TRUE)
+    SDWICE <- sd(DPM$WIC[re], na.rm=TRUE)
+    SDROC <- sd(DPM$ROC[rp], na.rm=TRUE)
+    cvf <- ccf(DPM$WIC[rp], DPM$ROC[rp], plot=FALSE)
+    maxcvf <- max(abs(cvf$acf))
+    Rmax <- maxcvf^2
+    VarCaused <- VAR * Rmax
+    sdCaused <- sqrt(VarCaused)
+    transmission <- 100 * sdCaused / SDROC
+    ggplotWAC(DG) + ggtitle(sprintf('transmission: %.2f%%; standard deviations: WIC %.2f ROC %.2f', 
+                                    transmission, SDWIC, SDROC), subtitle=sprintf ('standard deviation of WIC in environment %.2f', SDWICE))
+  })
+  
+  output$plotSR <- renderPlot ({
+    item <- as.integer(input$selSR)
+    if (length(item) < 1) {return('no plot selected')}
+    ProjDir <- input$ProjectPP
+    if (grepl('HIPPO', ProjDir)) {ProjDir <- 'HIPPO'}
+    M <- 1
+    if (grepl('angle', input$plotTypeSR)) {M <- 2}
+    if (grepl('airspeed', input$plotTypeSR)) {
+      M <- 3
+      fn <- sprintf ('%s%s/%s%s.nc', DataDirectory (), ProjDir, input$ProjectPP, SR$Flight[item])
+      VCH <- sort((DataFileInfo(fn))$Variables)
+      selV <- input$varSR
+      updateSelectInput(session, 'varSR', choices=VCH, selected=selV)
+    }
+    VL <- c('TASX', 'EWX', 'PSXC', 'RTX', 'GGALT', 'PITCH', 'ADIFR', 'QCF', 'AKRD', 'WIC', input$varSR)
+    DSR <- getNetCDF (sprintf ('%s%s/%s%s.nc', DataDirectory (), ProjDir, input$ProjectPP, SR$Flight[item]), 
+                      VL, Start=as.integer(SR$Start[item]), End=as.integer(SR$End[item]))
+    if (M == 3) {
+      DSR$dV <- c(0, diff(DSR$TASX))
+      DSR$RT <- ShiftInTime(DSR[, input$varSR], .shift=input$sliderSR)
+      fm <- lm(RT ~ TASX+I(TASX^2)+I(TASX^3), data=DSR)
+      rms <- summary(fm)$sigma
+      g <- ggplot (data=DSR, aes(x=TASX, y=RT)) + ylab(sprintf('shifted %s', input$varSR)) 
+      g <- g + geom_point (data=DSR[DSR$dV > 0, ], colour='forestgreen')
+      g <- g + geom_point (data=DSR[DSR$dV <= 0, ], colour='red') + theme_WAC()
+      g + ggtitle(sprintf('fit rms is %.4f; delay is %d', rms, input$sliderSR))
+    } else if (M == 2) {
+      DSR$dH <- c(0, diff(DSR$GGALT))
+      DSR$AOAREF <- with(DSR, PITCH - dH * 180 / (TASX * pi))
+      DG <- with(DSR, data.frame(Time, AKRD, AOAREF, WIC))
+      fm <- lm(AOAREF ~ (ADIFR / QCF), data=DSR)
+      cf <- coef(fm)
+      rms <- summary(fm)$sigma
+      ggplotWAC(DG)+ggtitle(sprintf('fit coef %.3f %.3f rms %.2f deg.', 
+                                    cf[1], cf[2], rms))
+    } else {
+      Cp <- SpecificHeats (DSR$EWX / DSR$PSXC)[, 1]
+      DSR$X <- DSR$TASX^2 / (2 * Cp)
+      DSR$RT <- ShiftInTime(DSR$RTX, .shift=input$sliderSR)
+      cf <- coef(fm <- lm (RT ~ X, data=DSR))
+      rms <- summary(fm)$sigma
+      RTSEL <- sub('. ', '', attr(DSR$RTX, 'Depend'))
+      xp <- c(min(DSR$X, na.rm=TRUE), max(DSR$X, na.rm=TRUE))
+      yp <- cf[1] + cf[2] * xp
+      d <- data.frame(xp=xp, yp=yp)
+      Xlab <- expression(paste(V^2,'/(2',c[p],')', sep=''))
+      g <- ggplot (data=DSR, aes(x=X, y=RT)) + geom_point(colour='blue') 
+      g <- g + geom_path(data=d, aes(x=xp, y=yp), colour='darkorange', lwd=1.5, lty=2)
+      g <- g + ggtitle(sprintf('RTX is %s; fit coefficients %.3f %.3f rms %.2f; delay %d ms',
+                               RTSEL, cf[1], cf[2], rms, input$sliderSR))
+      g <- g + ylab('Recovery Temperature [K]') + xlab(Xlab) + theme_WAC()
+      g
+    }
   })
   
   output$RS3apng <- renderImage ({

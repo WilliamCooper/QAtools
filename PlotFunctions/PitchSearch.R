@@ -31,6 +31,7 @@ PitchSearch <- function (data) {
     if (is.na(ive[i])) {next}
     r <- ivs[i]:ivn[ive[i]]
     # print (mean (data$GGALT[r], na.rm=TRUE))
+    if (length(r) < 90) {next}
     if(abs(mean(data$dh[r], na.rm=TRUE)) > 5) {next}
     if(mean(data$GGALT[r], na.rm=TRUE) < 1000) {next}
     startTime <- data$Time[r[1]]

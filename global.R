@@ -47,6 +47,39 @@ fr <- function (x, DF) {
   return (ans)
 }
 
+AddT <- function (Time, ATime=0) {
+  S <- Time %% 100 + ((Time %/% 100) %% 100) * 60 + (Time %/% 10000) * 3600
+  S <- S + ATime
+  S <- S %% 60 + 100 * ((S %% 3600) %/% 60) + 10000 * (S %/% 3600) 
+  return (S)
+}
+
+dataDPM <- function(ProjDir, ProjectPP, Flight, VL, START, END) {
+  fname <- sprintf ('%s%s/%s%s.nc', DataDirectory (), ProjDir, ProjectPP, Flight)
+  if (fname != fnameDPM || START != STARTDPM || END != ENDDPM) {
+    DPM <- getNetCDF (fname, VL, Start=START, End=END)
+    ## note: have checked that ROC determined this way matches GGVSPD when present
+    DPM$ROC <- ShiftInTime(c(0, diff(DPM$GGALT)), .shift=-500)
+    DPM <<- DPM
+    fnameDPM <<- fname
+    STARTDPM <<- START
+    ENDDPM <<- END
+  }
+  return (DPM)
+}
+
+dataDYM <- function(ProjDir, ProjectPP, Flight, VL, START, END) {
+  fname <- sprintf ('%s%s/%s%s.nc', DataDirectory (), ProjDir, ProjectPP, Flight)
+  if (fname != fnameDYM || START != STARTDYM || END != ENDDYM) {
+    DYM <- getNetCDF (fname, VL, Start=START, End=END)
+    DYM <<- DYM
+    fnameDYM <<- fname
+    STARTDYM <<- START
+    ENDDYM <<- END
+  }
+  return (DYM)
+}
+
 SeekManvrs <- function (Data) {
   source ("./PlotFunctions/SpeedRunSearch.R")
   source ("./PlotFunctions/CircleSearch.R")
@@ -128,6 +161,16 @@ ProjectSeekManeuvers <- function (inp) {
 
 fnamePPS <- ''
 ProjectPP <- ''
+STARTDPM <- 0
+ENDDPM <- 0
+fnameDPM <- ''
+countPM <- 0
+itemPM <- -1
+STARTDYM <- 0
+ENDDYM <- 0
+fnameDYM <- ''
+countYM <- 0
+itemYM <- -1
 
 n <- 50000
 X1R <- rnorm(n); X2R <- rnorm(n)
@@ -149,6 +192,7 @@ messg <- 'waiting for run'
 progressExists <- FALSE
 
 Project <- 'CSET'
+ProjectM <- 'ARISTO2017'
 ProjectKF <- 'CSET'
 Flight <- 1
 FlightKF <- 1
@@ -480,9 +524,10 @@ testPlot <- function (k) {
 ## exists in the data directory:
 
 PJ <- c('ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
-        'DEEPWAVE', 'CONTRAST', 'SPRITE-II', 'MPEX', 'DC3',
-        'TORERO', 'HIPPO-5', 'HIPPO-4', 'HIPPO-3', 'HIPPO-2',
+        'DEEPWAVE', 'CONTRAST', 'SPRITE-II', 'MPEX', 'DC3', 'HEFT10', 'IDEAS-4',
+        'TORERO', 'HIPPO-5', 'HIPPO-4', 'HIPPO-3', 'HIPPO-2', 'DC3-TEST',
         'HIPPO-1','PREDICT', 'START08', 'PACDEX', 'TREX')
+CHP <- c('recovery factor', 'angle of attack', 'airspeed dependence')
 DataDir <- DataDirectory ()
 for (P in PJ) {
   if (grepl('HIPPO', P)) {
