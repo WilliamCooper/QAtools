@@ -80,6 +80,33 @@ dataDYM <- function(ProjDir, ProjectPP, Flight, VL, START, END) {
   return (DYM)
 }
 
+dataDRH <- function(ProjDir, ProjectPP, Flight, VL, START, END) {
+  fname <- sprintf ('%s%s/%s%s.nc', DataDirectory (), ProjDir, ProjectPP, Flight)
+  if (Trace) {print (sprintf ('in dataDRH, file name to load is %s %d %d', fname, START, END))}
+  if (fname != fnameDRH || START != STARTDRH || END != ENDDRH) {
+    DRH <- getNetCDF (fname, VL, Start=START, End=END)
+    if (Trace) {print (sprintf (' called getNetCDF, nrows in file is %d', nrow(DRH)))}
+    ## add the drifting coordinates to the data.frame, for use in brush4:
+    data.rate <- 1
+    if (DRH$Time[2] - DRH$Time[1] <= 0.04) {data.rate <- 25}
+    if (DRH$Time[2] - DRH$Time[1] <= 0.02) {data.rate <- 50}
+    # DRH <- DRH[.Range, ]
+    with(DRH, {
+      ## try to interpolate for missing values
+      TAS <<- zoo::na.approx (as.vector(TASX), maxgap=1000, na.rm = TRUE)
+      HDG <<- (pi/180) * zoo::na.approx (as.vector(THDG+SSLIP), maxgap=1000, na.rm = TRUE)      
+    })
+    DRH$xa <- 0.001 * cumsum (TAS * sin(HDG)) / data.rate
+    DRH$ya <- 0.001 * cumsum (TAS * cos(HDG)) / data.rate
+
+    DRH <<- DRH
+    fnameDRH <<- fname
+    STARTDRH <<- START
+    ENDDRH <<- END
+  }
+  return (DRH)
+}
+
 SeekManvrs <- function (Data) {
   source ("./PlotFunctions/SpeedRunSearch.R")
   source ("./PlotFunctions/CircleSearch.R")
@@ -169,8 +196,11 @@ itemPM <- -1
 STARTDYM <- 0
 ENDDYM <- 0
 fnameDYM <- ''
-countYM <- 0
+countYM <- 1
 itemYM <- -1
+fnameDRH <- ''
+countRH <- 1
+itemRH <- -1
 
 n <- 50000
 X1R <- rnorm(n); X2R <- rnorm(n)

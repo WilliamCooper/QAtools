@@ -1,0 +1,1679 @@
+%% LyX 2.2.2 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[12pt,english]{report}
+\usepackage{mathptmx}
+\usepackage[LGR,T1]{fontenc}
+\usepackage[letterpaper]{geometry}
+\geometry{verbose,tmargin=3.54cm,bmargin=2.54cm,lmargin=2.54cm,rmargin=2.54cm,headheight=1cm,headsep=2cm,footskip=0.5cm}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\setlength{\parskip}{\medskipamount}
+\setlength{\parindent}{0pt}
+\usepackage{babel}
+\usepackage{verbatim}
+\usepackage{longtable}
+\usepackage{graphicx}
+\usepackage{wasysym}
+\usepackage[unicode=true]
+ {hyperref}
+\usepackage{breakurl}
+
+\makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+\DeclareRobustCommand{\greektext}{%
+  \fontencoding{LGR}\selectfont\def\encodingdefault{LGR}}
+\DeclareRobustCommand{\textgreek}[1]{\leavevmode{\greektext #1}}
+\ProvideTextCommand{\~}{LGR}[1]{\char126#1}
+
+%% Because html converters don't know tabularnewline
+\providecommand{\tabularnewline}{\\}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\input colordvi
+\usepackage{color}
+\fancyhead{}
+\fancyfoot[CE,CO]{}
+\newtoks{\topicofnote} \global\topicofnote={}
+\newdimen\longindent \longindent=3.5truein
+\fancyhead[L]{Aircraft Algorithm Memo re: \the\topicofnote \\ \datetoday \\ Page \thepage \hfill}
+\renewcommand{\headrulewidth}{0.0pt}
+\newenvironment{lyxlist}[1]
+{\begin{list}{}
+{\settowidth{\labelwidth}{#1}
+\setlength{\leftmargin}{\labelwidth}
+\addtolength{\leftmargin}{\labelsep}
+\renewcommand{\makelabel}[1]{##1\hfil}}}
+{\end{list}}
+\newcommand{\datetoday}{\number\day\space
+     \ifcase\month\or January\or February\or March\or April\or May\or
+     June\or July\or August\or September\or October\or November\or
+     December\fi
+     \space\number\year}
+\newcommand{\RAFAlgorithmMemo}{\null \vskip-1.5truein
+{\raggedright \textsf{\textsc{\large \textcolor{blue}{Research Aviation Facility}}}}\par
+{\raggedright \textsf{\textsl{\textcolor{blue}{Algorithm Memorandum:}}}} \par \vskip6pt
+{\color{blue}{\hrule}}\par
+\vskip0.2truein\leftline{\textcolor{blue}{\textsf{Subject: \the\topicofnote}}}
+\leftline{\textcolor{blue}{\textsf{Al Cooper}}}
+\leftline{\textcolor{blue}{\textsf{\datetoday}}} \vskip0.2truein
+\thispagestyle{empty}}
+\newcommand{\attachm}[1]{\begin{lyxlist}{Attachments:00}
+\item [Attachments:] {#1}
+\end{lyxlist}}
+\newcommand{\cc}[1]{\begin{lyxlist}{Attachments:00}
+\item [cc:] {#1}
+\end{lyxlist}}
+\newcommand{\attach}[1]{\begin{lyxlist}{Attachments:00}
+\item [Attachment:] {#1}
+\end{lyxlist}}
+%usage: \encl{A\\B\\C} or \cc{ma,e1\\name2\\name3}
+
+\makeatother
+
+\begin{document}
+\begin{comment}
+set topicofnote to topic of note
+\end{comment}
+
+\topicofnote={Studies of maneuvers}
+
+\RAFAlgorithmMemo
+
+<<preamble, echo=FALSE, include=FALSE>>=
+
+library(knitr)
+opts_chunk$set(echo=FALSE, include=FALSE, fig.lp="fig:")
+# note that fig.pos="center" gave errors, changed to fig.align
+opts_chunk$set(fig.width=6, fig.height=5, fig.align="center", digits=4)
+thisFileName <- "ManeuverStudy"
+require(Ranadu, quietly = TRUE, warn.conflicts=FALSE)
+library(reshape2)    ## used with ggplot facet plots
+library(grid)
+options(stringsAsFactors=FALSE)
+
+setwd ('~/RStudio/QAfunctions/maneuvers')
+Directory <- DataDirectory ()
+
+@
+
+\section*{Background}
+
+Special maneuvers have been used for decades to check the performance
+of the wind-sensing systems on NCAR/RAF research aircraft and to develop
+empirical relationships for such measurements as angle of attack or
+sideslip. The purpose of this note is to consider in more detail what
+information can be gleaned from maneuvers, to review accumulated maneuvers
+from GV projects, and to provide guidelines for the assessment of
+maneuvers. The maneuvers considered here are the following:
+\begin{enumerate}
+\item Speed runs, level flight legs during which the airspeed is varied
+from near minimum to near maximum for the particular flight conditions.
+Steady wind conditions are needed.
+\item Pitch maneuvers, where the pitch is varied in cycles lasting 20\textendash 30~s
+and the aircraft is allowed to climb and descend in response to the
+pitch changes while cycling about approximately the same average altitude.
+Typical changes in the vertical acceleration are about $\pm4$ m/s$^{2}$
+and the approximately sinusoidal vertical motion of the aircraft extends
+over about 6\textendash 10 cycles. This maneuver is best if flown
+where there is little vertical wind.
+\item Yaw maneuvers, where the sideslip of the aircraft is varied using
+rudder action in uncoordinated turns (i.e., without compensating roll)
+in a manner similar to the pitch maneuver, but usually resulting in
+a more rapid motion. Steady wind conditions are helpful.
+\item Reverse-heading maneuvers, during which the aircraft is flown along
+a level flight segment for a few minutes and then flown in the reverse
+direction along approximately the same flight trajectory (as it has
+drifted with the wind). These are usually best flown along the wind,
+and they should not be reverse-track maneuvers but instead should
+be flown in a Lagrangian frame drifting with the wind. Steady wind
+conditions are needed.
+\item Circle maneuvers, where the aircraft is flown with constant bank in
+either a right or left turn for at least a complete circle. The circle
+should drift with the wind, and it is best to include both right-
+and left-turn circles, two of each if possible. Steady wind conditions
+are needed.
+\end{enumerate}
+
+\section*{The Data Used}
+
+For this study, a set of maneuvers from recent GV projects was compiled
+using the ``SpeedRunSearch()'' and related functions in the directory
+``PlotFunctions'' under the QAfunctions project of RStudio. The
+candidate maneuvers obtained in that way are shown in the following
+tables:
+
+\pagebreak{}
+\begin{center}
+\begin{longtable}{|l|l|l|l|l|l||l|}
+\caption{Speed Runs (``OK'' means both increasing and decreasing speed)}
+\tabularnewline
+\hline 
+\textbf{Project} & \textbf{Flight} & \textbf{start} & \textbf{end} & \textbf{min. speed} & \textbf{max. speed} & OK?\tabularnewline
+\hline 
+\hline 
+ARISTO2017 & rf02 & 210228 & 210736 & 115.925201 & 195.620483 & $\checked$\tabularnewline
+\hline 
+ARISTO2017 & rf03 & 215143 & 215743 & 119.206978 & 216.206421 & $\checked$\tabularnewline
+\hline 
+ARISTO2017 & rf04 & 163732 & 164448 & 162.544159 & 240.523972 & $\checked$\tabularnewline
+\hline 
+CONTRAST & rf08 & 82842 & 83744 & 129.552521 & 217.060043 & $\checked$\tabularnewline
+\hline 
+CONTRAST & rf08 & 91651 & 92702 & 162.679657 & 253.086105 & $\checked$\tabularnewline
+\hline 
+CONTRAST & rf10 & 53026 & 53216 & 132.8367 & 182.974319 & \tabularnewline
+\hline 
+CONTRAST & rf11 & 42258 & 42500 & 169.851395 & 211.215973 & \tabularnewline
+\hline 
+CONTRAST & rf12 & 51841 & 52030 & 140.325745 & 181.046143 & \tabularnewline
+\hline 
+DC3 & rf04 & 203026 & 203313 & 138.026657 & 195.513184 & \tabularnewline
+\hline 
+DC3 & rf06 & 205419 & 205630 & 143.211624 & 183.353256 & \tabularnewline
+\hline 
+DC3 & rf09 & 241042 & 242105 & 185.944931 & 257.437469 & $\checked$\tabularnewline
+\hline 
+DC3 & rf11 & 192811 & 193034 & 170.311951 & 211.615173 & \tabularnewline
+\hline 
+DC3 & rf15 & 225820 & 230218 & 167.541595 & 208.072021 & $\checked$\tabularnewline
+\hline 
+DC3 & rf17 & 210522 & 210939 & 137.807449 & 186.525681 & \tabularnewline
+\hline 
+DC3 & rf18 & 215916 & 220103 & 164.393021 & 204.433533 & \tabularnewline
+\hline 
+DC3 & rf22 & 174858 & 175523 & 131.014908 & 215.969238 & $\checked$\tabularnewline
+\hline 
+DEEPWAVE & rf06 & 85253 & 85531 & 179.327637 & 229.627899 & \tabularnewline
+\hline 
+DEEPWAVE & rf10 & 110226 & 110458 & 173.318115 & 236.507446 & \tabularnewline
+\hline 
+DEEPWAVE & rf15 & 32048 & 32924 & 109.648895 & 201.115402 & $\checked$\tabularnewline
+\hline 
+DEEPWAVE & rf15 & 41449 & 42329 & 128.218796 & 220.558334 & $\checked$\tabularnewline
+\hline 
+DEEPWAVE & rf15 & 50045 & 51058 & 157.438492 & 244.182617 & $\checked$\tabularnewline
+\hline 
+DEEPWAVE & rf20 & 40250 & 40507 & 164.93 & 205.159531 & \tabularnewline
+\hline 
+HCRTEST & rf03 & 203154 & 204142 & 126.6026 & 203.430801 & $\checked$\tabularnewline
+\hline 
+HIPPO-4 & rf12 & 201320 & 201546 & 172.356262 & 230.23259 & \tabularnewline
+\hline 
+HIPPO-5 & rf01 & 190030 & 191422 & 201.780975 & 253.235657 & $\checked$\tabularnewline
+\hline 
+HIPPO-5 & rf02 & 163045 & 163307 & 147.010849 & 196.415741 & \tabularnewline
+\hline 
+ORCAS & rf18 & 201203 & 201411 & 183.183914 & 239.940247 & \tabularnewline
+\hline 
+TORERO & rf07 & 180205 & 180428 & 200.527466 & 245.433533 & \tabularnewline
+\hline 
+TORERO & rf07 & 185330 & 185509 & 177.34462 & 219.265732 & \tabularnewline
+\hline 
+TORERO & rf08 & 220110 & 220316 & 126.769753 & 186.632217 & \tabularnewline
+\hline 
+TORERO & rf09 & 170520 & 170745 & 177.694855 & 223.396317 & \tabularnewline
+\hline 
+TORERO & rf09 & 211821 & 212051 & 139.427139 & 194.041931 & \tabularnewline
+\hline 
+TORERO & rf11 & 211854 & 212051 & 141.586044 & 191.477463 & \tabularnewline
+\hline 
+TORERO & rf16 & 142318 & 142506 & 164.032394 & 208.535202 & \tabularnewline
+\hline 
+\end{longtable}
+\par\end{center}
+
+\pagebreak{}
+\begin{center}
+\begin{longtable}{|l|l|l|l|}
+\caption{Pitch Maneuvers}
+\tabularnewline
+\hline 
+\textbf{Project} & \textbf{flight} & \textbf{start} & \textbf{end}\tabularnewline
+\hline 
+\hline 
+ARISTO2017 & rf03 & 205729 & 210124\tabularnewline
+\hline 
+ARISTO2017 & rf03 & 224507 & 224858\tabularnewline
+\hline 
+DC3 & rf01 & 190943 & 191438\tabularnewline
+\hline 
+DC3 & rf02 & 210910 & 211305\tabularnewline
+\hline 
+DC3 & rf04 & 201633 & 202008\tabularnewline
+\hline 
+DEEPWAVE & rf20 & 33150 & 33536\tabularnewline
+\hline 
+HCRTEST & rf01 & 181028 & 181642\tabularnewline
+\hline 
+HCRTEST & rf03 & 210827 & 211416\tabularnewline
+\hline 
+HCRTEST & rf04 & 183955 & 184344\tabularnewline
+\hline 
+PREDICT & rf02 & 152215 & 152707\tabularnewline
+\hline 
+TORERO & rf01 & 135449 & 135831\tabularnewline
+\hline 
+TORERO & rf09 & 221648 & 222043\tabularnewline
+\hline 
+TORERO & rf10 & 212805 & 213202\tabularnewline
+\hline 
+TORERO & rf10 & 215340 & 215733\tabularnewline
+\hline 
+TORERO & rf11 & 203844 & 204312\tabularnewline
+\hline 
+TORERO & rf12 & 153700 & 154056\tabularnewline
+\hline 
+TORERO & rf12 & 160011 & 160514\tabularnewline
+\hline 
+TORERO & rf14 & 143414 & 143821\tabularnewline
+\hline 
+\end{longtable}
+\par\end{center}
+
+\pagebreak{}
+\begin{center}
+\begin{longtable}{|l|l|l|l|}
+\caption{Yaw Maneuvers}
+\tabularnewline
+\hline 
+\textbf{Project} & \textbf{Flight} & \textbf{start} & \textbf{end}\tabularnewline
+\hline 
+\hline 
+ARISTO2017 & rf03 & 214732 & 215000\tabularnewline
+\hline 
+ARISTO2017 & rf03 & 222644 & 223004\tabularnewline
+\hline 
+CONTRAST & rf08 & 72058 & 72407\tabularnewline
+\hline 
+CONTRAST & rf08 & 72428 & 72652\tabularnewline
+\hline 
+CONTRAST & rf08 & 72809 & 72925\tabularnewline
+\hline 
+CONTRAST & rf08 & 81356 & 83346\tabularnewline
+\hline 
+CONTRAST & rf08 & 83725 & 83921\tabularnewline
+\hline 
+CONTRAST & rf08 & 84520 & 84630\tabularnewline
+\hline 
+DEEPWAVE & rf11 & 102557 & 102800\tabularnewline
+\hline 
+DEEPWAVE & rf15 & 33153 & 33359\tabularnewline
+\hline 
+DEEPWAVE & rf15 & 43028 & 43205\tabularnewline
+\hline 
+DEEPWAVE & rf23 & 63540 & 63853\tabularnewline
+\hline 
+HCRTEST & rf04 & 193735 & 193920\tabularnewline
+\hline 
+HIPPO-4 & rf12 & 3311 & 3428\tabularnewline
+\hline 
+HIPPO-4 & rf12 & 3451 & 3938\tabularnewline
+\hline 
+HIPPO-4 & tf02 & 183145 & 183324\tabularnewline
+\hline 
+HIPPO-5 & rf09 & 41130 & 41623\tabularnewline
+\hline 
+HIPPO-5 & rf09 & 41855 & 42116\tabularnewline
+\hline 
+MPEX & rf10 & 154218 & 154552\tabularnewline
+\hline 
+PREDICT & rf16 & 153339 & 193907\tabularnewline
+\hline 
+PREDICT & rf16 & 201741 & 202520\tabularnewline
+\hline 
+PREDICT & rf18 & 121700 & 121929\tabularnewline
+\hline 
+PREDICT & rf19 & 151452 & 151734\tabularnewline
+\hline 
+PREDICT & rf19 & 173507 & 173733\tabularnewline
+\hline 
+PREDICT & rf22 & 162615 & 162905\tabularnewline
+\hline 
+PREDICT & rf22 & 170907 & 171103\tabularnewline
+\hline 
+PREDICT & rf23 & 150313 & 150527\tabularnewline
+\hline 
+PREDICT & rf24 & 125039 & 125252\tabularnewline
+\hline 
+PREDICT & rf24 & 125716 & 125915\tabularnewline
+\hline 
+PREDICT & rf24 & 141428 & 141717\tabularnewline
+\hline 
+PREDICT & rf24 & 152709 & 153104\tabularnewline
+\hline 
+PREDICT & rf25 & 135313 & 135428\tabularnewline
+\hline 
+PREDICT & rf25 & 140344 & 140606\tabularnewline
+\hline 
+PREDICT & rf25 & 155744 & 160059\tabularnewline
+\hline 
+PREDICT & rf25 & 171825 & 172058\tabularnewline
+\hline 
+\end{longtable}
+\par\end{center}
+
+\pagebreak{}
+
+\begin{longtable}{|l|l|l|l|l|l|}
+\caption{Reverse-Heading Maneuvers}
+\tabularnewline
+\hline 
+\textbf{Project} & \textbf{Flight} & \textbf{start leg 1} & \textbf{end leg 1} & \textbf{start leg 2} & \textbf{end leg 2}\tabularnewline
+\hline 
+\endhead
+\hline 
+ARISTO2017 & rf01 & 220902 & 221948 & 222141 & 223137\tabularnewline
+\hline 
+ARISTO2017 & rf01 & 223256 & 223932 & 224326 & 225040\tabularnewline
+\hline 
+ARISTO2017 & rf01 & 225145 & 225839 & 230225 & 230914\tabularnewline
+\hline 
+ARISTO2017 & rf01 & 230225 & 230914 & 231114 & 231323\tabularnewline
+\hline 
+CONTRAST & rf09 & 25232 & 25842 & 30025 & 31742\tabularnewline
+\hline 
+CONTRAST & rf09 & 43729 & 44034 & 44325 & 44856\tabularnewline
+\hline 
+CONTRAST & rf12 & 11109 & 22035 & 22304 & 32254\tabularnewline
+\hline 
+CONTRAST & rf13 & 192358 & 195249 & 195659 & 202717\tabularnewline
+\hline 
+DC3 & rf03 & 210542 & 210750 & 211002 & 211513\tabularnewline
+\hline 
+DC3 & rf04 & 13311 & 13946 & 14325 & 14526\tabularnewline
+\hline 
+DC3 & rf07 & 194129 & 194541 & 194920 & 195511\tabularnewline
+\hline 
+DC3 & rf08 & 221244 & 221935 & 222106 & 222550\tabularnewline
+\hline 
+DC3 & rf08 & 222106 & 222550 & 222731 & 223345\tabularnewline
+\hline 
+DC3 & rf08 & 222731 & 223345 & 223527 & 223953\tabularnewline
+\hline 
+DC3 & rf09 & 211007 & 212009 & 212418 & 213509\tabularnewline
+\hline 
+DC3 & rf09 & 232907 & 233832 & 234133 & 234703\tabularnewline
+\hline 
+DC3 & rf10 & 212029 & 212836 & 213157 & 213543\tabularnewline
+\hline 
+DC3 & rf11 & 223252 & 223506 & 223805 & 224017\tabularnewline
+\hline 
+DC3 & rf12 & 191601 & 193614 & 193816 & 195452\tabularnewline
+\hline 
+DC3 & rf12 & 200842 & 202411 & 202615 & 203047\tabularnewline
+\hline 
+DC3 & rf13 & 192527 & 193543 & 193744 & 194856\tabularnewline
+\hline 
+DC3 & rf13 & 203307 & 203603 & 203850 & 205523\tabularnewline
+\hline 
+DC3 & rf13 & 234228 & 235226 & 235706 & 240818\tabularnewline
+\hline 
+DC3 & rf16 & 163831 & 170559 & 170826 & 180057\tabularnewline
+\hline 
+DC3 & rf16 & 170826 & 180057 & 180406 & 181644\tabularnewline
+\hline 
+DC3 & rf16 & 194000 & 202240 & 202450 & 210718\tabularnewline
+\hline 
+DC3 & rf17 & 225457 & 225811 & 230033 & 230311\tabularnewline
+\hline 
+DC3 & rf20 & 211458 & 211759 & 212005 & 212455\tabularnewline
+\hline 
+DC3 & rf20 & 225445 & 230425 & 230717 & 231809\tabularnewline
+\hline 
+DC3 & rf21 & 225342 & 225614 & 225830 & 230150\tabularnewline
+\hline 
+DC3 & rf22 & 155732 & 160445 & 160706 & 161530\tabularnewline
+\hline 
+DC3 & rf22 & 172658 & 173004 & 173455 & 173801\tabularnewline
+\hline 
+DC3 & rf22 & 173455 & 173801 & 174258 & 174559\tabularnewline
+\hline 
+DC3 & rf22 & 174258 & 174559 & 175024 & 175444\tabularnewline
+\hline 
+\newpage
+\hline 
+DEEPWAVE & rf02 & 114827 & 123139 & 123422 & 132137\tabularnewline
+\hline 
+DEEPWAVE & rf05 & 94340 & 101421 & 101904 & 105124\tabularnewline
+\hline 
+DEEPWAVE & rf07 & 61933 & 65453 & 65708 & 83040\tabularnewline
+\hline 
+DEEPWAVE & rf07 & 102429 & 113751 & 114229 & 130801\tabularnewline
+\hline 
+DEEPWAVE & rf08 & 93340 & 100630 & 101206 & 103941\tabularnewline
+\hline 
+DEEPWAVE & rf13 & 115504 & 121651 & 121855 & 125752\tabularnewline
+\hline 
+DEEPWAVE & rf19 & 75753 & 84413 & 84912 & 93704\tabularnewline
+\hline 
+DEEPWAVE & rf20 & 34640 & 35335 & 35722 & 35946\tabularnewline
+\hline 
+DEEPWAVE & rf24 & 90302 & 95602 & 95826 & 104058\tabularnewline
+\hline 
+DEEPWAVE & rf26 & 90855 & 100450 & 100925 & 102043\tabularnewline
+\hline 
+DEEPWAVE & rf26 & 103056 & 104840 & 105207 & 114036\tabularnewline
+\hline 
+DEEPWAVE & rf26 & 105207 & 114036 & 114512 & 122403\tabularnewline
+\hline 
+DEEPWAVE & rf26 & 114512 & 122403 & 122724 & 131608\tabularnewline
+\hline 
+DEEPWAVE & rf26 & 122724 & 131608 & 132043 & 135902\tabularnewline
+\hline 
+HCRTEST & rf01 & 183928 & 184457 & 184928 & 185410\tabularnewline
+\hline 
+HCRTEST & rf01 & 185523 & 190022 & 190452 & 190950\tabularnewline
+\hline 
+HCRTEST & rf01 & 191102 & 191801 & 192232 & 192728\tabularnewline
+\hline 
+HCRTEST & rf01 & 192840 & 193349 & 193817 & 194313\tabularnewline
+\hline 
+HCRTEST & rf02 & 190350 & 191642 & 191852 & 192459\tabularnewline
+\hline 
+HCRTEST & rf02 & 191852 & 192459 & 192916 & 193416\tabularnewline
+\hline 
+HCRTEST & rf02 & 193526 & 194020 & 194437 & 194930\tabularnewline
+\hline 
+HCRTEST & rf02 & 195039 & 195534 & 195943 & 200446\tabularnewline
+\hline 
+HCRTEST & rf02 & 200556 & 201052 & 201501 & 202130\tabularnewline
+\hline 
+HCRTEST & rf02 & 203503 & 204249 & 204436 & 204742\tabularnewline
+\hline 
+HCRTEST & rf03 & 193527 & 194016 & 194448 & 194921\tabularnewline
+\hline 
+HCRTEST & rf03 & 195351 & 195557 & 200020 & 200336\tabularnewline
+\hline 
+HCRTEST & rf03 & 203204 & 204044 & 204303 & 204536\tabularnewline
+\hline 
+\newpage
+\hline 
+MPEX & rf03 & 104129 & 111541 & 111920 & 112221\tabularnewline
+\hline 
+MPEX & rf03 & 111920 & 112221 & 112707 & 113711\tabularnewline
+\hline 
+MPEX & rf03 & 125339 & 125813 & 130029 & 131051\tabularnewline
+\hline 
+MPEX & rf04 & 104738 & 115613 & 115756 & 123231\tabularnewline
+\hline 
+MPEX & rf05 & 95728 & 103209 & 103410 & 120311\tabularnewline
+\hline 
+MPEX & rf06 & 134033 & 135206 & 135421 & 135950\tabularnewline
+\hline 
+MPEX & rf07 & 110619 & 111849 & 112100 & 120232\tabularnewline
+\hline 
+MPEX & rf07 & 135811 & 140041 & 140352 & 142250\tabularnewline
+\hline 
+MPEX & rf08 & 141913 & 142704 & 142921 & 143816\tabularnewline
+\hline 
+MPEX & rf11 & 122045 & 122321 & 122611 & 124436\tabularnewline
+\hline 
+MPEX & rf12 & 92117 & 92337 & 92630 & 93327\tabularnewline
+\hline 
+MPEX & rf15 & 103445 & 105046 & 105303 & 110341\tabularnewline
+\hline 
+MPEX & rf15 & 125142 & 131841 & 132101 & 133022\tabularnewline
+\hline 
+MPEX & rf15 & 133222 & 141957 & 142200 & 144240\tabularnewline
+\hline 
+ORCAS & rf06 & 182816 & 183727 & 184149 & 184905\tabularnewline
+\hline 
+ORCAS & rf06 & 184149 & 184905 & 185318 & 190023\tabularnewline
+\hline 
+ORCAS & rf06 & 185318 & 190023 & 190442 & 192114\tabularnewline
+\hline 
+ORCAS & rf07 & 190225 & 191040 & 191512 & 192248\tabularnewline
+\hline 
+ORCAS & rf07 & 191512 & 192248 & 192731 & 193544\tabularnewline
+\hline 
+ORCAS & tf01 & 224148 & 224722 & 225008 & 225613\tabularnewline
+\hline 
+TORERO & rf10 & 190424 & 191836 & 192333 & 192821\tabularnewline
+\hline 
+TORERO & rf12 & 211811 & 212239 & 212440 & 212956\tabularnewline
+\hline 
+TORERO & rf13 & 180557 & 181044 & 181325 & 181817\tabularnewline
+\hline 
+TORERO & rf16 & 200046 & 200607 & 201009 & 201542\tabularnewline
+\hline 
+TORERO & rf16 & 201552 & 203238 & 203630 & 204850\tabularnewline
+\hline 
+TORERO & rf17 & 160310 & 161629 & 161700 & 161909\tabularnewline
+\hline 
+\end{longtable}
+
+\pagebreak{}
+
+\begin{longtable}{|l|l|l|l|l|l|}
+\caption{Circle Maneuvers}
+\tabularnewline
+\hline 
+\textbf{Project} & \textbf{Flight} &  & \textbf{start} & \textbf{end} & \textbf{degrees}\tabularnewline
+\hline 
+\hline 
+ARISTO2017 & rf01 & circle & 220505 & 220824 & 350\tabularnewline
+\hline 
+ARISTO2017 & rf03 & circle & 215922 & 220255 & 352\tabularnewline
+\hline 
+ARISTO2017 & rf03 & circle & 220317 & 220642 & 352\tabularnewline
+\hline 
+ARISTO2017 & rf04 & circle & 212327 & 213049 & 561\tabularnewline
+\hline 
+ARISTO2017 & rf04 & circle & 214056 & 214751 & 543\tabularnewline
+\hline 
+CONTRAST & rf05 & circle & 51025 & 51404 & 342\tabularnewline
+\hline 
+DC3 & rf02 & circle & 243308 & 244008 & 696\tabularnewline
+\hline 
+DEEPWAVE & rf02 & circle & 114058 & 114837 & 563\tabularnewline
+\hline 
+DEEPWAVE & rf04 & circle & 140710 & 142010 & 568\tabularnewline
+\hline 
+DEEPWAVE & rf15 & circle & 33938 & 34607 & 712\tabularnewline
+\hline 
+DEEPWAVE & rf15 & circle & 34717 & 35347 & 712\tabularnewline
+\hline 
+DEEPWAVE & rf15 & circle & 43627 & 44336 & 713\tabularnewline
+\hline 
+DEEPWAVE & rf15 & circle & 44442 & 45153 & 713\tabularnewline
+\hline 
+DEEPWAVE & rf15 & circle & 53255 & 54139 & 713\tabularnewline
+\hline 
+DEEPWAVE & rf15 & circle & 54242 & 55122 & 714\tabularnewline
+\hline 
+HCRTEST & rf01 & circle & 195415 & 195819 & 354\tabularnewline
+\hline 
+HCRTEST & rf01 & circle & 195836 & 200242 & 353\tabularnewline
+\hline 
+HCRTEST & rf01 & circle & 200259 & 200702 & 352\tabularnewline
+\hline 
+HCRTEST & rf01 & circle & 200720 & 201126 & 353\tabularnewline
+\hline 
+HCRTEST & rf01 & circle & 201143 & 201546 & 352\tabularnewline
+\hline 
+HCRTEST & rf02 & circle & 202704 & 203011 & 352\tabularnewline
+\hline 
+HCRTEST & rf02 & circle & 203029 & 203331 & 351\tabularnewline
+\hline 
+HCRTEST & rf03 & circle & 200649 & 201106 & 354\tabularnewline
+\hline 
+HCRTEST & rf03 & circle & 201118 & 201532 & 352\tabularnewline
+\hline 
+MPEX & rf12 & circle & 124103 & 124547 & 351\tabularnewline
+\hline 
+ORCAS & rf14 & circle & 173542 & 173846 & 371\tabularnewline
+\hline 
+ORCAS & tf01 & circle & 223449 & 223816 & 352\tabularnewline
+\hline 
+ORCAS & tf01 & circle & 223829 & 224155 & 356\tabularnewline
+\hline 
+ORCAS & tf02 & circle & 205350 & 205940 & 600\tabularnewline
+\hline 
+ORCAS & tf02 & circle & 210108 & 210656 & 722\tabularnewline
+\hline 
+TORERO & rf07 & circle & 194358 & 194646 & 364\tabularnewline
+\hline 
+\end{longtable}
+
+\section*{Studies of the Maneuvers}
+
+\subsection*{The speed run}
+
+The many uses of the speed run will be discussed in more detail in
+the remainder of this section, but this is a list that summarizes
+the main benefits of this maneuver:
+\begin{enumerate}
+\item A level speed run flown in the absence of vertical wind can be used
+to develop empirical expressions for the angle of attack.
+\item If the temperature is constant or is corrected for horizontal variations
+along the track, the speed run can be used to determine or check the
+recovery factor of a temperature probe. For this use, it is preferable
+to fly the speed run along the direction of the wind, which will usually
+be parallel to isobars and therefore less likely to encounter temperature
+variations.
+\item The lag present in temperature sensors can be determined from the
+difference between recovery temperature measured while accelerating
+vs.~that measured while decelerating.
+\item Consistency of the longitudinal component of the horizontal wind during
+the speed run is a check on the validity of the measurement of dynamic
+pressure.
+\item Change in d-value along the track should be linear; if the d-value
+depends on airspeed also, this indicates a potential error in the
+static defect that is used to correct the measured ambient pressure.
+\item Similar systematic variation in dew point with airspeed may indicate
+an error in the measured (or assumed) cavity pressure for the dew
+point hygrometers or, in the case of the VCSEL hygrometer, an error
+in the measurement of density in the sensitive aperture of the instrument.
+Similar checks are useful for trace-gas measurements. Spurious dependence
+on airspeed in any measurement can be an indicator of some problem
+needing further investigation.
+\end{enumerate}
+The speed run will therefore be discussed in considerable detail in
+the remainder of this subsection.
+
+\subsubsection{Empirical representation of the angle of attack}
+
+This use of speed runs has been discussed in detail in the NCAR Technical
+Note on \href{http://n2t.net/ark:/85065/d7qr4zqr}{\textquotedblleft Characterization of Uncertainty in Measurements of Wind from the NSF/NCAR Gulfstream V Research Aircraft\textquotedblright};
+see Sect.~5.1 of that document. Figure 19 from that document is repeated
+here:
+\begin{center}
+\begin{figure}
+\begin{centering}
+\includegraphics[width=0.75\textwidth]{AOAfit}
+\par\end{centering}
+\caption{Measurements from four speed runs from the DEEPWAVE project and the
+empirical fit to the measurements. The ``Reference AOA'' is developed
+in the Technical Note referenced above.}
+\end{figure}
+\par\end{center}
+
+Real fluctuations in the vertical wind lead to scatter in this plot,
+so small scatter indicates suitably small vertical wind. In the case
+of this plot, the standard deviation in the residuals from the fit
+was 0.12$^{\circ}$ and the uncertainty in the slope was about 0.3\%,
+so this is a very good fit and one that can serve as a target for
+good conditions for a speed run. Because the resulting angle of attack
+is multiplied by the (typically about 200 m/s) airspeed to determine
+the vertical wind, this uncertainty in slope contributes only about
+1\% to the uncertainty in the magnitude of the vertical wind.
+
+Plots similar to this are generated by the QA / QC web application,
+so the speed runs from research flights of the GV can be viewed there.
+
+\subsubsection*{The recovery factor of temperature sensors}
+
+The relationship between the actual ambient temperature ($T_{a}$)
+and that measured by a sensor exposed to the airstream ($T_{r}$)
+is discussed in the informal \href{https://drive.google.com/open?id=0B1kIUH45ca5Ab2Z6cld1M1cydjA}{Technical Note on Processing Algorithms};
+see Eq.~20 on p.~36, which can be rearranged to this form:
+
+\begin{equation}
+T_{r}-T_{a}=\alpha_{r}\frac{V^{2}}{2c_{p}^{\prime}}\label{eq:recovery-factor}
+\end{equation}
+where $\alpha_{r}$ is the ``recovery factor'' of the sensor (often
+near unity), $V$ is the airspeed and $c_{p}^{\prime}$ is the specific
+heat of air at constant pressure. The prime indicates that this is
+the true valie for humid air, not the dry-air value, and this difference
+is sometimes important.
+
+The measured temperature $T_{r}$ is called the ``recovery temperature''
+and, for $\alpha_{r}=1,$ would equal the ``total temperature''
+expected if the air in contact with the sensor were brought completely
+to rest. Both $T_{a}$ and $T_{r}$ must be expressed in units of
+an absolute temperature scale like kelvin.
+
+The ambient temperature $T_{a}$ is not known, but it and $\alpha_{r}$
+can be determined by plotting and fitting this relationship to the
+data:
+
+\begin{equation}
+T_{r}\sim c_{0}+c_{1}\frac{V^{2}}{2c_{p}^{\prime}}\label{eq:recftr-fit}
+\end{equation}
+where $c_{0}$ will be the ambient temperature and $c_{1}=\alpha_{r}$.
+Because $c_{p}^{\prime}$ is known, the fit coefficients $c_{0}$
+and $c_{1}$ will determine the recovery factor as well as the ambient
+temperature.
+
+<<recovery-factor, include=TRUE, fig.cap='Fitting a linear line to the expected dependence of the measured recovery temperature on airspeed (V). $c_p$ is the specific heat of moist air at constant pressure.'>>=
+
+Flight <- 15 			
+Project = "DEEPWAVE"     		
+ProjectDir <- "DEEPWAVE"
+fname = sprintf("%s%s/%srf%02d.nc", Directory, ProjectDir, Project, Flight)
+VarList <- standardVariables (c('RTHR1', 'ATHR1', 'QCFC', 'PSFC'))
+Data <- getNetCDF (fname, VarList) #, Start=41449, End=42329)
+Cp <- SpecificHeats (Data$EWX / Data$PSXC)[, 1]
+Data$X <- Data$TASX^2 / (2 * Cp)
+# Data$RTHR1 <- ShiftInTime (Data$RTHR1, .shift=-2300)
+r <- setRange(Data, 41449, 42329)
+cf <- coef(lm (RTHR1 ~ X, data=Data[r,]))
+xp <- c(7,25)
+yp <- cf[1] + cf[2] * xp
+d <- data.frame(xp=xp, yp=yp)
+Xlab <- expression(paste(V^2,'/(2',c[p],')', sep=''))
+g <- ggplot (data=Data[r, ], aes(x=X, y=RTHR1)) + geom_point(colour='blue') 
+g <- g + geom_path(data=d, aes(x=xp, y=yp), colour='darkorange', lwd=1.5, lty=2) 
+g + ylab('Recovery Temperature [K]') + xlab(Xlab) + theme_WAC()
+
+@
+
+An extensive analysis of 84 speed runs has been used to determine
+appropriate recovery factors for the HARCO and Rosemount (heated)
+sensors, as documented in \href{https://drive.google.com/open?id=0B1kIUH45ca5AOWlIbGxVcC13SHM}{this memo}.
+An example will be shown here also.
+
+There are some subtle considerations that complicate this analysis:
+\begin{enumerate}
+\item The calculation of the airspeed $V$ depends on the air temperature.
+The document on Processing Algorithms discusses the method by which
+airspeed and temperature are obtained by solving simultaneous equations
+for both. If the recovery factor is changed, the airspeed measurement
+will also change, so it is not correct to determine a new recovery
+factor in this way and then use that without consideration of how
+the change affects the airspeed measurement.
+\item Because the temperature along the flight path is assumed to remain
+constant, any variation in the temperature will affect the analysis.
+A linear gradient in temperature can be detected and compensation
+can be introduced, but it is more difficult to correct for systematic
+altitude changes such as might occur if the measured pressure varies
+with airspeed. The avionics package on the aircraft maintains flight
+on a constant pressure surface, but if there is a static-defect error
+in the ambient pressure it uses then the aircraft may climb and descend
+systematically with variations in airspeed, and this would mask a
+recovery-factor effect. A correction for this effect is developed
+below.
+\item The dynamic response of temperature sensors is often a first-order
+exponential response characterized by a single time constant $\tau$.
+The lag in measured temperature affects the analysis of the speed
+run, and for that reason it is important for this use that the speed
+run include both accelerating and decelerating segments. Averaging
+the two legs is helpful, but a better correction is to compensate
+for the lag by using the ramp response of a first-order sensor because
+in that case the measurements can simply be shifted forward by the
+response time to obtain measurements that are corrected for the time
+lag in sensor response. Because dynamic-heating effects can be 25$^{\circ}$C
+or more, it is important to compensate for the time lag.
+\end{enumerate}
+The second consideration will now be explored further. A valuable
+measurement for this purpose is the D-value measurement, defined as
+the difference between geopotential altitude and pressure altitude.
+Along the path of the speed run, which is flown nominally at constant
+pressure altitude, the D-value will change as a result of two gradients:
+\begin{itemize}
+\item The aircraft may fluctuate above or below the desired flight path,
+leading to change in the D-value because the temperature is in general
+not identical to that of the standard atmosphere. Approximately, the
+change is \\
+\begin{equation}
+\frac{\Delta D_{1}}{\Delta t}=-\frac{R_{a}}{g}(T_{a}-T_{s}(p))\frac{\Delta ln(p)}{\Delta t}\label{eq:dvalue1}
+\end{equation}
+\item There may be a true horizontal pressure gradient causing the D-value
+to change as the geopotential altitude changes during flight along
+a constant pressure surface. If the horizontal pressure gradient is
+$G=dp/ds$ where $s$ is distance along the flight path, the D-value
+changes at the rate \\
+\begin{equation}
+\frac{\Delta D_{2}}{\Delta t}=-\frac{R_{a}T_{a}}{gp}G\thinspace V\label{eq:dvalue2}
+\end{equation}
+which can be solved to find the pressure gradient $G.$\\
+\end{itemize}
+Both effects contribute to the net change in D-value. Because the
+target is to fly on a constant pressure surface, (\ref{eq:dvalue1})
+can be used to compensate for any departures from that pressure surface
+to obtain values expected for perfect maintenance of the pressure
+altitude. Then, the measured gradient in D-value after that compensation
+can be used with (\ref{eq:dvalue2}) to find the true pressure gradient
+G along the flight track. The usefulness of this determination is
+to check for possible airspeed dependence of the measurement of ambient
+pressure. It will not be surprising to find a pressure gradient along
+the flight track, and an associated temperature gradient may be present
+as well. However, if the D-value shows a dependence on airspeed, this
+may arise because the flight track does not follow a true constant-pressure
+surface but perhaps moves above the correct surface because the correction
+for static defect has an airspeed-dependent error. In that case the
+temperature will also have an apparent airspeed dependence, confounding
+efforts to find the recovery factor from (\ref{eq:recovery-factor}).
+Therefore it is important to consider the D-value variation along
+the flight track to determine if it is linear as expected or shows
+an airspeed dependence.
+
+\subsubsection{Determining the response time of a sensor}
+
+Some of the speed runs included in this data compilation are one-way,
+either only increasing or only decreasing in airspeed. Those are not
+useful for the study of the sensor response time, but the two-way
+speed runs with both increasing and decreasing measurements at each
+airspeed provide an excellent way to estimate the time constant of
+a first-order sensor that is characterized by the following differential
+equation:
+
+\begin{equation}
+\frac{dT}{dt}=-\frac{T-T^{*}}{\tau}\label{eq:first-order-tau}
+\end{equation}
+
+where $T$ is the measured output from the sensor, $T^{*}$ the actual
+measurand (i.e., the recovery temperature), \textgreek{t} the characteristic
+time constant, and$t$ the time. For $T^{*}=bt$ (i.e., increasing
+linearly with time at the rate $b$), the steady-state solution is
+for the measurement to lag behind the measurand by $b\tau=T^{*}(t)-T(t),$so
+that the sensor reports what would have been the measurement a time
+$\tau$ earlier. More information on the dynamic response of sensors
+is included in the background tab of the application. By plotting
+the measurement as a function of time, it is straightforward to determine
+the time constant from the speed-run maneuver, as shown below:
+
+<<speed-run, include=TRUE, fig.cap=' '>>=
+
+dg <- Data[r,]
+g <- ggplot(data=dg)
+g <- g + geom_point (aes(x=TASX, y=RTHR1), colour='blue')
+g <- g + xlab('airspeed [m/s]') + ylab('recovery temperature') + theme_WAC() 
+print(g)
+
+@
+
+\subsection*{The pitch maneuver}
+
+In the pitch maneuver, the pitch is varied in cycles lasting 20\textendash 30~s
+and the aircraft is allowed to climb and descend in response to the
+pitch changes while cycling above and below approximately the same
+average altitude. Typical changes in the vertical acceleration are
+about $\pm4$ m/s$^{2}$ and the approximately sinusoidal vertical
+motion of the aircraft extends over about 6\textendash 10 cycles.
+This maneuver is best if flown where there is little vertical wind
+and steady horizontal wind.
+
+The maneuver has two primary purposes:
+\begin{enumerate}
+\item If the wind-sensing system operates properly, it should produce a
+vertical wind that is unaffected by the vertical motion of the aircraft.
+The vertical wind $w$ is the sum of the rate of climb of the aircraft
+($w_{p}$) and the upward component of the relative wind, and is given
+approximately by\\
+\begin{equation}
+w=w_{p}+V(\alpha-\theta)\label{eq:vertical-wind}
+\end{equation}
+where $V$ is the airspeed, $\alpha$ the angle of attack and $\theta$
+the pitch angle. Usually the most difficult measurement is that of
+angle of attack because it is not measured directly but instead is
+determined from pressure measurements at ports on the nose radome.
+Requiring that there be no (or insignificant) correlation between
+the measured vertical wind and the induced rate of climb during the
+pitch maneuver is a stringent test of the validity of the empirical
+relationship used to determine $\alpha$.
+\item In addition, the relative timing among measurements affects the measurement
+of vertical wind during the pitch maneuver. Removing residual effects
+of the rate of climb on the vertical wind usually requires adjustment
+for the relative timing of the measurements, so this is an important
+check on the adjustments used to compensate for those timing errors.
+As commonly used, the variables entering (\ref{eq:vertical-wind})
+come from three different sources, each with its own clock to determine
+timing:
+\begin{enumerate}
+\item The airspeed and the pressure measurements entering $\alpha$ are
+provided by the central data-recording system (NIDAS) on the research
+aircraft.
+\item In recent projects, the rate of climb of the aircraft has been measured
+by the GPS receiver.
+\item The measurement of pitch is provided by the inertial system, with
+measurements normally transmitted to the aircraft data system after
+a delay that can range up to 80 ms.
+\end{enumerate}
+In addition, the complete equation for the vertical wind involves
+additional transformations to compensate for the attitude of the aircraft,
+esp.~the roll angle, and to determine the upward wind component relative
+to the Earth from the tilted coordinate system used by the aircraft.
+These usually have negligible effect except in turns, but those measurements
+have their own transmission delays that may differ from the pitch.
+\end{enumerate}
+Because these two components of studies of pitch maneuvers are so
+closely related, they are combined in the QA application in a single
+type of plot, which shows the rate of climb with the measurement of
+vertical wind and lists the results of some critical comparisons:
+\begin{itemize}
+\item The correlation coefficient between the rate of climb and the vertical
+wind and the influence of the rate of climb on vertical wind that
+is suggested by that correlation coefficient. A simple correlation
+coefficient is not useful because induced effects are usually significantly
+out-of-phase with the imposed rate of climb, so instead the peak autocorrelation
+coefficient for delays ranging from $\pm10$~s is used. The variance
+in the vertical wind $w$, the covariance with rate of climb $r$
+at lag $\tau$, and the coefficient of determination are:\\
+\begin{equation}
+Var(w)=\frac{1}{n}\sum(w_{i}-\left\langle w\right\rangle )^{2}=\left\langle w^{2}\right\rangle -\left\langle w\right\rangle {}^{2}\label{eq:variance}
+\end{equation}
+\begin{equation}
+Covar(w,r,\tau)=\frac{1}{n}\sum(w_{i}-\left\langle w)\right\rangle (r_{i+\tau}-\left\langle r\right\rangle )=\left\langle wr_{i+\tau}\right\rangle -\left\langle w\right\rangle \left\langle r\right\rangle \label{eq:covariance}
+\end{equation}
+\begin{equation}
+R_{max}^{2}=\frac{Covar(w,r,\tau_{max})^{2}}{Var(w)Var(r)}\label{eq:coef-of-determination}
+\end{equation}
+\\
+where <> denotes the mean value and $\tau_{max}$ is the time lag
+at which the covariance reaches a maximum. Even if the variance or
+standard deviation in the wind is small, a significant coefficient
+of determination will indicate that the induced maneuver has a significant
+effect on the measured vertical wind. Small $R_{max}^{2}$ is therefore
+a stringent test of the wind-measuring system.
+\item A comparison between the standard deviation in vertical wind during
+the maneuver to that imposed on the rate of climb of the aircraft.
+\item A comparison between the standard deviation in vertical wind during
+the maneuver and immediately before and immediately after the maneuver.
+\end{itemize}
+In addition, the tool supports adjustment of the relative timing among
+the measurements to determine what effects adjustments have on the
+performance during the pitch maneuver. An important consideration
+is that the relative timing corrections so determined may vary during
+a flight and from flight to flight; indeed, there are indications
+that they do. Nevertheless, these results provide guidance regarding
+representative values to use and the variability and uncertainty in
+those values.
+
+<<pitch-maneuver, include=TRUE, fig.cap=c('Pitch maneuver from the DEEPWAVE project, flight 15, 5:10:30--5:20:00 UTC. The variable "dZ" is the rate-of-climb of the aircraft.', 'Cross-correlation function between vertical wind and rat-of-climb, as a function of lag.')>>=
+
+VL <- c('TASX', 'PSXC', 'GGALT', 'PITCH', 'ADIFR', 'QCF', 'AKRD', 'WIC') 
+Data <- getNetCDF('/Data/DEEPWAVE/DEEPWAVErf15.nc', VL) 
+Data$dZ <- c(0, diff(Data$GGALT))
+r <- setRange(Data, 51030, 52000)
+with(Data[r,], plotWAC(data.frame(Time, PITCH, dZ, WIC)))
+rp <- setRange(Data, 51315, 51615)
+re <- r[-rp]
+VAR <- var(Data$WIC[rp])
+VARE <- var(Data$WIC[re])
+SDWIC <- sd(Data$WIC[rp])
+SDWICE <- sd(Data$WIC[re])
+SDDZ <- sd(Data$dZ[rp])
+cvf <- ccf(Data$WIC[rp], Data$dZ[rp], plot=FALSE)
+maxcvf <- max(abs(cvf$acf))
+Rmax <- maxcvf^2
+VarCaused <- VAR * Rmax
+sdCaused <- sqrt(VarCaused)
+plot(cvf$lag, cvf$acf, type='l', col='blue')
+# print (sprintf ('max cross-correlation is %.2f, variances for WIC and ROC are %.1f and %.1f', maxcvf, # # # SDWIC, SDDZ))
+
+@
+
+The following examines a representative pitch maneuver. Figure~\ref{fig:pitch-maneuver1}
+shows the changes in pitch and rate of climb (plotted as ``dZ'').
+For the central part of the maneuver (5:13:15\textendash 5:16:15 UTC),
+the standard deviation in rate of climb was \Sexpr{round(SDDZ, 1)}
+and the standard deviation in measured vertical wind was \Sexpr{round(SDWIC, 1)},
+so the maneuver meets the long-standing criterion that less than 10\%
+of the imposed motion should appear in the vertical wind. However,
+consideration of the cross-correlation, shown in Fig.~\ref{fig:pitch-maneuver2},
+can refine this estimate of influence. The maximum cross-correlation
+is \Sexpr{round(maxcvf, 2)} so a better estimate of the standard
+deviation in measured wind produced by the maneuver is $\sqrt{Var(w)\thinspace R_{max}^{2}}$,
+which for this maneuver is \Sexpr{round(sdCaused, 2)}~m/s. Although
+the correlation is significant and indicates a detectable effect of
+the maneuver, the standard deviation in WIC that is attributable to
+the maneuver is only about \Sexpr{round(100*sdCaused/SDDZ,1)}\% of
+the magnitude of the rate of climb imposed during the maneuver.
+
+Another meassure of the possible influence of the maneuver is to compare
+the standard deviation in WIC for times just before and just after
+the maneuver to that during the maneuver. In this case, the standard
+deviation for points in the interval of Fig.~\ref{fig:pitch-maneuver1}
+but outside the interval listed above as the ``central part'' was
+\Sexpr{round(SDWICE, 2)}, while that within the central part was
+\Sexpr{round(SDWIC, 2)}, so this is reasonably consistent with the
+estimate of the effect of the maneuver in the preceding paragraph.
+
+\subsection*{The yaw maneuver}
+
+The equations for the yaw maneuver are more complicated and the maneuver
+is very hard to fly. Ideally, the yaw maneuver should only change
+sideslip angle and heading without change in roll, altitude, or angle
+of attack, but that is impossible to fly. It is practical, however,
+to minimize roll and change in altitude, and that was how these maneuvers
+have been flown since DEEPWAVE. (Some from earlier projects had significant
+roll changes.) In the case of yaw maneuvers, the evaluation of the
+maneuver is based on the expectation that the horizontal wind remains
+constant during the maneuver. The calculation of the component of
+the wind lateral to the aircraft requires the measured sideslip, so
+evaluation of the yaw maneuver is based on consistency in that measured
+component of the wind. However, the orientation of the aircraft and
+therefore the lateral component of the horizontal wind changes during
+the maneuver, so evaluation is instead based on determining the mean
+heading for the maneuver and then calculating the component of the
+wind normal to the mean heading direction during the maneuver.
+
+The equations are developed as follows. If $\psi$ is the mean heading,
+$\beta$ the sideslip, $W$ the wind speed and $\delta$ the wind
+direction, then the lateral component of the wind perpendicular to
+the mean heading ($W_{\perp}$) is\\
+\begin{equation}
+W_{\perp}=W\left(\sin(\psi-\frac{\pi}{2})\sin\delta+\cos(\psi-\frac{\pi}{2})\cos\delta\right)\label{eq:lat-wind}
+\end{equation}
+This is preferable to using the variable VYC in the data files because
+VYC is the component lateral to the aircraft so it will vary as the
+orientation of the aircraft changes, and if the flight direction is
+along the direction of the wind the lateral component varies as $W\tan\psi^{\prime}$
+where $\psi^{\prime}$ is the fluctuation in the heading. The variable
+VYC can be corrected for this variation, but it is preferable to use
+$W_{\perp}$ as given by (\ref{eq:lat-wind}) because that variable
+should remain constant if the measurement of sideslip and other quantities
+entering the wind calculation are correct.
+
+<<yaw, include=TRUE, fig.cap='A yaw maneuver from the DEEPWAVE project, flight 15 3:30:00--3:38:00 UTC. The measured sideslip is shown as SSRD [degrees] and the wind component in the direction normal to the mean heading as the variable "Lat", in units of m/s.'>>=
+
+Project <- 'DEEPWAVE'
+Flight <- 15
+DYAW <- getNetCDF(sprintf('%s%s/%srf%02d.nc', DataDirectory(), Project, Project, Flight), c('SSRD', 'THDG', 'WDC', 'WSC', 'VYC', 'TASX'))
+r <- setRange(DYAW, 33000, 33800)
+r2 <- setRange(DYAW, 33220, 33520)
+psibar <- mean(DYAW$THDG[r], na.rm=TRUE) * pi / 180  ## eventually, fix for wrap-around possibility
+psi <- DYAW$THDG - psibar * 180 / pi
+delta <- DYAW$WDC * pi / 180
+DYAW$Lat <- DYAW$WSC * (sin (psibar - pi/2) * sin(delta) + cos(psibar - pi/2)*cos(delta))
+DYAW$Lat <- DYAW$Lat - mean(DYAW$Lat[r], na.rm=TRUE)
+DYAW$VYC <- DYAW$VYC - mean(DYAW$VYC[r], na.rm=TRUE)
+DYAW$selected <- rep(0, nrow(DYAW))
+DYAW$selected[c(1:r2[1], r2[length(r2)]:nrow(DYAW))] <- NA
+DYAW$SScomp <- DYAW$TASX * DYAW$SSRD * pi / 180
+with(DYAW[r,], plotWAC(data.frame(Time, SScomp, Lat, selected), col=c('blue', 'red', 'magenta'), ylab='Sideslip-induced crosswind [m/s]', lwd=c(2,2,2), lty=c(1,2,1), ylim=c(-4,4)))
+cvf <- ccf(DYAW$Lat[r2], DYAW$SScomp[r2], plot=FALSE)
+Rmax <- max(abs(cvf$acf), na.rm=TRUE)
+sdSS <- sd(DYAW$SScomp[r2], na.rm=TRUE)
+sdTrans <- Rmax * sd (DYAW$Lat[r2], na.rm=TRUE)
+transmission <- sdTrans / sdSS
+title(sprintf ('transmission %.1f%% SS comp. std dev %.2f transmitted std dev %.2f m/s',
+                   transmission*100, sdSS, sdTrans), cex.main=0.9)
+
+@
+
+A good example of a yaw maneuver is shown in Fig.~\ref{fig:yaw}.
+Instead of SSRD, the variable plotted is SScomp=SSRD{*}TASX{*}$\pi$/180,
+or the sideslip-induced crosswind component. The lateral-wind component
+from (\ref{eq:lat-wind}), labeled ``Lat,'' shows some correlation
+with the induced cross-wind component, with a largest-in-magnitude
+correlation coefficient of \Sexpr{round(Rmax, 2)} for a 10-s lag
+and a significant correlation at zero lag also, so the wind calculation
+does not remove all of the induced component. As for the vertical
+wind, the transmitted component can be estimated from\\
+\begin{equation}
+\mathrm{transmission}=\left|\rho\right|_{max}\sigma_{Lat}/\sigma_{SScomp}\label{eq:trans-yaw}
+\end{equation}
+where $\rho_{max}$ is the maximum absolute value of the correlation
+coefficient for any lag, $\sigma_{Lat}$ the standard deviation in
+the ``lateral'' component, and $\sigma_{SScomp}$ the standard deviation
+in the induced cross-wind component. The numerator specifies the part
+of the standard deviation in the lateral component attributable to
+variations in SScomp. For this case, the transmission calculated from
+(\ref{eq:trans-yaw}) is \Sexpr{round(transmission*100, 1)}\% of
+the sideslip-induced crosswind or \Sexpr{round(sdTrans,2)}~m/s.
+For this calculation, the standard deviations and correlation function
+are calculated only for the period of the maneuver, shown by the ``selected''
+magenta line in the figure. The transmission incidates that only this
+fraction of the strong sideslip-induced crossflow appears in the measurements
+and the typical magnitude of the induced fluctuations is well below
+10\% of the induced fluctuations, so this example shows very good
+performance of the wind-measuring system with induced errors significantly
+smaller than the estimated uncertainty in the lateral component of
+the horizontal wind, which is 0.4~m/s.
+
+As a test, SSRD was increased or decreased in magnitude by a few percent
+and the wind recalculated. This test indicated that reducing the magnitude
+of SSRD by a factor of 0.95 led to the minimum transmission (0.05~m/s),
+so this is a suggestion that the second sensitivity coefficient in
+use may be about 5\% too large.
+
+It is also possible to evaluate the effect of a time shift between
+the variable for heading (THDG) and the sideslip measurement from
+the radome (SSRD). Because, for negligible roll, the wind calculation
+depends on the sum of these two angles, any time-shift between them
+during the yaw maneuver will influence the transmission. When flown
+according to design, the roll angle should remain within about $\pm5^{\circ}$,
+so a reasonable approximation to the direction of the relative wind
+is $\psi+\beta$ and the effect of a time shift can be evaluated by
+revising the relative-wind direction to be $\psi^{\prime}+\beta$
+instead, where $\psi^{\prime}$is the shifted heading. The ground-speed
+vector stays the same, so the change in the relative wind is the same
+as the change in the ground-relative wind, and the new wind direction
+is\\
+\begin{equation}
+\delta(\psi^{\prime})=\arctan\left\{ \frac{V\sin(\psi^{\prime}+\beta)-V_{x}}{V(\cos(\psi^{\prime}+\beta)-V_{y}}\right\} \label{eq:wind-direction}
+\end{equation}
+where $V$ is the airspeed, $V_{x}$ the eastward component of the
+aircraft groundspeed, and $V_{y}$ the northward component. Then the
+change in direction is $\delta(\psi^{\prime})-\delta(\psi)$. Similarly,
+the change in wind speed can be evaluated from the two wind components
+in the numerator and denominator of (\ref{eq:wind-direction}). These
+equations can be used in place of the full calculation of the horizontal
+wind, to avoid the added complexity of needing all the additional
+variables on which that full calculation depends. 
+
+\subsection*{The circle maneuver}
+
+\subsubsection*{General comments:}
+
+There is an extensive discussion of the circle maneuver in the NCAR
+Technical Note on \href{https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&uact=8&ved=0ahUKEwjQw_rDnIPUAhUD9IMKHWc9DjUQFggmMAA&url=https\%3A\%2F\%2Fopensky.ucar.edu\%2Fislandora\%2Fobject\%2Ftechnotes\%253A540&usg=AFQjCNFG1cO2NbuvJCmCw8TvZAzDQqj85w}{Uncertainty in Wind Measurements},
+in Section~7.1. Some of that discussion is repeated here, but the
+treatment is condensed from that source.
+
+The circle maneuver is flown by maintaining a constant roll angle
+so that the flight track drifts with the wind. The maneuver should
+include both left-turn and right-turn circles, preferably turning
+720$^{\circ}$in each direction, although turns that are each a little
+more than 360$^{\circ}$ can also be used. A one-minute straight leg
+before and after the maneuver is desirable. Conditions with constant
+horizontal and near-zero vertical wind are needed. The preferred orientation
+is for the straight legs to be along or against the wind direction,
+but this is not required. The circles are best flown under control
+of the flight management system, with heading bug turned so as to
+keep ahead of the heading, because this produces a constant-rate turn
+(with a rate that may change with altitude). The turn rate is often
+<3 min for a 360$^{\circ}$ turn at intermediate flight altitudes
+for the aircraft but takes longer at higher altitudes in order to
+avoid loss of altitude. The time for a 360$^{\circ}$ turn ($T$)
+at airspeed ($V$) and roll angle $(\phi$) is given by $T=2\pi V/(g\,\tan\phi$.
+For the particular C-130 example used here, the bank angle was about
+26.7$^{\circ}$and $T=159$~s for flight at 125 m/s, at an altitude
+of about 12,500~ft.
+
+The circle maneuver provides several checks on the measurements of
+wind:
+\begin{enumerate}
+\item The drift of the pattern provides a measurement of the wind that is
+dependent only on positions from the GPS receiver and is independent
+of the INS, except for confirming that the roll remains steady. The
+result should be within about 0.5~m/s of the mean wind measured during
+the circle maneuver and during the straight legs.
+\item From the assumption that the horizontal wind should remain steady,
+sinusoidal variations in the measured wind can be used to estimate
+the error in airspeed and the error in the combination of the measurements
+of heading and sideslip.
+\item If there is no mean updraft around the circle, the error in sideslip
+angle can be separated from the error in heading because they enter
+the wind equations differently when the roll angle of the aircraft
+is significant. This appears to be the only maneuver that is sensitive
+to this offset.
+\end{enumerate}
+
+\subsubsection*{Estimating offsets in measured airspeed and flight direction}
+
+CircleManeuver.R is an R script for fitting a sinusoidal variation
+to a circle maneuver. It is located on barolo.eol.ucar.edu in \textasciitilde{}cooperw/RStudio/WINTER
+and also in this github directory \href{https://github.com/WilliamCooper/WINTER.git}{(linked here)}.
+Anyone can download this from github, but the program makes extensive
+use of 'Ranadu' functions so this should be used with that package,
+also available on barolo and on github. The analysis core from that
+script is incorporated into the circle-maneuver analysis provided
+by the QAfunctions Shiny app.
+
+The key equations, with variables $v$ and $\lambda$ representing
+the true wind speed and direction, $v_{m}$ the measured wind speed
+with error $\delta v_{m}$, $V$ and $\delta V$ the true airspeed
+and offset in true airspeed, $\psi$ and $\delta\psi$ the heading
+and offset in heading, $\phi$ the roll angle, and $\beta$ and $\delta\beta$
+the sideslip angle and offset in sideslip, are:
+
+\begin{eqnarray}
+\delta v_{m} & = & -\delta V\thinspace\cos\xi+\delta\xi\thinspace V\sin\xi\label{eq:circle-1}\\
+ & = & v_{m}+A\thinspace\cos\xi+B\thinspace\sin\xi-v\label{eq:circle-2}
+\end{eqnarray}
+
+where $\xi$ is the angle between the flight direction relative to
+the air and the wind direction, defined as $\xi=\psi+\beta\cos\phi-\lambda$
+and having error $\delta\xi=\delta\psi+\delta\beta\thinspace\cos\phi$.
+For steady wind with speed $v$, $A=-\delta V$, $B=V\delta\xi,$
+and $v$ are parameters that characterize the difference between the
+true wind speed and that measured around the circles. Best-fit values
+for these parameters can then be found by minimizing the error measure
+$\chi^{2}=\sum(\delta v_{m})^{2}$. These equations conform to the
+expectation that comparing wind measured while flying upwind to that
+measured while flying downwind results in a difference that is twice
+the error in true airspeed, while comparing wind measured while flying
+crosswind with wind from starboard to that measured while flying with
+wind from port results in a difference that is twice the heading error
+(corrected for sideslip error) multiplied by the true airspeed because
+this gives the error in measured crosswind component. However, fitting
+to the full circle makes it possible to use all the measurements to
+estimate these errors.
+
+<<circle-init, echo=FALSE, include=FALSE>>=
+
+# set global chunk options 
+# opts_chunk$set(fig.path='figure/', echo=FALSE, fig.align='center', fig.show='hold', fig.width=6, 
+# fig.height=5, fig.lp="fig:")
+# options(replace.assign=TRUE,width=49, digits=2)
+# opts_knit$set(eval.after = "fig.cap")
+
+#### this section specifies defaults, changed by run-time arguments or user interaction
+startCircles <- 33830  # use 1955 to exclude some problem areas in the first circle
+endCircles <- 35630
+UserInteraction <- FALSE
+Flight <- "rf15AllCirclesHR"
+Directory = DataDirectory ()
+Project <- "DEEPWAVE"
+fname = sprintf("%s%s/DW%s.nc", Directory, Project, Flight)
+VarNames <- c("GGALT","LATC", "LONC", "PSXC", "QCXC", "GGVSPD",
+              "WDC", "WSC", "GGVEW", "GGVNS", "VEW", "VNS", "TASX",
+              "ADIFR", "AKRD", "SSLIP", "PITCH", "PSF", "QCF", "SSRD",
+              "ROLL", "THDG", "BDIFR", "EWX", "GGSPD",
+              "ADIF_GP", "BDIF_GP", "PS_GP", "QC_GP",
+              "CROLL_GP", "CPITCH_GP", "CTHDG_GP", "WIC",
+              "CVNS_GP", "CVEW_GP", "VSPD", "CVSPD_GP",
+              "ATX", "VNSC", "VEWC")
+D <- getNetCDF (fname, VarNames, F=15)      # this handles high-rate data also
+#### ------
+
+
+<<search-for-circles>>=
+
+if (startCircles < 0 || endCircles < 0) {
+  if (file.exists("./chunks/CircleSearch.R")) {
+    source ("./chunks/CircleSearch.R")
+    SE <- CircleSearch (D)
+    startCircles <- SE[1]
+    endCircles   <- SE[2]
+  }
+  if (startCircles < 0 || endCircles < 0) {
+    print (sprintf ("no circle times available; aborting..."))
+    quit (save="no")
+  }
+  print (sprintf ("new circle start and end times: %.0f--%.0f", startCircles, endCircles))
+}
+
+<<plot-track, echo=FALSE, include=TRUE, fig.cap="Portion of the flight track from DEEPWAVE rf15, 3:38:30--3:56:30 UTC, showing the circle maneuver flown at that time. The left panel shows the geographic position of the track, and the right panel shows the same track in a reference frame drifting with the wind.", fig.height=4>>=
+
+r <- setRange(D$Time, startCircles,endCircles)   # set this to span the circle maneuver
+DC <- D[r, ]
+# op <- par (mar=c(2,4,1,1)+0.1)
+layout(matrix(1:2, ncol = 2), widths = c(0.5,0.5), heights=c(5,5))
+plotTrack (DC, .Spacing=2, .WindFlags=0.02)                 # plot the flight track 
+# op <- par (mar=c(5,4,1,1)+0.1)
+plotTrack (DC, xc=NA, .Spacing=2)          # xc=NA is flag to do drifting plot
+# op <- par (mfrow=c(1,1), mar=c(5,5,2,2)+0.1)  # reset
+
+<<get-mean-wind-and-RL-subsets>>=
+
+## subsets that are just left-turn circles and just right-turn circles
+DCL <- DC[DC$ROLL < -24, ]
+DCR <- DC[DC$ROLL >  24, ]
+ROLLbarL <-mean(DCL$ROLL)
+ROLLsdL <- sd(DCL$ROLL)
+ROLLbarR <- mean(DCR$ROLL)
+ROLLsdR <- sd(DCR$ROLL)
+WDM <- DC$WDC * pi / 180.
+WSM <- DC$WSC
+WEW <- WSM * sin (WDM)
+WNS <- WSM * cos (WDM)
+WEWbar <- mean (WEW, na.rm=TRUE)
+WNSbar <- mean (WNS, na.rm=TRUE)
+WDMbar <- atan2 (WEWbar, WNSbar) * 180. / pi
+if (WDMbar < 0) {WDMbar <- WDMbar + 360}
+WSMbar <- mean (sqrt(WEW^2+WNS^2), na.rm=TRUE)
+Cradeg = pi/180.
+# print (sprintf ("mean of measured wind in circles: %.1f deg. / %.1f m/s", WDMbar, WSMbar))
+
+@
+
+A problem with this approach is that the true wind direction $\lambda$
+is needed to provide the reference direction for $\xi$, yet an error
+in wind measurement will introduce an error in this reference direction.
+The circle pattern largely corrects for this by including equal weighting
+of errors from all directions of flight, but it still may be better
+to determine the wind direction solely from the drift of the pattern
+as measured by GPS. That largely removes the wind-measuring system
+from the process and so should provide a better reference direction
+for use in (\ref{eq:circle-2}. This can be done by fitting the dead-reckoning
+flight track adjusted by the wind vector to the ground-speed track,
+or equivalently the dead-reckoning flight speed adjusted by the wind
+vector to the measured ground speed from GPS. This fit can use one
+fit parameter that represents an offset in heading, so that such an
+error will be corrected in the fit and should not affect the deduced
+wind direction. Usually this is not necessary and the mean wind direction
+$\bar{\lambda}$ can be used, or alternately $\lambda$ can be an
+additional parameter in the fit.
+
+<<find-wind-direction-from-GPS, include=FALSE, eval=TRUE>>=
+
+# define a chisquare error function:
+csq <- function (x, .d) {
+  roll <- .d$ROLL * pi / 180
+  gamma <- (.d$THDG + x[4] + .d$SSLIP*cos(roll) - .d$ATTACK*sin(roll)) * pi / 180 
+  dvx <- (.d$TASX+x[3])*sin(gamma) -x[1] - .d$GGVEW
+  dvy <- (.d$TASX+x[3])*cos(gamma) -x[2] - .d$GGVNS
+  chisq <- sum (dvx**2 + dvy**2)
+}
+
+NL <- nrow(DC$GGVEW)
+wx <- 10.
+wy <- 10.
+dV <- 0.5
+dG <- 0.5
+DC$ATTACK <- DC$AKRD
+A <- nlm (csq, c(wx, wy, dV, dG), DC, hessian=TRUE)
+rms <- sqrt(A$minimum / nrow (DC))
+bestFit <- A$estimate
+print (bestFit)
+
+# best-fit wind:
+bestWD <- atan2(-bestFit[1], -bestFit[2]) / Cradeg + 180. %% 360
+if (bestWD > 360) {bestWD <- bestWD - 360}
+bestWS <- sqrt(bestFit[1]**2 + bestFit[2]**2)
+DC$WDC[DC$WDC < 180] <- DC$WDC[DC$WDC < 180] + 360
+aveWD <- mean (DC$WDC, na.rm=TRUE) %% 360
+aveWS <- mean (DC$WSC, na.rm=TRUE)
+print (sprintf ("wind determined from drift: %.1f / %.1f", bestWD, bestWS))
+
+<<substitute-measured-mean-wind, include=TRUE>>=
+
+if (!exists("aveWD")) {
+  print (sprintf ("GPS-drift wind section suppressed, so measured mean wind (%.1f/%.1f) is used.", WDMbar, WSMbar))
+  bestWD <- WDMbar
+  bestWS <- WSMbar
+}
+
+@
+
+The procedure for finding the wind solely from the drift of the circle
+pattern is as follows. The horizontal components of the ground-relative
+motion of the aircraft, as measured from the aircraft, are these:
+
+\begin{eqnarray}
+v_{p,x} & = & (V+\delta V)\sin(\xi^{\prime}+\delta\xi^{\prime})-v_{x}\label{eq:circle-3}\\
+v_{p,y} & = & (V+\delta V)\cos(\xi^{\prime}+\delta\xi^{\prime})-v_{y}\label{eq:circle-4}
+\end{eqnarray}
+where $v_{p,x}$ and $v_{p,y}$ are the east and north components
+of the aircraft motion, $v_{x}$ and $v_{y}$ are the corresponding
+components of the wind, $V$ is the true airspeed with possible error
+$\delta V$, $\xi$ represents the direction of flight and so, for
+$\beta$=sideslip, $\alpha=$angle-of-attack, and $\phi=$roll, is
+$\xi^{\prime}=\psi+\beta\cos\phi-\alpha\sin\phi$. (The angle of attack
+enters here, while it did not in (\ref{eq:circle-2}), because there
+the angle of attack and sideslip have already entered the calculation
+of wind so only the error in sideslip is relevant, while any error
+in angle of attack is neglected. That is the reason that the variable
+here has a prime accent.) For fit parameters $v_{x}$, $v_{y}$, $\delta V$,
+and $\delta\xi$, best-fit values can be found by minimizing the following
+error measure:\\
+\begin{equation}
+\chi_{2}^{2}=\sum\left((v_{p,x}-v_{g,x})^{2}+(v_{p,y}-v_{g,y})^{2}\right)\label{eq:chisq-2}
+\end{equation}
+where $v_{g,x}$ and $v_{g,y}$ are the ground-speed components measured
+by GPS. The result is that the estimated wind direction is \Sexpr{round(bestWD, 1)}
+with magnitude \Sexpr{round(bestWS, 1)}~m/s. This direction will
+then be used for the direction $\lambda$ entering the relative angle
+$\xi$ in (\ref{eq:circle-2}). For comparison, the mean wind determined
+from the measurements was \Sexpr{format(round(WDMbar,1), nsmall=1)}
+/ \Sexpr{round(WSMbar,1)}, so these two approaches gave essentially
+the same wind vector. 
+
+<<plot-sine, include=FALSE, fig.lp="fig:", fig.cap="The measured wind speed as a function of the difference between heading and mean wind direction, for the measurements from the flight segment shown in the preceding figure. top: before correction (with dashed orange line showing the correction function); bottom: after correction.", fig.height=4>>=
+
+DCR$Ang <- (DCR$THDG - bestWD + 360) %% 360
+DCL$Ang <- (DCL$THDG - bestWD + 360) %% 360
+DD <- rbind (DCR, DCL)
+pmin <- min(DD$WSC, na.rm=TRUE)
+pmax <- max (DD$WSC, na.rm=TRUE)
+plot (DCL$Ang, DCL$WSC, xlim=c(0,360), pch=19, col='blue', xlab="heading - wind direction [deg.]", ylab="measured wind speed [m/s]", ylim=c(pmin, pmax))
+points (DCR$Ang, DCR$WSC, pch=19, col='darkgreen')
+legend("bottomright", legend=c("left turns", "right turns"), col=c("blue", "darkgreen"), pch=16)
+lines(c(180,180), c(0.,50.), col='red', lwd=2)
+lines(c(90,90), c(0.,50.), col='red', lwd=2)
+lines(c(270,270), c(0.,50.), col='red', lwd=2)
+lines(c(360,360), c(0.,50.), col='red', lwd=2)
+lines(c(0,0), c(0.,50.), col='red', lwd=2)
+# print(mean(DD$WDC,na.rm=TRUE))
+
+DD$Ang <- DD$Ang * Cradeg
+fm <- lm (WSC~I(cos(Ang))+I(TASX*sin(Ang)), data=DD)
+cf <- coefficients(fm)
+xp <- 0:360
+TASAVG <- mean (DD$TASX, na.rm=TRUE)
+yp <- cf[1] + cf[2] * cos(xp*Cradeg) + cf[3] * TASAVG * sin(xp*Cradeg)
+lines (xp, yp, col='darkorange', lty=2, lwd=4)
+# find rms error after adjustment:
+DD$WSCorr <- DD$WSC - cf[2] * cos(DD$Ang) - cf[3] * DD$TASX * sin(DD$Ang)
+plot (DD$Ang, DD$WSCorr, col='blue', type='p', pch=20, ylim=c(pmin,pmax), xlab="heading - wind direction [deg.]", ylab="corrected wind speed [m/s]")
+print (sprintf ("rms before and after fit adjustment: %.2f %.2f", sd(DD$WSC, na.rm=TRUE), sd(DD$WSCorr, na.rm=TRUE)))
+
+@
+
+<<first-circles, fig.lp="fig:", fig.cap="Measured wind speed from the left-turn and right-turn circles in the circle pattern shown in Fig.\\ \\ref{fig:plot-track}, as a function of $\\xi$, the difference between the adjusted heading and the mean wind direction. Orange lines are the results of fitting (\\ref{eq:circle-2}) to the measurements.",fig.width=5.0, fig.height=3.5, echo=FALSE, hold=FALSE, include=TRUE, warning=FALSE>>=
+
+options(digits=2)
+## get fits
+VerrMean <- vector(); HerrMean <- vector()
+mwd <- mean (DC$WDC, na.rm=TRUE)
+DC$Ang <- (DC$THDG+(DC$SSLIP)*cos(DC$ROLL*pi/180)-DC$AKRD*sin(DC$ROLL*pi/180)-mwd) %% 360
+DC$WS <- DC$WSC 
+Dc <- DC[setRange (DC$Time, startCircles, endCircles), ]
+Dc <- Dc[abs(Dc$ROLL) > 26, ]
+DR <- Dc[Dc$ROLL > 0, ]
+DL <- Dc[Dc$ROLL < 0, ]
+ymin = 16; ymax = 20.5
+mwdL <- mean (DL$WDC, na.rm=TRUE)
+mwdR <- mean (DR$WDC, na.rm=TRUE)
+meanr1 <- mean(DL$ROLL, na.rm=TRUE)
+meanr2 <- mean(DR$ROLL, na.rm=TRUE)
+sdr1 <- sd(DL$ROLL, na.rm=TRUE)
+sdr2 <- sd(DR$ROLL, na.rm=TRUE)
+meanv1 <- mean(DL$TASX, na.rm=TRUE)
+meanv2 <- mean(DR$TASX, na.rm=TRUE)
+sdv1 <- sd(DL$TASX, na.rm=TRUE)
+sdv2 <- sd(DR$TASX, na.rm=TRUE)
+meanv <- mean(rbind(DL, DR)$TASX, na.rm=TRUE)
+sdv <- sd(rbind(DL, DR)$TASX, na.rm=TRUE)
+
+source("~/RStudio/DEEPWAVE/WindUncertainty/chunks/fitCircle.R")
+VerrMean[length(VerrMean)+1] <- VerrorL; VerrMean[length(VerrMean)+1] <- VerrorR
+HerrMean[length(HerrMean)+1] <- HerrorL; HerrMean[length(HerrMean)+1] <- HerrorR
+cfcircle1 <- c(cfcircleC, cfcircleL, cfcircleR)
+cfcircleC <- cfcircle1[1:3];cfcircleL <- cfcircle1[4:6]; cfcircleR <- cfcircle1[7:9] 
+ymin=16; ymax=20.5 
+source ("~/RStudio/DEEPWAVE/WindUncertainty/chunks/plotWSvsAngle.R") 
+
+@
+
+Figure~\ref{fig:first-circles} shows the measured wind speed as
+a function of the angle between the heading and the mean wind direction
+determined by the preceding fit. There is a clear sinusoidal variation,
+so it is useful to fit to these measurements to determine the magnitude
+of the errors. The best-fit results were a mean wind speed of \Sexpr{cf[1]}~m/s,
+true airspeed correction of \Sexpr{cf[2]}~m/s, and an offset in
+$\xi$ of \Sexpr{cf[3]*180/pi}$^{\circ}$. The standard deviation
+of the measurement of wind speed decrease from \Sexpr{sd(DD$WSC, na.rm=TRUE)}\,m/s
+in the original measurements to \Sexpr{sd(DD$WSCorr, na.rm=TRUE)}\,m/s
+after application of the corrections from the fit. Most of the standard
+deviation in the original measurements arises from the variation with
+$\xi$ (adjusted heading). The fit indicates reasonable consistency
+between the airspeed from the fit and the measured airspeed, after
+application of the corrections deduced from LAMS. (Cf.~\href{http://www.atmos-meas-tech.net/7/3215/2014/}{Cooper et al., 2014}.) 
+
+The indicated error in direction is $\delta\xi=\delta\psi+\delta\beta\thinspace\cos\phi$,
+and it is not possible to separate the error in heading from the error
+in sideslip because $\cos\phi$ is constant throughout the left-turn
+and right-turn circles. Therefore, another approach to checking the
+sideslip angle is needed, as discussed in the next section.
+
+\subsubsection*{Estimating the separate errors in heading and sideslip}
+
+\subsubsection{Checking the sideslip offset}
+
+<<sideslip-correction>>=
+
+options(digits=5)
+dbeta <- (Dc$PITCH-Dc$ATTACK*cos(Dc$ROLL*pi/180))/sin(Dc$ROLL*pi/180)-Dc$SSLIP
+# hist (dbeta)
+dbm <-mean (dbeta, na.rm=TRUE)
+dbsd <- sd   (dbeta, na.rm=TRUE) / sqrt (length(dbeta))
+cssrd <- attr(D$SSRD, which='SSRD')
+
+@
+
+For level flight with zero vertical wind, the transformation equations
+from \href{https://www.eol.ucar.edu/raf/Bulletins/bulletin23.html}{RAF Bulletin 23}
+indicate that $-\sin\theta+\sin\phi\tan\beta+\cos\phi\tan\alpha=0$,
+where $\theta$ is the pitch, $\phi$ the roll, $\alpha$ the angle
+of attack, and $\beta$ the sideslip angle. Pitch and angle of attack
+can be assumed accurate because the former is checked, as part of
+the recalculation procedure, via determining the correction for Schuler
+oscillation and the latter is calibrated to low uncertainty via speed
+runs. Thus this equation can be used to deduce the offset in the measurement
+of sideslip, while other maneuvers such as yaw maneuvers or reverse-heading
+maneuvers cannot separate a sideslip offset from a heading offset.
+For small angles such that $\tan\beta\approx\beta$, $\tan\alpha\approx\alpha$
+and $\sin\theta\approx\theta$, $\beta\sin\phi\approx\mbox{\ensuremath{\theta}-\ensuremath{\alpha\cos\phi}}$.
+With angle of attack and pitch remaining about the same in the left-turn
+and right-turn circles, but roll changing sign, it is expected that
+$\beta$ will also change sign symmetrically from right-turn to left-turn
+circles. This can be checked via plots of sideslip vs time, as shown
+in the wind-uncertainty technical note, but instead the sideslip will
+be checked here by plotting the correction required for $\beta$ to
+satisfy the preceding equation, rewritten as\\
+\begin{equation}
+\delta\beta=\frac{\theta-\alpha\cos\phi}{\sin\phi}-\beta_{m}\label{eq:SS-correction}
+\end{equation}
+where $\beta_{m}$ is the measured sideslip and $\delta\beta$ is
+the indicated correction to that sideslip. The calibration coefficients
+for SSRD used to produce this data file were \{\Sexpr{cssrd[1]},
+\Sexpr{cssrd[2]}\}, For measurements from the circle maneuvers, the
+mean value of $\delta\beta$ was \Sexpr{round(dbm,3)}$^{\circ}\pm$\Sexpr{round(dbsd,3)}$^{\circ}$,
+so this indicates that the constant sensitivity coefficient for SSRD
+shoud have this correction \emph{added }to give a new value of \Sexpr{cssrd[1]+dbm}.
+the error in $\xi$ mostly arises from the error in sideslip and the
+residual error in heading is only \Sexpr{cf[3]*180/pi-dbm}$^{\circ}$.
+
+<<plotSS, fig.lp="fig:", fig.cap="Sideslip measured turning the circle maneuvers, first turning left (19:52:30--19:57:30) and then turning right (19:59:30--20:04:10). Mean values for these segments are indicated by dashed orange lines.", echo=FALSE, include=TRUE>>=
+
+
+plotWAC(DC[, c("Time", "SSLIP")], ylab="Sideslip [deg.]")
+# lines(c(DC$Time[1], DC$Time[length(DC$Time)]), c(0.3,0.3), col='red', lty=2, lwd=4)
+lines(c(DC$Time[1], DC$Time[length(DC$Time)]), c(0.,0.), col='red', lty=2, lwd=4)
+yl <- mean(DCL$SSLIP)
+lines(c(DCL$Time[1], DCL$Time[length(DCL$Time)]), c(yl,yl), col='darkorange', lty=2, lwd=4)
+yr <- mean(DCR$SSLIP)
+lines(c(DCR$Time[1], DCR$Time[length(DCR$Time)]), c(yr,yr), col='darkorange', lty=2, lwd=4)
+
+@
+
+\subsection*{The reverse-heading maneuver}
+
+The reverse-heading maneuver consists of a pair of flight legs of
+the same duration that are flown on opposing headings, preferably
+along the wind. Uniform wind conditions are desirable, and these are
+more likely present when flying along isobars or approximately along
+the wind. The maneuver should be flown in a drifting reference frame;
+that is, 2\textendash 5 min on one heading and then 2\textendash 5
+min on a reverse heading. The heading reversal could be done using
+a 90-270 turn or a teardrop pattern in order to return to the end
+of the first leg at the start of the second leg, but it can also be
+flown with a simple 180-degree turn to return along a path slightly
+offset from the first. The maneuver should not be reverse-course;
+if there is a side wind it should drift with that wind while maintaining
+a constant heading, and it is best if the legs are displaced from
+each other in distance as would correspond to similar drift during
+the heading-reversal maneuver.
+
+The primary use of this maneuver is to check that the wind-measuring
+system does not introduce a false offset in the lateral wind, as for
+example would arise from an offset in heading or in sideslip. The
+sum of heading and sideslip enters the wind calculation, so the maneuver
+can't distinguish a heading offset from a sideslip offset. In the
+past, the heading has often been offset in processing to make reverse-heading
+maneuvers look better, but it is probably preferable to adjust the
+sideslip offset in those situations. See also the circle maneuver,
+with which it is possible to separate an offset in sideslip from one
+in heading. The maneuver is also useful for detecting a possible offset
+in the lateral wind measurement, probably arising from an offset in
+airspeed measurement, because such an error (like that in the lateral
+component) will reverse sign between the two legs. The differences
+between mean values of lateral and longitudinal wind, with consideration
+of the standard deviations and stability of conditions, should not
+be more than twice the uncertainty in the measurement of horizontal
+wind, which has been estimated at 0.4~m/s for each component. (See
+the NCAR Technical Note on uncertainty in wind measurement for details.)
+
+<<rh, include=TRUE, fig.cap=c('Reverse-heading maneuver from the ARISTO2017 project, flight 1. The flight track is shown in a reference frame drifting with the wind in order to highlight the overlap between the two flight legs. The selected periods, listed in the plot title, are shown as heavy red (northbound) or green (southbound) lines. The blue dotted portion of the flight track is not included in the comparison.', 'For the same maneuver as shown in the previous figure, the lateral and longitudinal wind components along the two legs. For the second leg, the components are reversed in sign and plotted in reverse sequence starting at the time that matches the end of the first leg, so if the wind remains consistent the two legs will show the same pattern.')>>=
+
+Project <- 'ARISTO2017'
+Flight <- 1
+VL <- c('LATC', 'LONC', 'TASX', 'GGALT', 'SSLIP', 'BDIFR', 'QCF')
+VL <- c(VL, 'WDC', 'WSC', 'THDG', 'VYC', 'GGVNS', 'GGVEW')
+DRH <- getNetCDF(sprintf('%s%s/%srf%02d.nc', DataDirectory(), Project, Project, Flight), 
+                 VL, Start=223258, End=225101)
+r1 <- setRange(DRH, 223330, 224000)
+r2 <- setRange(DRH, 224445, 225100)
+plotTrack(DRH, xc=NA, .Spacing=2, lty=3)
+plotTrack(DRH, xc=NA, .Range=r1, .Spacing=200, .Add=TRUE, col='forestgreen', lwd=4)
+plotTrack(DRH, xc=NA, .Range=r2, .Spacing=200, .Add=TRUE, col='red', lwd=2)
+Wperp1 <- with(DRH[r1,], mean (WSC*(sin(WDC*pi/180) * cos(THDG*pi/180)-cos(WDC*pi/180)*sin(THDG*pi/180))))
+Wperp2 <- with(DRH[r2,], mean (WSC*(sin(WDC*pi/180) * cos(THDG*pi/180)-cos(WDC*pi/180)*sin(THDG*pi/180))))
+Wpar1 <- with(DRH[r1,], mean(WSC*(cos(WDC*pi/180)*cos(THDG*pi/180) + sin(WDC*pi/180)*sin(THDG*pi/180))))
+Wpar2 <- with(DRH[r2,], mean(WSC*(cos(WDC*pi/180)*cos(THDG*pi/180) + sin(WDC*pi/180)*sin(THDG*pi/180))))
+longDiff <- (Wpar1 + Wpar2) / 2
+latDiff <- (Wperp1 + Wperp2) / 2
+SDperp1 <- with(DRH[r1,], sd (WSC*(sin(WDC*pi/180) * cos(THDG*pi/180)-cos(WDC*pi/180)*sin(THDG*pi/180))))
+SDperp2 <- with(DRH[r2,], sd (WSC*(sin(WDC*pi/180) * cos(THDG*pi/180)-cos(WDC*pi/180)*sin(THDG*pi/180))))
+SDpar1 <- with(DRH[r1,], sd(WSC*(cos(WDC*pi/180)*cos(THDG*pi/180) + sin(WDC*pi/180)*sin(THDG*pi/180))))
+SDpar2 <- with(DRH[r2,], sd(WSC*(cos(WDC*pi/180)*cos(THDG*pi/180) + sin(WDC*pi/180)*sin(THDG*pi/180))))
+SDperp <- sqrt(SDperp1^2/length(r1) + SDperp2^2/length(r2))
+SDpar <- sqrt(SDpar1^2/length(r1) + SDpar2^2/length(r2))
+formatTime <- function (time) {
+  t <- as.POSIXlt (time)
+  tt <- sprintf ("%d:%02d:%02d", t$hour, t$min, t$sec)
+  return (tt)
+}
+ttext <- sprintf ("L1 %s %s L2 %s %s\nlongitudinal difference %.1f (%.1f) lateral %.1f (%.1f)", 
+                          formatTime (DRH$Time[r1[1]]), formatTime(DRH$Time[r1[length(r1)]]),
+                          formatTime (DRH$Time[r2[1]]), formatTime(DRH$Time[r2[length(r2)]]),
+                          longDiff, SDpar, latDiff, SDperp)
+title(main=ttext, sub='drifting', cex.sub=0.9)
+DRH$Wperp <- with(DRH, (WSC*(sin(WDC*pi/180) * cos(THDG*pi/180)-cos(WDC*pi/180)*sin(THDG*pi/180))))
+DRH$Wpar <- with(DRH, (WSC*(cos(WDC*pi/180)*cos(THDG*pi/180) + sin(WDC*pi/180)*sin(THDG*pi/180))))
+r <- 1:nrow(DRH)
+rr <- r1[length(r1)]-(r-r2[1])
+rr[rr > nrow(DRH)] <- nrow(DRH)
+rr[rr < 1] <- 1
+DRH$Wperpr <- -DRH$Wperp[rr]
+DRH$Wparr <- -DRH$Wpar[rr]
+ggplotWAC(with(DRH[r1,], data.frame(Time,Wperp,Wperpr, Wpar, Wparr)), ylab='W component [m/s]', 
+          panels=2, labelL=c('leg1', 'leg2'), labelP=c('lateral', 'longitudinal'))
+        
+
+@
+
+The reverse-heading maneuver is best analyzed by calculating average
+values for the longitudinal and lateral components of the horizontal
+wind for each leg. These each should reverse sign between the two
+legs, so the sum of the averages is a sensitive test of the measurements
+of horizontal wind. An error in the longitudinal component normally
+will indicate an error is airspeed, while an error in the lateral
+component normally arises from an error in sideslip or heading. A
+good example from ARISTO2017, flight 1 22:32:58-22:51:00 UTC, is shown
+in Fig.~\ref{fig:rh1}, where the flight track is plotted in a reference
+frame drifting with the wind. The two selected legs, 22:33:30\textendash 22:40:00
+(northbound) and 22:44:45\textendash 22:51:00 (southbound) are plotted
+respectively as green and red lines, with some additional parts of
+the flight track including the course reversal plotted as dotted blue
+lines. The two legs overlap very well because the flight legs were
+flown exceptionally well, with reciprocal headings differing by less
+than 0.2$^{\circ}$ and standard deviations in heading of about 0.1$^{\circ}$.
+However, there was significant variation in the wind speed along the
+tracks, which has some effect on the results. Also, the wind was westerly
+and so not aligned along the flight track as desired, perhaps accounting
+partially for the variation in wind speed along these flight legs. 
+
+The longitudinal and lateral components of the wind are\\
+\begin{eqnarray*}
+W_{\parallel} & = & W\thinspace(\cos\delta\cos\psi+\sin\delta\sin\psi)\\
+W_{\perp} & = & W\thinspace(\cos\delta\cos(\psi+\frac{\pi}{2})+\sin\delta\sin(\psi+\frac{\pi}{2}))\\
+ & = & W\thinspace(-\cos\delta\sin\psi+\sin\delta\cos\psi)
+\end{eqnarray*}
+
+where $W$ is the wind speed, $\delta$ the wind direction, and $\psi$
+the mean heading along the flight leg.
+
+As in the QA tool, the plot title includes half of the two differences
+between the legs and (in parentheses) the standard deviations in the
+means for these two differences. Half the difference is listed because
+this is the best estimate of the measurement error, if that error
+arises from the same offset applied in two different directions during
+the reverse-heading maneuver.
+
+Figure \ref{fig:rh2} shows the longitudinal and lateral components
+of the horizontal wind for the two flight legs. The components for
+the second leg are reversed in sign and plotted in reverse time order
+starting at the end time for the first leg, so if the wind pattern
+in space stays constant during the interval of the maneuver these
+two legs should show the same structure even if there is some variation
+along the legs. For this maneuver, there is fairly consistent structure
+in the lateral component for the two legs but a little more variability
+in the longitudinal component, so this may account for the smaller
+estimated error in the lateral component in comparison to the longitudinal
+component.
+
+\vskip0.5truein \centerline{\textcolor{blue}{---- END ----}}
+
+%\attach{attachment}
+
+%\attachm{first\\second}
+
+%\cc{first attachment\\second\\3rd att}
+\end{document}

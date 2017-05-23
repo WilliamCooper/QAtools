@@ -279,12 +279,16 @@ server <- function(input, output, session) {
       Maneuvers <<- Maneuvers
     }
     countPM <<- 0
-    countYM <<- 0
+    countYM <<- 1
+    countRH <<- 1
     itemYM <<- 0
+    itemRH <<- 0
     PM <<- Maneuvers [Maneuvers$Project == input$ProjectPP & Maneuvers$Type == 'pitch', ]
     YM <<- Maneuvers [Maneuvers$Project == input$ProjectPP & Maneuvers$Type == 'yaw', ]
+    RH <<- Maneuvers [Maneuvers$Project == input$ProjectPP & Maneuvers$Type == 'reverse heading', ]
     SR <<- Maneuvers [Maneuvers$Project == input$ProjectPP & Maneuvers$Type == 'speed run', ]
     chSR <- vector('character');chPM <<- vector('character');chYM <<- vector('character')
+    chRH <- vector('character')
     if (nrow(SR) > 0) {
       for (i in 1:nrow(SR)) {
         print (s <- sprintf ('%s %d-%d', SR$Flight[i], SR$Start[i], SR$End[i]))
@@ -317,6 +321,18 @@ server <- function(input, output, session) {
     } else {
       updateRadioButtons(session, inputId='selYM', choices='none')
     }
+    print (sprintf ('reverse heading maneuvers for project %s', input$ProjectPP))
+    if (nrow(RH) > 0) {
+      for (i in 1:nrow(RH)) {
+        print (s <- sprintf ('%s %d-%d', RH$Flight[i], RH$Start[i], RH$Other2[i]))
+        chRH[i] <- sprintf ('%d', i)
+        names(chRH)[i] <- s
+      }
+      updateRadioButtons(session, inputId='selRH', choices=chRH, selected='1')
+      # updateSliderInput (session, inputId='sliderRH', min=RH$Start[1], max=RH$End[1])
+    } else {
+      updateRadioButtons(session, inputId='selRH', choices='none')
+    }
   }, priority=10)
   
   observe ({
@@ -341,12 +357,66 @@ server <- function(input, output, session) {
         minT <- DYM$Time[1]; maxT <- DYM$Time[nrow(DYM)]
         # mint <- as.POSIXlt (minT, tz='UTC'); maxT <- as.POSIXlt (maxT, tz='UTC')
         updateSliderInput (session, 'sliderYM', min=minT, max=maxT, value=c(minT, maxT))
-        print ( sprintf ('updating time slider, limits are %s %s', minT, maxT))
+        print ( sprintf ('updating YM time slider, limits are %s %s', minT, maxT))
         # print (str(DYM))
       }
     }
   }, priority=0)
   
+  
+  
+  observe ({
+    item <- input$selRH
+    updateSelectInput(session, 'setRHT', selected='leg 1')
+    if (item != 'none' && !is.na(item)) {
+      item <- as.integer(item)
+      print (sprintf ('item %s nrow(RH)=%d', input$selRH, nrow(RH)))
+      if (is.na(item) || nrow(RH) < 1) {
+        itemRH <<- item <- 0
+        DRH <<- data.frame()
+      }
+      ProjDir <- input$ProjectPP
+      if (!is.na(item) && item != 'none' && item != 0 && length(item) > 0 && item <= nrow(RH)) {
+        itemRH <<- item
+        print (c('item, RH', item, RH[item,]))
+        if (grepl('HIPPO', ProjDir)) {ProjDir <- 'HIPPO'}
+        VL <- c('LATC', 'LONC', 'TASX', 'GGALT', 'SSLIP', 'BDIFR', 'QCF', 'WDC', 'WSC', 'THDG', 'VYC',
+                'GGVNS', 'GGVEW')
+        START <- AddT (as.integer (RH$Start[item]), -120)
+        END <- AddT (as.integer (RH$Other2[item]), 120)
+        DRH <<- dataDRH(ProjDir, input$ProjectPP, RH$Flight[item], VL, START, END)
+        minT <- DRH$Time[1]; maxT <- DRH$Time[nrow(DRH)]
+        setT1 <- DRH$Time[getIndex(DRH, RH$Start[item])]
+        setT2 <- DRH$Time[getIndex(DRH, RH$End[item])]
+        # mint <- as.POSIXlt (minT, tz='UTC'); maxT <- as.POSIXlt (maxT, tz='UTC')
+        updateSliderInput (session, 'sliderRH', min=minT, max=maxT, value=c(setT1, setT2))
+        print ( sprintf ('updating RH time slider, limits are %s %s setting is %s %s', minT, maxT, setT1, setT2))
+        # print (str(DRH))
+        countRH <<- 1
+      }
+    }
+  }, priority=5)
+
+  observe ({                              ## tleg for RH maneuver
+    input$setRHT
+    if (Trace) {print (sprintf ('entered tleg observer with value %s', input$setRHT))}
+    item <- as.integer(isolate(input$selRH))
+    if (!is.na(item) && item != 'none' && item != 0 && length(item) > 0 && item <= nrow(RH)) {
+      minT <- DRH$Time[1]; maxT <- DRH$Time[nrow(DRH)]
+      if (input$setRHT == 'leg 1') {
+        setT1 <- DRH$Time[getIndex(DRH, RH$Start[item])]
+        setT2 <- DRH$Time[getIndex(DRH, RH$End[item])]
+        # mint <- as.POSIXlt (minT, tz='UTC'); maxT <- as.POSIXlt (maxT, tz='UTC')
+        updateSliderInput (session, 'sliderRH', min=minT, max=maxT, value=c(setT1, setT2))
+      } else {
+        setT1 <- DRH$Time[getIndex(DRH, RH$Other1[item])]
+        setT2 <- DRH$Time[getIndex(DRH, RH$Other2[item])]
+        # mint <- as.POSIXlt (minT, tz='UTC'); maxT <- as.POSIXlt (maxT, tz='UTC')
+        updateSliderInput (session, 'sliderRH', min=minT, max=maxT, value=c(setT1, setT2))
+      }
+    }
+  }, priority=4)
+    
   observe ({                              ## typeFlight
     if (Trace) {print (sprintf ('entered typeFlight observer with value %s', input$typeFlight))}
     typeFlight <<- input$typeFlight
@@ -357,7 +427,6 @@ server <- function(input, output, session) {
     if (input$ProjectPP != ProjectPP) {
       ProjectPP <<- input$ProjectPP
       countPM <- 0
-      countYM <- 0
       FlightPP <- input$FlightPP
       FLT <- ifelse (input$AllPP, 1, FlightPP)
       ProjDir <- ProjectPP
@@ -477,6 +546,36 @@ server <- function(input, output, session) {
     # times <<- c(T1, T2)
   } )
   
+  observeEvent (input$plot4_brush, {
+    xmin <- as.integer(input$plot4_brush$xmin)
+    xmax <- as.integer(input$plot4_brush$xmax)
+    ymin <- as.integer(input$plot4_brush$ymin)
+    ymax <- as.integer(input$plot4_brush$ymax)
+    print (sprintf ('rect limits from brush = %.2f, %.2f. %.2f, %.2f', xmin, xmax, ymin, ymax))
+    r <- DRH$xa >= xmin & DRH$xa <= xmax & DRH$ya >= ymin & DRH$ya <= ymax
+    item <- isolate(input$selRH)
+    if (item != 'none' && !is.na(item)) {
+      item <- as.integer (item)
+      RH$Start[item] <<- as.integer (gsub(':', '', formatTime (DRH$Time[r1 <- which(r)[1]])))
+      RH$End[item] <<- as.integer (gsub(':', '', formatTime (DRH$Time[r2 <- which(!r & DRH$Time > DRH$Time[r1])[1]])))
+      RH$Other1[item] <<- as.integer (gsub(':', '', formatTime(DRH$Time[r3 <- which(r & DRH$Time > DRH$Time[r2])[1]])))
+      RH$Other2[item] <<- as.integer (gsub(':', '', formatTime(DRH$Time[r4 <- which(!r & DRH$Time > DRH$Time[r3])[1]])))
+      print (sprintf ('RH[%d]=%d %d %d %d', item, RH$Start[item], RH$End[item], RH$Other1[item], RH$Other2[item]))
+      if (input$setRHT == 'leg 1') {
+        updateSliderInput (session, 'sliderRH', value=c(DRH$Time[r1], DRH$Time[r2]))
+      } else {
+        updateSliderInput (session, 'sliderRH', value=c(DRH$Time[r3], DRH$Time[r4]))
+      }
+    }
+    # T1 <- as.POSIXlt(xmin, origin='1970-01-01', tz='UTC')
+    # T2 <- as.POSIXlt(xmax, origin='1970-01-01', tz='UTC')
+    # TB1 <- T1$hour*10000 + T1$min*100 + T1$sec
+    # TB2 <- T2$hour*10000 + T2$min*100 + T2$sec
+    # #   print (sprintf ('brush times are %d %d', TB1, TB2))
+    # updateSliderInput (session, 'sliderYM', value=c(T1, T2))
+    # times <<- c(T1, T2)
+  } )
+  
   observeEvent (input$resetT, {
     step <- 60
     Data <- data ()
@@ -531,6 +630,42 @@ server <- function(input, output, session) {
       size = 'l',
       easyClose = TRUE
     ))
+  })
+  
+  observeEvent (input$infoRH, {
+    showModal(modalDialog(
+      includeHTML('maneuvers/RHManeuver.html'),
+      title = 'Expected Results',
+      size = 'l',
+      easyClose = TRUE
+    ))
+  })
+  
+  observeEvent (input$delRH, {
+    print ('entered delete RH')
+    iRH <- as.integer(input$selRH)
+    ## want match to Maneuvers for Project, Flight,
+    print (RH[iRH,])
+    idel <- which(Maneuvers$Project == RH$Project[iRH] & Maneuvers$End == RH$End[iRH] & Maneuvers$Type == RH$Type[iRH] & Maneuvers$Flight == RH$Flight[iRH])
+    print (sprintf ('deleting maneuver number %d', idel))
+    Maneuvers <<- Maneuvers <- Maneuvers[-idel, ]
+    save(Maneuvers, file='Maneuvers.Rdata')
+    # print(Maneuvers[Maneuvers$Project == ProjectPP & Maneuvers$Type == 'pitch' & Maneuvers$End == chPM[iPM,3],])
+  })
+  
+  observeEvent (input$saveRH, {
+    print ('entered saveRH')
+    iRH <- as.integer(input$selRH)
+    if (Trace) {print (sprintf ('saving new maneuver times for maneuver %d', iRH))}
+    ## irev was set in plotRH
+    # irev <- which(Maneuvers$Project == RH$Project[iRH] & Maneuvers$End == RH$End[iRH] & Maneuvers$Type == RH$Type[iRH] & Maneuvers$Flight == RH$Flight[iRH])
+    Maneuvers$Start[irev] <<- RH$Start[iRH]
+    Maneuvers$End[irev] <<- RH$End[iRH]
+    Maneuvers$Other1[irev] <<- RH$Other1[iRH]
+    Maneuvers$Other2[irev] <<- RH$Other2[iRH]
+    print (sprintf('revised maneuvers irev=%d', irev))
+    print (Maneuvers[irev, ])
+    save(Maneuvers, file='Maneuvers.Rdata')
   })
   
   observeEvent (input$infoQC, {
@@ -1925,6 +2060,108 @@ server <- function(input, output, session) {
                               sd(Data$DTHDG, na.rm=TRUE)))
     g + theme_WAC() + theme (plot.title=element_text(size=14))
   })
+  
+  output$plotRH <- renderPlot ({
+    print (sprintf ('entry to plotRH, selRH is %s', input$selRH))
+    if (input$selRH == 'none') {
+      plot (0.5, 0.5, type='n')
+      title ('no maneuver for this selection')
+    } else {
+      item <- as.integer (input$selRH)
+      if (countRH == 1) {
+        minT <<- DRH$Time[1]; maxT <<- DRH$Time[nrow(DRH)]
+        print (item); print (minT); print (maxT)
+        if (Trace) {print (sprintf ('in plotRH, item/minT/maxT=%d %s %s', item, minT, maxT))}
+        # mint <- as.POSIXlt (minT, tz='UTC'); maxT <- as.POSIXlt (maxT, tz='UTC')
+        r1RH <<- getIndex(DRH, RH$Start[item]); r2RH <<- getIndex(DRH, RH$End[item])
+        selT1 <- DRH$Time[getIndex(DRH, RH$Start[item])]
+        selT2 <- DRH$Time[getIndex(DRH, RH$End[item])]
+        updateSliderInput (session, 'sliderRH', min=minT, max=maxT, value=c(selT1, selT2))
+        print (c('updating time slider, limits are:', minT, maxT))
+        r3RH <<- getIndex(DRH, RH$Other1[item]); r4RH <<- getIndex (DRH, RH$Other2[item])
+        if (Trace) {print(sprintf('countRH section r4RH is %d', r4RH))}
+        countRH <<- countRH + 1
+      }
+      if (input$setRHT == 'leg 1') {
+        r1RH <<- which(DRH$Time >= input$sliderRH[1])[1]
+        r2RH <<- which(DRH$Time >= input$sliderRH[2])[1]
+        {r3RH <<- getIndex(DRH, RH$Other1[item])}
+        {r4RH <<- getIndex(DRH, RH$Other2[item])}
+        print (sprintf (' leg 1 start time=%s, end time is %s', DRH$Time[r1RH], DRH$Time[r2RH]))
+        print (sprintf ('e new r1/4 range %d:%d %d:%d', r1RH, r2RH, r3RH, r4RH))
+      } else {
+        r3RH <<- which(DRH$Time >= input$sliderRH[1])[1]
+        r4RH <<- which(DRH$Time >= input$sliderRH[2])[1]
+        print (input$sliderRH[2]); print(r4RH)
+        if (is.na(r3RH) || (r3RH < r2RH)) {r3RH <<- r2RH}
+        print (sprintf ('new leg 2 range %d:%d', r3RH, r4RH))
+      }
+      if (is.na(r1RH)) {r1RH <<- 1}
+      if (is.na(r2RH)) {r2RH <<- nrow(DRH)}
+      if (is.na(r3RH)) {r3RH <<- 1}
+      if (is.na(r4RH)) {r4RH <<- nrow(DRH)}
+      r1 <- r1RH:r2RH
+      r2 <- r3RH:r4RH
+      ## save the selected limits in the RH data.frame
+      irev <- which(Maneuvers$Project == RH$Project[item] & Maneuvers$End == RH$End[item] & 
+                      Maneuvers$Type == RH$Type[item] & Maneuvers$Flight == RH$Flight[item])[1]
+      if (!is.na(irev)) {irev <<- irev}
+      ## get the appropriately formatted four times:
+      RH$Start[item] <<- as.integer(gsub(':', '', formatTime(DRH$Time[r1RH])))
+      RH$End[item] <<- as.integer(gsub(':', '', formatTime(DRH$Time[r2RH])))
+      RH$Other1[item] <<- as.integer(gsub(':', '', formatTime(DRH$Time[r3RH])))
+      RH$Other2[item] <<- as.integer(gsub(':', '', formatTime(DRH$Time[r4RH])))
+      if (Trace) {print (sprintf ('new maneuver %d limits are %d %d %d %d', irev,
+                                  RH$Start[item], RH$End[item], RH$Other1[item], RH$Other2[item]))}
+      ## this is not saved in the Maneuvers database until 'save times' is clicked with this item selected
+      # re <- r[-which(r %in% rp)]
+      # print (c('re ', re))
+      DRH$selected <- rep(0, nrow(DRH))
+      # if (length(re) > 0) {DRH$selected[re] <- NA}
+      ## adjust for SSRD shift:
+      DRH$Wperp <- with(DRH, (WSC*(sin(WDC*pi/180) * cos(THDG*pi/180)-cos(WDC*pi/180)*sin(THDG*pi/180))))
+      DRH$Wpar <- with(DRH, (WSC*(cos(WDC*pi/180)*cos(THDG*pi/180) + sin(WDC*pi/180)*sin(THDG*pi/180))))
+      if (input$sliderRHSS != 0) {
+        DRH$Wperp <- DRH$Wperp + input$sliderRHSS * pi/180 * DRH$TASX
+      }
+      if (input$plotTypeRH == 'track') {
+        plotTrack (DRH, xc=NA, .Spacing=2, lty=3)
+        plotTrack (DRH, xc=NA, .Spacing=100, .Range=r1, .Add=TRUE, col='red', lwd=5)  ## xc=NA is flag to plot a drifting track
+        plotTrack (DRH, xc=NA, .Spacing=100, .Range=r2, .Add=TRUE, col='forestgreen', lwd=3)
+        Wperp1 <- with(DRH[r1,], mean (Wperp, na.rm=TRUE))
+        Wperp2 <- with(DRH[r2,], mean (Wperp, na.rm=TRUE))
+        Wpar1 <- with(DRH[r1,], mean(Wpar, na.rm=TRUE))
+        Wpar2 <- with(DRH[r2,], mean(Wpar, na.rm=TRUE))
+        longDiff <- (Wpar1 + Wpar2) / 2
+        latDiff <- (Wperp1 + Wperp2) / 2
+        SDperp1 <- with(DRH[r1,], sd (Wperp, na.rm=TRUE))
+        SDperp2 <- with(DRH[r2,], sd (Wperp, na.rm=TRUE))
+        SDpar1 <- with(DRH[r1,], sd(Wpar, na.rm=TRUE))
+        SDpar2 <- with(DRH[r2,], sd(Wpar, na.rm=TRUE))
+        SDperp <- sqrt(SDperp1^2/length(r1) + SDperp2^2/length(r2))
+        SDpar <- sqrt(SDpar1^2/length(r1) + SDpar2^2/length(r2))
+        ttext <- sprintf ("L1 %s %s L2 %s %s\nlongitudinal difference %.1f (%.1f) lateral %.1f (%.1f) m/s", 
+                          formatTime (DRH$Time[r1[1]]), formatTime(DRH$Time[r2RH]),
+                          formatTime (DRH$Time[r2[1]]), formatTime(DRH$Time[r4RH]),
+                          longDiff, SDpar, latDiff, SDperp)
+        title(main=ttext, sub='drifting', cex.sub=0.9)
+      } else if (input$plotTypeRH == 'wind') {
+        with (DRH, plotWAC(data.frame(Time, THDG, WDC, WSC), legend.position='right'))
+      } else {  ## reverse-time case
+        r <- 1:nrow(DRH)
+        rr <- r1[length(r1)]-(r-r2[1])
+        rr[rr > nrow(DRH)] <- nrow(DRH)
+        rr[rr < 1] <- 1
+        DRH$Wperpr <- -DRH$Wperp[rr]
+        DRH$Wparr <- -DRH$Wpar[rr]
+        ggplotWAC(with(DRH[r1,], data.frame(Time,Wperp,Wperpr, Wpar, Wparr)), ylab='W component [m/s]', panels=2, labelL=c('leg1', 'leg2'),
+                  labelP=c('lateral', 'longitudinal'))
+        
+      }
+
+    }
+  })
+  
   
   output$plotYM <- renderPlot ({
     # print ('entered plotYM with selYM, Proj, setYMT, sliderYM, sliderTHDGYM=')

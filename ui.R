@@ -489,10 +489,38 @@ ui <- fluidPage (
                                                 )
                                                                        ),
                                                              tabPanel ('Circle'),
-                                                             tabPanel ('Reverse Heading')
+                                                             tabPanel ('Reverse Heading',
+                                                                       sidebarLayout (
+                                                                         sidebarPanel (h4('select reverse-heading maneuver'),
+                                                                                       radioButtons('selRH', label=NULL, choices=c('none'='0')),
+                                                                                       fluidRow (
+                                                                                         column(2, actionButton('infoRH', label='Info')),
+                                                                                         column(3, selectInput('plotTypeRH', label='plot',
+                                                                                                               choices=c('track', 'wind', 'reverse time'),
+                                                                                                               selected='track')),
+                                                                                         column(3, selectInput('setRHT', label='set time for:',
+                                                                                                               choices=c('leg 1', 'leg 2'),
+                                                                                                               selected='leg 1')),
+                                                                                         column(2, actionButton('saveRH', label='save\ntimes')),
+                                                                                         column(2, actionButton('delRH', label='delete'))
+                                                                                       ),
+                                                                                       sliderInput('sliderRH', label='set interval', min=minT, max=maxT, 
+                                                                                                   step=5, value=c(minT, maxT),
+                                                                                                   timeFormat='%T',
+                                                                                                   timezone='+0000'
+                                                                                       ),
+                                                                                       sliderInput('sliderRHSS', label='SSRD offset [deg]', min=-0.2, max=0.2,
+                                                                                                   step=0.01, value=0)
+                                                                                       
+                                                                         ),
+                                                                         mainPanel(
+                                                                           plotOutput (outputId='plotRH', height='600px',
+                                                                                       brush=brushOpts(id='plot4_brush', delay=3000, delayType='debounce', resetOnNew=TRUE))
+                                                                         )
+                                                                       )
                                                 )
                                       )
-                         )),
+                         ))),
                tabPanel ('Tools',
                          tabsetPanel (id='whichTool', type='pills',
                                       tabPanel('Add Var',
