@@ -1109,4 +1109,139 @@ makeVRPlot <- function (slp, psq) {
   return (VR)
 }
 
+## DPcheck additions:
 VRPlot <- loadVRPlot(Project, FALSE, 1, psq)
+VarListTDP <- standardVariables (c('CAVP_DPL', 'BALNC_DPL', 'MIRRTMP_DPL', 'DP_DPL', 'DP_VXL', 'EW_DPL', 'EW_VXL', 'ATX'))
+setNA <- function (.x, .v) {
+  X <- zoo::na.approx (as.vector (.x), maxgap=1000, na.rm=FALSE)
+  X[is.na(X)] <- .v
+  return (X)
+}
+itmL <- 0
+addDPERR <- function (Data) {
+  ## from the VXL vapor pressure, predict the DPL mirror temperature
+  Data$ecav <- Data$EW_VXL * Data$CAVP_DPL / Data$PSXC
+  mfind <- function (t, pr, e) {
+    return (abs(MurphyKoop(t, pr) - e))
+  }
+  Data$MT_DPL <- rep(0, nrow(Data))
+  # for (i in 1:nrow(Data)) {
+  #   if (!is.na(Data$ecav[i]) && !is.na(Data$DP_DPL[i]) && !is.na(Data$PSXC[i]) && !is.na(Data$CAVP_DPL[i])) {
+  #     Data$MT_DPL[i] <- nlm (mfind, Data$DP_DPL[i], Data$PSXC[i], Data$ecav[i])$estimate
+  #   } else {
+  #     Data$MT_DPL[i] <- NA
+  #   }
+  # }
+  ftest <- function (D) {return (nlm (f=mfind,p= D$DP_DPL, pr=D$PSXC, e=D$ecav)$estimate)}
+  # ftest <- function (D) {return (newtn (FUNC=mfind, X0=D$DP_DPL, pr=D$PSXC, e=D$ecav))}
+  rej <- with(Data, is.na(DP_DPL) | is.na(PSXC) | is.na(ecav) | is.na(CAVP_DPL))
+  Data$DP_DPL <- setNA (Data$DP_DPL, 0)
+  Data$PSXC <- setNA (Data$PSXC, 1000)
+  Data$ecav <- setNA (Data$ecav, 1.e-3)
+  Data$CAVP_DPL <- setNA (Data$CAVP_DPL, 500)
+  Data$MT_DPL <- plyr::adply(Data, .margins=1, .fun=ftest, .expand=FALSE)$V1
+  Data$MT_DPL[rej] <- NA
+  Data$R1 <- c(0,diff(Data$MIRRTMP_DPL))
+  Data$R2 <- c(0, diff (Data$MT_DPL))
+  Data$DDPL <- Data$MT_DPL - Data$MIRRTMP_DPL
+  # Data$DDPL <- Data$DP_VXL-Data$MIRRTMP_DPL
+  Data$DDPL[is.na(Data$DDPL)] <- 0
+  Data$CDDPL <- 10 * zoo::rollmean (Data$DDPL, 30, fill=0, align='right')
+  Data$R1[is.na(Data$R1)] <- 0
+  Data$RM1 <- zoo::rollmean (Data$R1, 120, fill=0, align='right')
+  
+  ## try to simulate MIRRTMP_DPL on the basis of MT_DPL response?
+  MS <- 0; DS <- 0
+  Data$TSIM <- rep(0, nrow(Data))
+  hlim <- 0.75; clim <- -1
+  for (i in 1:nrow(Data)) {
+    if (!is.na(Data$MT_DPL[i])) {
+      DS <- f1simTDP * DS + f2simTDP * (Data$MT_DPL[i] - MS)
+      if (DS > 0) {
+        if (asimTDP * DS < hlim) {
+          MS <- MS + asimTDP * DS
+        } else {
+          MS <- MS + hlim
+        }
+      } else {
+        if (asimTDP * DS > clim) {
+          MS <- MS + asimTDP * DS
+        } else {
+          MS <- MS + clim
+        }
+      }
+    }
+    Data$TSIM[i] <- MS
+  }
+  return(Data)
+}
+asimTDP <- 0.14
+f1simTDP <- 0.97; f2simTDP <- 1 - f1simTDP
+
+constructDQF <- function (project, flight) {
+  projectDir <- project
+  if (grepl ('HIPPO', project)) {projectDir <- 'HIPPO'}
+  Data <- getNetCDF (sprintf ('%s%s/%srf%02d.nc', DataDirectory(), projectDir, project, flight), VarListTDP)
+  Data$MIRRTMP_DPL <- setNA (Data$MIRRTMP_DPL, 0)
+  Data$DERIV2 <- -signal::filter(signal::sgolay(3,17,2),Data$MIRRTMP_DPL)
+  Data$DPERR <- Data$DERIV2 / (asimTDP * f2simTDP)
+  Data$CBAL <- zoo::rollmean (setNA (Data$BALNC_DPL, 0), 60, fill=0, align='right') / 500
+  Data$DPLQUAL <- ifelse (abs(Data$CBAL) > 3, -10, 0)
+  Data$DPLQUAL[abs(Data$CBAL) > 10] <- -20
+## find candidates for overshooting, but skip if data.frame already exists:
+  fileDQF <- sprintf ('DQF%srf%02d.Rdata', project, flight)
+  if (file.exists(fileDQF)) {
+    load(fileDQF)
+  } else {
+    i1 <- i2 <- 1
+    iL <- nrow(Data)
+    Elim=20
+    DQF <- data.frame()
+    while (!is.na(i1)) {
+      i1 <- which(Data$DPERR[i2:iL] > Elim & Data$TASX[i2:iL] > 130)[1]+i2-1
+      if (is.na(i1)) {break}
+      i2 <- which (Data$DPERR[i1:iL] <= Elim)[1]-1+i1
+      if (mean(Data$MIRRTMP_DPL[i1:i2], na.rm=TRUE) > -20) {
+        print (sprintf ('overshoot candidate %s--%s', 
+                        Data$Time[i1], Data$Time[i2]))
+        DQF <- rbind (DQF, data.frame(Start=Data$Time[i1], End=Data$Time[i2], 
+                                      qfStart=Data$Time[i1], qfEnd=Data$Time[i2], Use=FALSE))
+        # with(Data[(i1-120):(i2+120),], plotWAC (data.frame (Time, MIRRTMP_DPL, MT_DPL,
+        #                                                     DPERR, ATX)))
+        # abline(h=15, lty=3, lwd=2, col='magenta')
+        # abline(v=Data$Time[i1], lwd=0.5, lty=2); abline(v=Data$Time[i2], 
+        #                                                 lwd=0.5, lty=2)
+      }
+    }
+    ## add supersaturation events:
+    i1 <- i2 <- 1
+    iL <- nrow(Data)
+    Data$SS <- Data$DP_DPL - Data$ATX
+    while (!is.na(i1)) {
+      i1 <- which(Data$SS[i2:iL] > 2 & Data$TASX[i2:iL] > 100)[1]+i2-1
+      if (is.na(i1)) {break}
+      i2 <- which (Data$SS[i1:iL] <= 2)[1]-1+i1
+      if (mean(Data$MIRRTMP_DPL[i1:i2], na.rm=TRUE) > -20) {
+        print (sprintf ('supersaturation candidate %s--%s', 
+                        Data$Time[i1], Data$Time[i2]))
+        DQF <- rbind (DQF, data.frame(Start=Data$Time[i1], End=Data$Time[i2], 
+                                      qfStart=Data$Time[i1], qfEnd=Data$Time[i2], Use=FALSE))
+      }
+    }
+  }
+  DQF <<- DQF
+  DQFsave <<- DQF
+}
+
+getDataTDP <- function (project, flight) {
+  projectDir <- project
+  if (grepl ('HIPPO', project)) {projectDir <- 'HIPPO'}
+  DataTDP <- getNetCDF (sprintf ('%s%s/%srf%02d.nc', DataDirectory(), projectDir, project, flight), VarListTDP)
+  DataTDP$MIRRTMP_DPL <- setNA (DataTDP$MIRRTMP_DPL, 0)
+  DataTDP$DERIV2 <- -signal::filter(signal::sgolay(3,17,2),DataTDP$MIRRTMP_DPL)
+  DataTDP$DPERR <- DataTDP$DERIV2 / (asimTDP * f2simTDP)
+  DataTDP$CBAL <- zoo::rollmean (setNA (DataTDP$BALNC_DPL, 0), 60, fill=0, align='right') / 500
+  DataTDP$DPLQUAL <- ifelse (abs(DataTDP$CBAL) > 3, -10, 0)
+  DataTDP$DPLQUAL[abs(DataTDP$CBAL) > 10] <- -20
+  DataTDP <<- DataTDP
+}

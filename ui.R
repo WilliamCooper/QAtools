@@ -688,9 +688,53 @@ ui <- fluidPage (
                                                                 tabPanel ('listing', dataTableOutput ('listing')))))
                ),
                tabPanel ('Known Problems',
+                         fluidRow (
+                           column (2,                                      
+                                   selectInput (inputId='ProjectKP', label='Project',
+                                                choices=PJ, selected='ORCAS', width='100px')),
+                           column(2,
+                                  numericInput (inputId='FlightKP', label='Flight', value=7,
+                                                min=1, max=99, step=1, width='80px'))
+                           ),                         
                          tabsetPanel (id='whichKnown', type='pills',
-                                      tabPanel ('DP overshoot'),
-                                      tabPanel ('Supersaturation'),
+                                      tabPanel ('DP overshoot/SS',
+                                                fluidRow(
+                                                  column (1, actionButton ('searchTDP', label='search')),
+                                                  column (3, actionButton ('addVXL', label='add VSCEL prediction')),
+                                                  column(1, actionButton ('resetTDP', label='reset')),
+                                                  column (1, actionButton ('prevTDP', label='previous')),
+                                                  column(1, actionButton ('nextTDP', label='next')),
+                                                  column(2, actionButton ('autoFlag', label='auto Flag')),
+                                                  column(2, actionButton ('saveTDP', label='save'))
+                                                ),
+                                                # Sidebar with slider inputs for display interval and flag interval
+                                                sidebarLayout(
+                                                  sidebarPanel(
+                                                    sliderInput("timesTDP",
+                                                                "time range:",
+                                                                min = minT,
+                                                                max = maxT, step=60,
+                                                                timeFormat='%T',
+                                                                timezone='+0000',
+                                                                value = c(minT, maxT),
+                                                                dragRange=TRUE),
+                                                    sliderInput("dqftimes",
+                                                                "data-quality-flag time range:",
+                                                                min = minT,
+                                                                max = maxT,
+                                                                timeFormat='%T',
+                                                                timezone='+0000', step=1, round=TRUE,
+                                                                value = c(minT, maxT)),
+                                                    radioButtons ('overshoot', label='list of overshooting candidates',
+                                                                  choices='none')
+                                                  ),
+                                                  
+                                                  # Show a plot of the dewpoint measurements
+                                                  mainPanel(
+                                                    plotOutput("dewpointPlot", brush=brushOpts(id='plot_brushTDP', delay=3000, delayType='debounce', resetOnNew=TRUE))
+                                                  )
+                                                )
+                                                ),
                                       tabPanel ('T probe icing/wetting'),
                                       tabPanel ('T/DP match'),
                                       tabPanel ('missing/frozen var'),

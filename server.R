@@ -2797,5 +2797,196 @@ server <- function(input, output, session) {
   outputOptions (output, 'listing', priority=-10)
   outputOptions (output, 'hist', priority=-10)
   outputOptions (output, 'barWvsZ', priority=-10)
+  
+  ## additions for DPcheck:
+  observeEvent (input$plot_brushTDP, {
+    xmin <- as.integer(input$plot_brushTDP$xmin)
+    xmax <- as.integer(input$plot_brushTDP$xmax)
+    T1 <- as.POSIXlt(xmin, origin='1970-01-01', tz='UTC')
+    T2 <- as.POSIXlt(xmax, origin='1970-01-01', tz='UTC')
+    TB1 <- T1$hour*10000 + T1$min*100 + T1$sec
+    TB2 <- T2$hour*10000 + T2$min*100 + T2$sec
+    #   print (sprintf ('brush times are %d %d', TB1, TB2))
+    updateSliderInput (session, 'dqftimes', value=c(T1, T2))
+    dfqtimes <<- c(T1, T2)
+  }) 
+  
+  observeEvent (input$searchTDP, {
+    project <- isolate (input$ProjectKP)
+    flight <- isolate (input$FlightKP)
+    constructDQF(project, flight)
+    if (nrow(DQF) > 0) {
+      chDQF <- vector('character', nrow(DQF))
+      for (i in 1:nrow(DQF)) {
+        u <- ifelse (DQF$Use[i], 'Y', 'N')
+        print (s <- sprintf ('%s %d %s-%s', u, i, 
+                             formatTime(DQF$Start[i]), formatTime(DQF$End[i])))
+        chDQF[i] <- sprintf ('%d', i)
+        names(chDQF)[i] <- s
+      }
+      updateRadioButtons(session, inputId='overshoot', choices=chDQF, selected='1')
+      minT <- DataTDP$Time[which (DataTDP$Time >= DQF$Start[1])[1]]
+      step <- 10
+      minT <- minT - as.integer (minT) %% step - step
+      maxT <- DataTDP$Time[which (DataTDP$Time >= DQF$End[1])[1]]
+      maxT <- maxT - as.integer (maxT) %% step + step
+      times <- c(minT-120, maxT+120)
+      updateSliderInput (session, 'timesTDP', value=times)
+      updateSliderInput (session, 'dqftimes', min=times[1], max=times[2], value=c(DQF$Start[1], DQF$End[1]))
+    }
+  })
+  
+  observeEvent (input$autoFlag, {
+    i1 <- i2 <- 1
+    iL <- nrow(DataTDP)
+    while (!is.na(i1)) {
+      i1 <- which(DataTDP$DPLQUAL[i2:iL] != 0 & DataTDP$TASX[i2:iL] > 100)[1]+i2-1
+      DQ <- DataTDP$DPLQUAL[i1]
+      if (is.na(i1)) {break}
+      i2 <- which (DataTDP$DPLQUAL[i1:iL] != DQ)[1]-1+i1
+      if (mean(DataTDP$MIRRTMP_DPL[i1:i2], na.rm=TRUE) > -30) {
+        print (sprintf ('DQ flag %s--%s', 
+                        DataTDP$Time[i1], DataTDP$Time[i2]))
+        DQF <<- rbind (DQF, DataTDP.frame(Start=DataTDP$Time[i1], End=DataTDP$Time[i2], 
+                                      qfStart=DataTDP$Time[i1], qfEnd=DataTDP$Time[i2], 
+                                      Use=TRUE, Flag=-DQ/10))
+        # with(DataTDP[(i1-120):(i2+120),], plotWAC (DataTDP.frame (Time, MIRRTMP_DPL, MT_DPL,
+        #                                                     DPERR, ATX, DPLQUAL)))
+        # abline(v=DataTDP$Time[i1], lwd=0.5, lty=2); abline(v=DataTDP$Time[i2], lwd=0.5, lty=2)
+      }
+    }
+  })
+  
+  observeEvent (input$addVXL, {
+    showNotification ('Generating VCSEL prediction of DPL mirror temperature: This takes a minute or so. Please wait for this message to disappear before continuing.', duration=NULL, id='notice', type='message')
+    DataTDP <<- addDPERR (DataTDP)
+    removeNotification (id='notice')
+    reac$newplotTDP <- reac$newplotTDP + 1
+  })
+  
+  observeEvent (input$resetTDP, {
+    itm <- isolate (input$overshoot)
+    if (length(itm) > 0 && itm != 'none') {
+      itm <- as.integer(itm)
+      times <- c(DQFsave$Start[itm], DQFsave$End[itm])
+      updateSliderInput (session, 'dqftimes', value=times)
+      DQF$Use[itm] <<- FALSE
+      DQF$Start[itm] <<- DQFsave$Start[itm]
+      DQF$End[itm] <<- DQFsave$End[itm]
+      if (nrow(DQF) >= itm) {
+        print (s <- sprintf ('N %d %s-%s', itm, 
+                             formatTime(DQF$Start[itm]), formatTime(DQF$End[itm])))
+        chDQF[itm] <<- sprintf ('%d', itm)
+        names(chDQF)[itm] <<- s
+        updateRadioButtons(session, inputId='overshoot', choices=chDQF, selected=itm)
+      }
+    }
+  })
+  
+  observeEvent (input$nextTDP, {
+    times <- input$timesTDP
+    dt <- difftime (times[2], times[1])
+    times[1] <- times[1] + dt
+    times[2] <- times[2] + dt
+    updateSliderInput (session, 'timesTDP', value=times)
+  })
+  
+  observeEvent (input$prevTDP, {
+    times <- input$timesTDP
+    dt <- difftime (times[2], times[1])
+    times[1] <- times[1] - dt
+    times[2] <- times[2] - dt
+    updateSliderInput (session, 'timesTDP', value=times)
+  })
+  
+  observeEvent (input$saveTDP, {
+    project <- isolate (input$ProjectKP)
+    flight <- isolate (input$FlightKP)
+    fileDQF <- sprintf ('DQF%srf%02d.Rdata', project, flight)
+    save(DQF, file=fileDQF)
+    print (sprintf ('%s saved', fileDQF))
+  })
+  
+  reac <- reactiveValues (newplotTDP=0)
+  
+  
+  observe ({
+    itm <- input$overshoot
+    print (sprintf ('entry to overshoot observer, overshoot item = %s', itm))
+    if (itm != 'none' && length(itm) > 0) {
+      itm <- as.integer(itm)
+      # if (itm == itmL) {DQF$Use[itm] <<- !DQF$Use[itm]}
+      # itmL <<- itm
+      minT <- DataTDP$Time[which (DataTDP$Time >= DQF$Start[itm])[1]]
+      step <- 10
+      minT <- minT - as.integer (minT) %% step - step
+      maxT <- DataTDP$Time[which (DataTDP$Time >= DQF$End[itm])[1]]
+      maxT <- maxT - as.integer (maxT) %% step + step
+      times <- c(minT-90, maxT+90)
+      updateSliderInput (session, 'timesTDP', value=times)
+      updateSliderInput (session, 'dqftimes', min=times[1], max=times[2], 
+                         value=c(DQF$Start[itm], DQF$End[itm]))
+      if (nrow(DQF) > 0) {
+        chDQF <- vector('numeric')
+        for (i in 1:nrow(DQF)) {
+          u <- ifelse (DQF$Use[i], 'Y', 'N')
+          print (s <- sprintf ('%s %d %s-%s', u, i, 
+                               formatTime(DQF$Start[i]), formatTime(DQF$End[i])))
+          chDQF[i] <- sprintf ('%d', i)
+          names(chDQF)[i] <- s
+        }
+        updateRadioButtons(session, inputId='overshoot', choices=chDQF, selected=itm)
+        chDQF <<- chDQF
+      }
+    }
+  })
+  
+  observe ({
+    print (sprintf ('entry to dqftimes observer, value is %s %s', 
+                    input$dqftimes[1], input$dqftimes[2]))
+    itm <- isolate(input$overshoot)
+    if (length(itm) > 0 && itm != 'none') {
+      itm <- as.integer(itm)
+      times <- input$dqftimes
+      if (nrow(DQF) >= itm && (times[1] != DQFsave$Start[itm] || times[2] != DQFsave$End[itm])) {
+        DQF$Use[itm] <<- TRUE
+        DQF$Start[itm] <<- times[1]
+        DQF$End[itm] <<- times[2]
+        print (s <- sprintf ('Y %d %s-%s', itm, 
+                             formatTime(DQF$Start[itm]), formatTime(DQF$End[itm])))
+        chDQF[itm] <<- sprintf ('%d', itm)
+        names(chDQF)[itm] <<- s
+        updateRadioButtons(session, inputId='overshoot', choices=chDQF, selected=itm)
+      }
+    }
+  })
+  
+  output$dewpointPlot <- renderPlot({
+    reac$newplotTDP
+    if (!exists('DataTDP')) {
+      getDataTDP(input$ProjectKP, input$FlightKP)
+      times <- c(DataTDP$Time[1], DataTDP$Time[nrow(DataTDP)])
+      updateSliderInput (session, 'timesTDP', min=times[1], max=times[2], value=times)
+    }
+    print (sprintf ('TDP time interval is %s -- %s', input$timesTDP[1], input$timesTDP[2]))
+    r1 <- which (DataTDP$Time >= input$timesTDP[1])[1]
+    r2 <- which (DataTDP$Time >= input$timesTDP[2])[1]
+    print (c('TDP r1 r2', r1,r2))
+    if ('MT_DPL' %in% names (DataTDP)) {
+      with (DataTDP[r1:r2,], plotWAC (data.frame (Time, MIRRTMP_DPL, MT_DPL, 
+                                               DPERR, ATX, CBAL, DPLQUAL), 
+                                   col=c('blue', 'forestgreen', 'red', 'cyan', 'brown', 'magenta'),
+                                   lty=c(1,1,1,1,2,2), lwd=c(2,2,1,2,2,1),
+                                   ylim=c(-40,40), legend.position='topleft'))
+    } else {
+      with (DataTDP[r1:r2,], plotWAC (data.frame (Time, MIRRTMP_DPL, DPERR, ATX, CBAL, DPLQUAL), 
+                                   col=c('blue', 'red', 'cyan', 'brown', 'magenta'),
+                                   lty=c(1,1,1,2,2), lwd=c(2,1,2,2,1),
+                                   ylim=c(-40,40), legend.position='topleft'))
+    }
+    abline(h=15, col='magenta', lwd=2, lty=3)
+    abline(h=0)
+    abline(v=input$dqftimes[1], lwd=0.5, lty=2); abline(v=input$dqftimes[2], lwd=0.5, lty=2)
+  })
 }
 
