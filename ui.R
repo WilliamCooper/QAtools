@@ -412,8 +412,10 @@ ui <- fluidPage (
                                       tabPanel ('Maneuver study',
                                                 tabsetPanel (id='whichMan', type='pills',
                                                              tabPanel ('search for maneuvers',
-                                                                       selectInput (inputId='ProjectM', label='Project',
-                                                                                    choices=PJ, selected='CSET', width='100px'),
+                                                                       # selectInput (inputId='ProjectM', label='Project',
+                                                                       #              choices=PJ, selected='CSET', width='100px'),
+                                                                       checkboxGroupInput ('manS', 'types of maneuver', choices=c('speed run', 'pitch', 'yaw', 'circle', 'reverse heading'), 
+                                                                                           selected=c('speed run', 'pitch', 'yaw', 'circle', 'reverse heading'), inline=TRUE),
                                                                        actionButton ('Tmaneuvers', 'Search')
                                                              ),
                                                              tabPanel ('Speed Run',
@@ -427,7 +429,7 @@ ui <- fluidPage (
                                                                                        ),
                                                                                        sliderInput('sliderSR', label='set delay [ms]', min=-5000, max=5000, step=50, value=0),
                                                                                        selectInput('varSR', label='other variable (type-3 plot)', 
-                                                                                                   choices=sort((DataFileInfo(sprintf ('%s%s/%srf01.nc', DataDirectory(), ProjectM, ProjectM)))$Variables), selected='RTX')
+                                                                                                   choices=sort((DataFileInfo(sprintf ('%s%s/%srf01.nc', DataDirectory(), ProjectPP, ProjectPP)))$Variables), selected='RTX')
                                                                          ),
                                                                          mainPanel(
                                                                            plotOutput (outputId='plotSR')
@@ -488,7 +490,36 @@ ui <- fluidPage (
                                                              )
                                                 )
                                                                        ),
-                                                             tabPanel ('Circle'),
+                                                             tabPanel ('Circle',
+                                                                       sidebarLayout (
+                                                                         sidebarPanel (h4('select circle maneuver'),
+                                                                                       radioButtons('selCR', label=NULL, choices=c('none'='0')),
+                                                                                       fluidRow (
+                                                                                         column(2, actionButton('infoCR', label='Info')),
+                                                                                         column(3, selectInput('plotTypeCR', label='plot',
+                                                                                                               choices=c('track', 'WS fit', 'SSRD offset'),
+                                                                                                               selected='track')),
+                                                                                         column(3, selectInput('setCRT', label='set time for:',
+                                                                                                               choices=c('leg 1', 'leg 2'),
+                                                                                                               selected='leg 1')),
+                                                                                         column(2, actionButton('saveCR', label='save\ntimes')),
+                                                                                         column(2, actionButton('delCR', label='delete'))
+                                                                                       ),
+                                                                                       sliderInput('sliderCR', label='set interval', min=minT, max=maxT, 
+                                                                                                   step=5, value=c(minT, maxT),
+                                                                                                   timeFormat='%T',
+                                                                                                   timezone='+0000'
+                                                                                       ),
+                                                                                       sliderInput('sliderCRSS', label='SSRD offset [deg]', min=-0.2, max=0.2,
+                                                                                                   step=0.01, value=0)
+                                                                                       
+                                                                         ),
+                                                                         mainPanel(
+                                                                           plotOutput (outputId='plotCR', height='600px',
+                                                                                       brush=brushOpts(id='plot5_brush', delay=3000, delayType='debounce', resetOnNew=TRUE))
+                                                                         )
+                                                                       )
+                                                                       ),
                                                              tabPanel ('Reverse Heading',
                                                                        sidebarLayout (
                                                                          sidebarPanel (h4('select reverse-heading maneuver'),
@@ -661,7 +692,7 @@ ui <- fluidPage (
                                       tabPanel ('DP overshoot'),
                                       tabPanel ('Supersaturation'),
                                       tabPanel ('T probe icing/wetting'),
-                                      tabPanel ('Radome blockage'),
+                                      tabPanel ('T/DP match'),
                                       tabPanel ('missing/frozen var'),
                                       tabPanel ('bad DP cavity P')
                                       )

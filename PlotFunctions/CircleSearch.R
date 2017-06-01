@@ -23,6 +23,7 @@ CircleSearch <- function (data) {
     if (rg2-k < 100) {next}
     r <- k:rg2
     if (max(data$GGALT[r], na.rm=TRUE) - min(data$GGALT[r], na.rm=TRUE) > 50) {next}
+    meanZ <- mean(data$GGALT[r])
     ## require total turn angle to exceed 300 deg:
     rmn <- mean(abs(data$ROLL[r]), na.rm=TRUE)
     tasm <- mean(data$TASX[r], na.rm=TRUE)
@@ -38,8 +39,20 @@ CircleSearch <- function (data) {
     if (is.na(rtn[1])) {
       rtn <- rt
     } else {
-      rtn <- c(rtn, rt)
+      ## consider if this turn should be added to the previous one
+      if (as.integer(difftime(data$Time[k], TLast, units='secs')) < 150 && abs(meanZ-meanZlast) < 200) {
+        rtn[length(rtn)] <- sprintf( "%s %s circle          %s %s %.0f", 
+                                     attr(data, 'project'), attr(data, 'FlightNumber'),
+                                     strftime(TFirst, format="%H%M%S", tz='UTC'),
+                                     strftime(data$Time[rg2], format="%H%M%S", tz='UTC'),
+                                     ta)
+      } else {
+        rtn <- c(rtn, rt)
+      }
     }
+    meanZlast <- meanZ
+    TLast <- data$Time[rg2]
+    TFirst <- data$Time[k]
   }
   return(rtn)
 }

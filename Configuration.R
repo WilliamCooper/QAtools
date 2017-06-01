@@ -981,7 +981,7 @@ if (Project == "HIPPO-4" || Project == "HIPPO-5") {
   # VRPlot$PV30 <- c("CORAW_AL", "FO3_ACD", "COFLOW_AL", "INLETP_AL")
   VRPlot$PV23 <- c(NA)
 }
-if (Project == "PREDICT") {
+if (Project == "PREDICT" || Project == 'HEFT10' || Project == 'IDEAS-4') {
   pitch_offset = 0.178
   roll_offset = -0.192
   thdg_offset = -0.536

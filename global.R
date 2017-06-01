@@ -14,6 +14,8 @@ minT <- as.POSIXct(0, origin='2012-05-29', tz='UTC')
 maxT <- as.POSIXct(3600*8, origin='2012-05-29', tz='UTC')
 step <- 60
 
+Cradeg <- pi/180
+
 ## for the Resolution exercise:
 xp <- (-600:600)/100
 xpp <- (0:1000)
@@ -80,6 +82,33 @@ dataDYM <- function(ProjDir, ProjectPP, Flight, VL, START, END) {
   return (DYM)
 }
 
+dataDCR <- function(ProjDir, ProjectPP, Flight, VL, START, END) {
+  fname <- sprintf ('%s%s/%s%s.nc', DataDirectory (), ProjDir, ProjectPP, Flight)
+  if (Trace) {print (sprintf ('in dataDCR, file name to load is %s %d %d', fname, START, END))}
+  if (fname != fnameDCR || START != STARTDCR || END != ENDDCR) {
+    DCR <- getNetCDF (fname, VL, Start=START, End=END)
+    if (Trace) {print (sprintf (' called getNetCDF, nrows in file is %d', nrow(DCR)))}
+    ## add the drifting coordinates to the data.frame, for use in brush4:
+    data.rate <- 1
+    if (DCR$Time[2] - DCR$Time[1] <= 0.04) {data.rate <- 25}
+    if (DCR$Time[2] - DCR$Time[1] <= 0.02) {data.rate <- 50}
+    # DCR <- DCR[.Range, ]
+    with(DCR, {
+      ## try to interpolate for missing values
+      TAS <<- zoo::na.approx (as.vector(TASX), maxgap=1000, na.rm = TRUE)
+      HDG <<- (pi/180) * zoo::na.approx (as.vector(THDG+SSLIP), maxgap=1000, na.rm = TRUE)      
+    })
+    DCR$xa <- 0.001 * cumsum (TAS * sin(HDG)) / data.rate
+    DCR$ya <- 0.001 * cumsum (TAS * cos(HDG)) / data.rate
+    
+    DCR <<- DCR
+    fnameDCR <<- fname
+    STARTDCR <<- START
+    ENDDCR <<- END
+  }
+  return (DCR)
+}
+
 dataDRH <- function(ProjDir, ProjectPP, Flight, VL, START, END) {
   fname <- sprintf ('%s%s/%s%s.nc', DataDirectory (), ProjDir, ProjectPP, Flight)
   if (Trace) {print (sprintf ('in dataDRH, file name to load is %s %d %d', fname, START, END))}
@@ -107,7 +136,8 @@ dataDRH <- function(ProjDir, ProjectPP, Flight, VL, START, END) {
   return (DRH)
 }
 
-SeekManvrs <- function (Data) {
+SeekManvrs <- function (Data, manL) {
+  # print (c('in SeekManvrs, manL = ', manL))
   source ("./PlotFunctions/SpeedRunSearch.R")
   source ("./PlotFunctions/CircleSearch.R")
   source ("./PlotFunctions/PitchSearch.R")
@@ -115,16 +145,26 @@ SeekManvrs <- function (Data) {
   source ("./PlotFunctions/ReverseHeadingSearch.R")
   # print ('list of maneuvers:')
   lst <- vector('character')
-  lt <- PitchSearch (Data)
-  if (!is.na(lt[1]))  {lst <- lt}
-  lt <- YawSearch (Data)
+  if ('pitch' %in% manL) {
+    lt <- PitchSearch (Data)
+    if (!is.na(lt[1]))  {lst <- lt}
+  }
+  if ('yaw' %in% manL) {
+    lt <- YawSearch (Data)
     if (!is.na(lt[1])) {lst <- c(lst, lt)}
-  lt <- SpeedRunSearch (Data) 
+  }
+  if ('speed run' %in% manL) {
+    lt <- SpeedRunSearch (Data) 
     if (!is.na(lt[1])) {lst <- c(lst, lt)}
-  lt <- CircleSearch (Data)
+  }
+  if ('circle' %in% manL) {
+    lt <- CircleSearch (Data)
     if (!is.na(lt[1])) {lst <- c(lst, lt)}
-  lt <- ReverseHeadingSearch (Data)
+  }
+  if ('reverse heading' %in% manL) {
+    lt <- ReverseHeadingSearch (Data)
     if (!is.na(lt[1])) {lst <- c(lst, lt)}
+  }
   # print ('end of maneuver list')
   return (lst)
 }
@@ -145,7 +185,7 @@ SeekManeuvers <- function (Data) {
 }
 
 ProjectSeekManeuvers <- function (inp) {
-  Project <- inp$ProjectM
+  Project <- inp$ProjectPP
   if (grepl ('HIPPO', Project)) {
     ProjDir <- 'HIPPO'
   } else {
@@ -174,8 +214,9 @@ ProjectSeekManeuvers <- function (inp) {
       if (!checkBad(sprintf('%s%s%02d', Project, Type, Flight))) {
         Data <- getNetCDF (sprintf ('%s%s/%s%s%02d.nc', DataDirectory (), ProjDir, 
                                     Project, Type, Flight),
-                           standardVariables (c('PITCH', 'SSRD', 'THDG', 'ROLL')))
-        lt <- SeekManvrs (Data)
+                           (c('ATX', 'GGALT', 'LATC', 'LONC', 'PSXC', 'QCXC', 'TASX', 'WDC', 'WSC', 'WIC',
+                              'PITCH', 'SSRD', 'THDG', 'ROLL')))
+        lt <- SeekManvrs (Data, inp$manS)
         if(!is.na(lt[1])) {lst <- c(lst,lt)}
       }
     }
@@ -199,8 +240,11 @@ fnameDYM <- ''
 countYM <- 1
 itemYM <- -1
 fnameDRH <- ''
+fnameDCR <- ''
 countRH <- 1
+countCR <- 1
 itemRH <- -1
+itemCR <- -1
 
 n <- 50000
 X1R <- rnorm(n); X2R <- rnorm(n)
@@ -222,7 +266,7 @@ messg <- 'waiting for run'
 progressExists <- FALSE
 
 Project <- 'CSET'
-ProjectM <- 'ARISTO2017'
+ProjectPP <- 'ARISTO2017'
 ProjectKF <- 'CSET'
 Flight <- 1
 FlightKF <- 1

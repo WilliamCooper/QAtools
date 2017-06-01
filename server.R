@@ -254,8 +254,8 @@ server <- function(input, output, session) {
   })
   
   observeEvent (input$Tmaneuvers, {
-    msg <- 'This takes several minutes and cannot be interrupted. Click OK to continue.'
-    showNotification(msg, action = NULL, duration = 5, closeButton = TRUE,
+    msg <- 'This takes several minutes and cannot be interrupted.'
+    showNotification(msg, action = NULL, duration = 15, closeButton = TRUE,
                      id = 'noticeMan', type = "warning")
     ProjectSeekManeuvers (inp=input)
   })
@@ -281,14 +281,16 @@ server <- function(input, output, session) {
     countPM <<- 0
     countYM <<- 1
     countRH <<- 1
+    countCR <<- 1
     itemYM <<- 0
     itemRH <<- 0
     PM <<- Maneuvers [Maneuvers$Project == input$ProjectPP & Maneuvers$Type == 'pitch', ]
     YM <<- Maneuvers [Maneuvers$Project == input$ProjectPP & Maneuvers$Type == 'yaw', ]
     RH <<- Maneuvers [Maneuvers$Project == input$ProjectPP & Maneuvers$Type == 'reverse heading', ]
+    CR <<- Maneuvers [Maneuvers$Project == input$ProjectPP & Maneuvers$Type == 'circle', ]
     SR <<- Maneuvers [Maneuvers$Project == input$ProjectPP & Maneuvers$Type == 'speed run', ]
     chSR <- vector('character');chPM <<- vector('character');chYM <<- vector('character')
-    chRH <- vector('character')
+    chRH <- vector('character');chCR <- vector('character')
     if (nrow(SR) > 0) {
       for (i in 1:nrow(SR)) {
         print (s <- sprintf ('%s %d-%d', SR$Flight[i], SR$Start[i], SR$End[i]))
@@ -320,6 +322,18 @@ server <- function(input, output, session) {
       # updateSliderInput (session, inputId='sliderYM', min=YM$Start[1], max=YM$End[1])
     } else {
       updateRadioButtons(session, inputId='selYM', choices='none')
+    }
+    print (sprintf ('circle maneuvers for project %s', input$ProjectPP))
+    if (nrow(CR) > 0) {
+      for (i in 1:nrow(CR)) {
+        print (s <- sprintf ('%s %d-%d', CR$Flight[i], CR$Start[i], CR$End[i]))
+        chCR[i] <- sprintf ('%d', i)
+        names(chCR)[i] <- s
+      }
+      updateRadioButtons(session, inputId='selCR', choices=chCR, selected='1')
+      # updateSliderInput (session, inputId='sliderCR', min=CR$Start[1], max=CR$End[1])
+    } else {
+      updateRadioButtons(session, inputId='selCR', choices='none')
     }
     print (sprintf ('reverse heading maneuvers for project %s', input$ProjectPP))
     if (nrow(RH) > 0) {
@@ -363,8 +377,6 @@ server <- function(input, output, session) {
     }
   }, priority=0)
   
-  
-  
   observe ({
     item <- input$selRH
     updateSelectInput(session, 'setRHT', selected='leg 1')
@@ -393,6 +405,39 @@ server <- function(input, output, session) {
         print ( sprintf ('updating RH time slider, limits are %s %s setting is %s %s', minT, maxT, setT1, setT2))
         # print (str(DRH))
         countRH <<- 1
+      }
+    }
+  }, priority=5)
+  
+  
+  observe ({
+    item <- input$selCR
+    updateSelectInput(session, 'setCRT', selected='leg 1')
+    if (item != 'none' && !is.na(item)) {
+      item <- as.integer(item)
+      print (sprintf ('item %s nrow(CR)=%d', input$selCR, nrow(CR)))
+      if (is.na(item) || nrow(CR) < 1) {
+        itemCR <<- item <- 0
+        DCR <<- data.frame()
+      }
+      ProjDir <- input$ProjectPP
+      if (!is.na(item) && item != 'none' && item != 0 && length(item) > 0 && item <= nrow(CR)) {
+        itemCR <<- item
+        print (c('item, CR', item, CR[item,]))
+        if (grepl('HIPPO', ProjDir)) {ProjDir <- 'HIPPO'}
+        VL <- c('LATC', 'LONC', 'TASX', 'GGALT', 'PITCH', 'ATTACK', 'ROLL', 'SSLIP', 'SSRD', 'BDIFR', 
+                'QCF', 'WDC', 'WSC', 'THDG', 'VYC', 'GGVSPD', 'VEW', 'VNS', 'GGVNS', 'GGVEW')
+        START <- AddT (as.integer (CR$Start[item]), -120)
+        END <- AddT (as.integer (CR$End[item]), 120)
+        DCR <<- dataDCR(ProjDir, input$ProjectPP, CR$Flight[item], VL, START, END)
+        minT <- DCR$Time[1]; maxT <- DCR$Time[nrow(DCR)]
+        setT1 <- DCR$Time[getIndex(DCR, CR$Start[item])]
+        setT2 <- DCR$Time[getIndex(DCR, CR$End[item])]
+        # mint <- as.POSIXlt (minT, tz='UTC'); maxT <- as.POSIXlt (maxT, tz='UTC')
+        updateSliderInput (session, 'sliderCR', min=minT, max=maxT, value=c(setT1, setT2))
+        print ( sprintf ('updating CR time slider, limits are %s %s setting is %s %s', minT, maxT, setT1, setT2))
+        # print (str(DCR))
+        countCR <<- 1
       }
     }
   }, priority=5)
@@ -545,7 +590,7 @@ server <- function(input, output, session) {
     updateSliderInput (session, 'sliderYM', value=c(T1, T2))
     # times <<- c(T1, T2)
   } )
-  
+
   observeEvent (input$plot4_brush, {
     xmin <- as.integer(input$plot4_brush$xmin)
     xmax <- as.integer(input$plot4_brush$xmax)
@@ -565,6 +610,36 @@ server <- function(input, output, session) {
         updateSliderInput (session, 'sliderRH', value=c(DRH$Time[r1], DRH$Time[r2]))
       } else {
         updateSliderInput (session, 'sliderRH', value=c(DRH$Time[r3], DRH$Time[r4]))
+      }
+    }
+    # T1 <- as.POSIXlt(xmin, origin='1970-01-01', tz='UTC')
+    # T2 <- as.POSIXlt(xmax, origin='1970-01-01', tz='UTC')
+    # TB1 <- T1$hour*10000 + T1$min*100 + T1$sec
+    # TB2 <- T2$hour*10000 + T2$min*100 + T2$sec
+    # #   print (sprintf ('brush times are %d %d', TB1, TB2))
+    # updateSliderInput (session, 'sliderYM', value=c(T1, T2))
+    # times <<- c(T1, T2)
+  } )
+    
+  observeEvent (input$plot5_brush, {
+    xmin <- as.integer(input$plot5_brush$xmin)
+    xmax <- as.integer(input$plot5_brush$xmax)
+    ymin <- as.integer(input$plot5_brush$ymin)
+    ymax <- as.integer(input$plot5_brush$ymax)
+    print (sprintf ('rect limits from brush = %.2f, %.2f. %.2f, %.2f', xmin, xmax, ymin, ymax))
+    r <- DCR$xa >= xmin & DCR$xa <= xmax & DCR$ya >= ymin & DCR$ya <= ymax
+    item <- isolate(input$selCR)
+    if (item != 'none' && !is.na(item)) {
+      item <- as.integer (item)
+      CR$Start[item] <<- as.integer (gsub(':', '', formatTime (DCR$Time[r1 <- which(r)[1]])))
+      CR$End[item] <<- as.integer (gsub(':', '', formatTime (DCR$Time[r2 <- which(!r & DCR$Time > DCR$Time[r1])[1]])))
+      CR$Other1[item] <<- as.integer (gsub(':', '', formatTime(DCR$Time[r3 <- which(r & DCR$Time > DCR$Time[r2])[1]])))
+      CR$Other2[item] <<- as.integer (gsub(':', '', formatTime(DCR$Time[r4 <- which(!r & DCR$Time > DCR$Time[r3])[1]])))
+      print (sprintf ('CR[%d]=%d %d %d %d', item, CR$Start[item], CR$End[item], CR$Other1[item], CR$Other2[item]))
+      if (input$setCRT == 'leg 1') {
+        updateSliderInput (session, 'sliderCR', value=c(DCR$Time[r1], DCR$Time[r2]))
+      } else {
+        updateSliderInput (session, 'sliderCR', value=c(DCR$Time[r3], DCR$Time[r4]))
       }
     }
     # T1 <- as.POSIXlt(xmin, origin='1970-01-01', tz='UTC')
@@ -630,6 +705,42 @@ server <- function(input, output, session) {
       size = 'l',
       easyClose = TRUE
     ))
+  })
+  
+  observeEvent (input$infoCR, {
+    showModal(modalDialog(
+      includeHTML('maneuvers/CircleManeuver.html'),
+      title = 'Expected Results',
+      size = 'l',
+      easyClose = TRUE
+    ))
+  })
+  
+  observeEvent (input$delCR, {
+    print ('entered delete CR')
+    iCR <- as.integer(input$selCR)
+    ## want match to Maneuvers for Project, Flight,
+    print (CR[iCR,])
+    idel <- which(Maneuvers$Project == CR$Project[iCR] & Maneuvers$End == CR$End[iCR] & Maneuvers$Type == CR$Type[iCR] & Maneuvers$Flight == CR$Flight[iCR])
+    print (sprintf ('deleting maneuver number %d', idel))
+    Maneuvers <<- Maneuvers <- Maneuvers[-idel, ]
+    save(Maneuvers, file='Maneuvers.Rdata')
+    # print(Maneuvers[Maneuvers$Project == ProjectPP & Maneuvers$Type == 'pitch' & Maneuvers$End == chPM[iPM,3],])
+  })
+  
+  observeEvent (input$saveCR, {
+    print ('entered saveCR')
+    iCR <- as.integer(input$selCR)
+    if (Trace) {print (sprintf ('saving new maneuver times for maneuver %d', iCR))}
+    ## irev was set in plotCR
+    # irev <- which(Maneuvers$Project == CR$Project[iCR] & Maneuvers$End == CR$End[iCR] & Maneuvers$Type == CR$Type[iCR] & Maneuvers$Flight == CR$Flight[iCR])
+    Maneuvers$Start[irev] <<- CR$Start[iCR]
+    Maneuvers$End[irev] <<- CR$End[iCR]
+    Maneuvers$Other1[irev] <<- CR$Other1[iCR]
+    Maneuvers$Other2[irev] <<- CR$Other2[iCR]
+    print (sprintf('revised maneuvers irev=%d', irev))
+    print (Maneuvers[irev, ])
+    save(Maneuvers, file='Maneuvers.Rdata')
   })
   
   observeEvent (input$infoRH, {
@@ -2059,6 +2170,210 @@ server <- function(input, output, session) {
     g <- g + ggtitle(sprintf ('mean %.2f +/- %.2f', mean(Data$DTHDG, na.rm=TRUE),
                               sd(Data$DTHDG, na.rm=TRUE)))
     g + theme_WAC() + theme (plot.title=element_text(size=14))
+  })
+  
+  output$plotCR <- renderPlot ({
+    print (sprintf ('entry to plotCR, selCR is %s', input$selCR))
+    if (input$selCR == 'none') {
+      plot (0.5, 0.5, type='n')
+      title ('no maneuver for this selection')
+    } else {
+      item <- as.integer (input$selCR)
+      if (countCR == 1) {
+        minT <<- DCR$Time[1]; maxT <<- DCR$Time[nrow(DCR)]
+        print (item); print (minT); print (maxT)
+        if (Trace) {print (sprintf ('in plotCR, item/minT/maxT=%d %s %s', item, minT, maxT))}
+        # mint <- as.POSIXlt (minT, tz='UTC'); maxT <- as.POSIXlt (maxT, tz='UTC')
+        r1CR <<- getIndex(DCR, CR$Start[item]); r2CR <<- getIndex(DCR, CR$End[item])
+        selT1 <- DCR$Time[getIndex(DCR, CR$Start[item])]
+        selT2 <- DCR$Time[getIndex(DCR, CR$End[item])]
+        updateSliderInput (session, 'sliderCR', min=minT, max=maxT, value=c(selT1, selT2))
+        print (c('updating time slider, limits are:', minT, maxT))
+        r3CR <<- getIndex(DCR, CR$Other1[item]); r4CR <<- getIndex (DCR, CR$Other2[item])
+        if (Trace) {print(sprintf('countCR section r4CR is %d', r4CR))}
+        countCR <<- countCR + 1
+      }
+      r1CR <<- which(DCR$Time >= input$sliderCR[1])[1]
+      r2CR <<- which(DCR$Time >= input$sliderCR[2])[1]
+      
+      if (is.na(r1CR)) {r1CR <<- 1}
+      if (is.na(r2CR)) {r2CR <<- nrow(DCR)}
+      r1 <- r1CR:r2CR
+      ## save the selected limits in the CR data.frame
+      irev <- which(Maneuvers$Project == CR$Project[item] & Maneuvers$End == CR$End[item] & 
+                      Maneuvers$Type == CR$Type[item] & Maneuvers$Flight == CR$Flight[item])[1]
+      if (!is.na(irev)) {irev <<- irev}
+      ## get the appropriately formatted four times:
+      CR$Start[item] <<- as.integer(gsub(':', '', formatTime(DCR$Time[r1CR])))
+      CR$End[item] <<- as.integer(gsub(':', '', formatTime(DCR$Time[r2CR])))
+      if (Trace) {print (sprintf ('new maneuver %d limits are %d %d', irev,
+                                  CR$Start[item], CR$End[item]))}
+      ## this is not saved in the Maneuvers database until 'save times' is clicked with this item selected
+      # re <- r[-which(r %in% rp)]
+      # print (c('re ', re))
+      DCR$selected <- rep(0, nrow(DCR))
+      # if (length(re) > 0) {DCR$selected[re] <- NA}
+      ## adjust for SSRD shift:
+      if (input$plotTypeCR == 'track') {
+        plotTrack (DCR, xc=NA, .Spacing=2, lty=3)
+        # plotTrack (DCR, xc=NA, .Spacing=100, .Range=r1, .Add=TRUE, col='red', lwd=5)  ## xc=NA is flag to plot a drifting track
+        # plotTrack (DCR, xc=NA, .Spacing=100, .Range=r2, .Add=TRUE, col='forestgreen', lwd=3)
+        ## find the wind from GPS only
+        # define a chisquare error function:
+        csq <- function (x, .d) {
+          roll <- .d$ROLL * pi / 180
+          gamma <- (.d$THDG + x[4] + .d$SSLIP*cos(roll) - .d$ATTACK*sin(roll)) * pi / 180 
+          dvx <- (.d$TASX+x[3])*sin(gamma) -x[1] - .d$GGVEW
+          dvy <- (.d$TASX+x[3])*cos(gamma) -x[2] - .d$GGVNS
+          chisq <- sum (dvx**2 + dvy**2)
+        }
+        
+        NL <- nrow(DCR$GGVEW)
+        wx <- 10.
+        wy <- 10.
+        dV <- 0.5
+        dG <- 0.5
+        DCR$AKRD <- DCR$ATTACK
+        A <- nlm (csq, c(wx, wy, dV, dG), DCR, hessian=TRUE)
+        rms <- sqrt(A$minimum / nrow (DCR))
+        bestFit <- A$estimate
+        print (bestFit)
+        
+        # best-fit wind:
+        bestWD <- atan2(-bestFit[1], -bestFit[2]) / Cradeg + 180. %% 360
+        if (bestWD > 360) {bestWD <- bestWD - 360}
+        bestWS <- sqrt(bestFit[1]**2 + bestFit[2]**2)
+        WDM <- DCR$WDC * pi / 180.
+        WSM <- DCR$WSC
+        WEW <- WSM * sin (WDM)
+        WNS <- WSM * cos (WDM)
+        WEWbar <- mean (WEW, na.rm=TRUE)
+        WNSbar <- mean (WNS, na.rm=TRUE)
+        WDMbar <- atan2 (WEWbar, WNSbar) * 180. / pi
+        if (WDMbar < 0) {WDMbar <- WDMbar + 360}
+        WSMbar <- mean (sqrt(WEW^2+WNS^2), na.rm=TRUE)
+        DCR$WDC[DCR$WDC < 180] <- DCR$WDC[DCR$WDC < 180] + 360
+        aveWD <- mean (DCR$WDC, na.rm=TRUE) %% 360
+        aveWS <- mean (DCR$WSC, na.rm=TRUE)
+        title (main=sprintf ("mean measured wind is %.1f / %.1f; wind determined from drift: %.1f / %.1f", 
+                             WDMbar, WSMbar, bestWD, bestWS), sub='drifting plot')
+      } else {
+        # with (DCR, plotWAC(data.frame(Time, THDG, WDC, WSC), legend.position='right'))
+        nbins=20
+        cfit <- function (D) {
+          mwd <- mean (D$WD, na.rm=TRUE)
+          D$xi <- (Cradeg * (D$THDG + D$SSLIP * cos (D$ROLL*Cradeg) - D$ATTACK * sin (D$ROLL*Cradeg))+2*pi) %% (2*pi)
+          Dc <- D[abs(D$ROLL) > 26, ]
+          DR <- Dc[Dc$ROLL > 0, ]
+          DL <- Dc[Dc$ROLL < 0, ]
+          DL$xi <- (DL$xi - mean(DL$WD, na.rm=TRUE)*Cradeg + 2*pi) %% (2*pi)
+          DR$xi <- (DR$xi - mean(DR$WD, na.rm=TRUE)*Cradeg + 2*pi) %% (2*pi)
+          Dc$xi <- (Dc$xi - mean(Dc$WD, na.rm=TRUE)*Cradeg + 2*pi) %% (2*pi)
+          fmC <- lm (WS ~ I(cos(xi))+I(TASX*sin(xi)), data=Dc)
+          fmL <- lm (WS ~ I(cos(xi))+I(TASX*sin(xi)), data=DL)
+          fmR <- lm (WS ~ I(cos(xi))+I(TASX*sin(xi)), data=DR)
+          cfC <- coefficients (fmC)
+          cfL <- coefficients (fmL)
+          cfR <- coefficients (fmR) 
+          xi <- (0:360)*pi/180
+          EBL <- binStats (DL[, c("WS", "xi")], bins=nbins)
+          EBL$xc <- EBL$xc / Cradeg
+          EBR <- binStats (DR[, c("WS", "xi")], bins=nbins)
+          EBR$xc <- EBR$xc / Cradeg
+          EBC <- binStats (Dc[, c("WS", "xi")], bins=nbins)
+          EBC$xc <- EBC$xc / Cradeg 
+          return(list(cfL, cfR, cfC, EBL, EBR, EBC))
+        }
+        DN <- WindProcessor (DCR, CompF=FALSE)
+        DCR$WS <- DN$WSN
+        DCR$WD <- DN$WDN
+        # first call is to get the time shift
+        cflist <- cfit(DCR)
+        thdg <- DCR$THDG[abs(DCR$ROLL) > 25]
+        Rate <- DataFileInfo(fnameDCR, LLrange=FALSE)$Rate
+        dthdg <- abs(diff(thdg)) * Rate
+        dthdg[dthdg > 10] <- NA
+        TRate <- mean(dthdg, na.rm=TRUE) * Cradeg
+        shiftTHDG <- (cflist[[1]][3] - cflist[[2]][3]) / (2*TRate) * 1000
+        print (sprintf ('THDG shift is %.0f', shiftTHDG))
+        DCR$THDG <- ShiftInTime (DCR$THDG, .rate=Rate, .shift=shiftTHDG, .mod=360)
+        ## fit again
+        DN <- WindProcessor (DCR, CompF=FALSE)
+        DCR$WS <- DN$WSN
+        DCR$WD <- DN$WDN
+        cflist <- cfit(DCR)
+        ## adjust the wind if necessary, and recalculate
+        # Dc$TASX <- Dc$TASX + 0.1917  #0.4069
+        # Dc$THDG <- Dc$THDG + 0.0026/Cradeg   #((0.0037)) / Cradeg
+        cfL <- cflist[[1]]
+        cfR <- cflist[[2]]
+        cfC <- cflist[[3]]
+        EBL <- cflist[[4]]
+        EBR <- cflist[[5]]
+        EBC <- cflist[[6]]
+        DCR$xi <- (Cradeg * (DCR$THDG + DCR$SSLIP * cos (DCR$ROLL*Cradeg) - DCR$ATTACK * sin (DCR$ROLL*Cradeg))+2*pi) %% (2*pi)
+        Dc <- DCR[abs(DCR$ROLL) > 25, ]
+        DR <- Dc[Dc$ROLL > 0, ]
+        DL <- Dc[Dc$ROLL < 0, ]
+        xi <- (0:360)*pi/180
+        Ec <- EL <- ER <- data.frame ("xi"=xi)
+        Ec$WSfit <- cfC[1] + cfC[2] * cos(xi)+cfC[3]*mean(Dc$TASX, na.rm=TRUE)*sin(xi)
+        EL$WSfit <- cfL[1] + cfL[2] * cos(xi)+cfL[3]*mean(DL$TASX, na.rm=TRUE)*sin(xi)
+        ER$WSfit <- cfR[1] + cfR[2] * cos(xi)+cfR[3]*mean(DR$TASX, na.rm=TRUE)*sin(xi)
+        ymin <- 16; ymax <- 19.5
+        DL$xi <- (DL$xi - mean(DL$WD, na.rm=TRUE)*Cradeg + 2*pi) %% (2*pi)
+        DR$xi <- (DR$xi - mean(DR$WD, na.rm=TRUE)*Cradeg + 2*pi) %% (2*pi)
+        Dc$xi <- (Dc$xi - mean(Dc$WD, na.rm=TRUE)*Cradeg + 2*pi) %% (2*pi)
+        if (input$plotTypeCR == 'WS fit') {
+          meanv <- mean(Dc$TASX, na.rm=TRUE)
+          clr <- c("left", "right", "std")
+          col <- c ('blue', 'darkgreen')
+          p <- ggplot(EBL, aes(x=xc))
+          p <- p + geom_errorbar(aes(ymin=ybar-sigma, ymax=ybar+sigma, colour=clr[1])) # + ylim(ymin, ymax)
+          p <- p + scale_x_continuous (breaks=c(0,90,180,270,360))
+          p <- p + geom_point (aes(y = ybar, colour=clr[1], shape=clr[1]), size=2.5)
+          p <- p + geom_line  (data=EL, aes(x=xi/Cradeg, y=WSfit), colour='darkorange', lty=1, lwd=1.5)
+          p <- p + geom_errorbar(data=EBR, aes(ymin=ybar-sigma, ymax=ybar+sigma, colour=clr[2]))
+          p <- p + geom_point (data=EBR, aes(y = ybar, colour=clr[2], shape=clr[2]), size=2.5)
+          p <- p + geom_line  (data=ER, aes(x=xi/Cradeg, y=WSfit), colour='darkorange', lty=1, lwd=1.5)
+          DL$WSCC <- DL$WS - cfL[2]*cos(DL$xi) - cfL[3]*DL$TASX*sin(DL$xi)
+          DR$WSCC <- DR$WS - cfR[2]*cos(DR$xi) - cfR[3]*DR$TASX*sin(DR$xi)
+          EBRC <- binStats (DR[, c("WSCC", "xi")], bins=nbins)
+          EBRC$xc <- EBRC$xc / Cradeg
+          EBLC <- binStats (DL[, c("WSCC", "xi")], bins=nbins)
+          EBLC$xc <- EBLC$xc / Cradeg
+          # p <- p + geom_point (data=EBLC, aes(x=xc, y=ybar), colour='black', size=2.5)
+          # p <- p + geom_line (data=EBLC, aes(x=xc, y=ybar), colour='black')
+          # p <- p + geom_point (data=EBRC, aes(x=xc, y=ybar), colour='magenta', size=2.5)
+          # p <- p + geom_line (data=EBRC, aes(x=xc, y=ybar), colour='black')
+          # p <- p + geom_errorbar(data=EBc, aes(ymin=ybar-sigma, ymax=ybar+sigma), col='red')
+          # p <- p + geom_point (aes(y = ybar), pch=19, col='red', size=2.5)
+          # p <- p + geom_line  (data=Ec, aes(x=xi/Cradeg, y=WSfit), colour='darkorange', lty=2, lwd=2)
+          p <- p + xlab(expression(paste(xi," [", degree, "]"))) + ylab ("wind speed [m/s]")
+          p <- p + scale_colour_manual("turn direction:", labels = clr, values = col)
+          p <- p + scale_shape_manual ("turn direction:", labels = clr, values = c(19,19))
+          p <- p + theme_WAC() + theme (legend.background=element_rect(colour='black', size=0.3, fill="ivory")) 
+          p + ggtitle(sprintf ('Estimated TAS error: %.2f +/- %.2f m/s', -(cfL[2]+cfR[2])/2, abs(cfL[2]-cfR[2])/2),
+                      subtitle=sprintf ('error in modified HDG: %.2f +/- %.2f deg.; THDG time shift %d ms', 
+                                        (cfL[3]+cfR[3])/2/Cradeg, abs(cfL[3]-cfR[3])/2/Cradeg, as.integer(shiftTHDG))) +
+            labs (caption=sprintf ('WS std. dev. before correction %.2f; after correction %.2f. \nCorresponding value from TASX is %.2f',
+                                   (sd(DL$WS, na.rm=TRUE)+sd(DR$WS, na.rm=TRUE))/2,
+                                   (sd(DL$WSCC, na.rm=TRUE)+sd(DR$WSCC, na.rm=TRUE))/2,
+                                   (sd(DCR$TASX[abs(DCR$ROLL) < 3], na.rm=TRUE)+sd(DR$TASX, na.rm=TRUE)/2)))
+        } else {  ## 'SSRD offset' case
+          dbeta <- Dc$SSLIP -(Dc$PITCH-Dc$ATTACK*cos(Dc$ROLL*pi/180))/sin(Dc$ROLL*pi/180)
+          # hist (dbeta)
+          dbm <-mean (dbeta, na.rm=TRUE)
+          dbsd <- sd   (dbeta, na.rm=TRUE) / sqrt (length(dbeta))
+          cssrd <- attr(DCR$SSRD, which='SSRD')
+          if (is.null(cssrd[1])) {cssrd <- attr (DCR$SSRD, 'Calib')}
+          ttl <- sprintf ('mean SSRD error is %.2f +/- %.2f; orig. SSRD offset %.2f; new %.2f\nsuggested heading error is %.2f deg.', 
+                          dbm, dbsd, cssrd[1], cssrd[1]-dbm, (cfL[3]+cfR[3])/(2*Cradeg)-dbm*cos(27*pi/180))
+          print (ttl)
+          hist(dbeta, breaks=30, freq=FALSE, xlab='sideslip error [deg.]', main=ttl)
+        }
+      }
+    }
   })
   
   output$plotRH <- renderPlot ({

@@ -1,9 +1,8 @@
  
 PJ <- c('ARISTO2017', 'ORCAS', 'CSET', 'HCRTEST',
-        'DEEPWAVE', 'CONTRAST', 'MPEX', 'DC3',
-        'TORERO', 'HIPPO-5', 'HIPPO-4', 'PREDICT')
-PJ <- c('DC3',
-        'TORERO', 'HIPPO-5', 'HIPPO-4', 'PREDICT')
+        'DEEPWAVE', 'CONTRAST', 'MPEX', 'DC3', 'DC3-TEST', 'HEFT10',
+        'TORERO', 'HIPPO-5', 'HIPPO-4', 'HIPPO-3', 'HIPPO-2', 'HIPPO-1',
+        'IDEAS-4', 'PACDEX', 'SOCRATES-TEST', 'START08',  'PREDICT', 'TREX')
 library(Ranadu)
 source ("./PlotFunctions/SpeedRunSearch.R")
 source ("./PlotFunctions/CircleSearch.R")
@@ -48,6 +47,9 @@ ProjectSeekManeuvers <- function (Project) {
       if (grepl ('tf', Flt)) {
         Flight <- sub (".*tf", '', sub(".nc", '', Flt))
         Type <- 'tf'
+      } else if (grepl ('ff', Flt)) {
+        Flight <- sub (".*ff", '', sub (".nc", '', Flt))
+        Type <- 'ff'
       } else if (grepl ('rf', Flt)) {
         Flight <- sub (".*rf", '', sub(".nc", '', Flt))
         Type <- 'rf'
@@ -72,14 +74,18 @@ for (Project in PJ) {
   ProjectSeekManeuvers (Project)
 }
 
-# lstAll <- vector('character')
-# for (Project in PJ) {
-#   fn <- sprintf('maneuvers/maneuvers%s', Project)
-#   load(fn)
-#   lstAll <- c(lstAll, lst)
-# }
-# 
-# lstAll <- gsub('  *', ';', lstAll)
-# sink(file='ManeuversGV.csv')
-# print (lstAll)
-# sink()
+lstAll <- vector('character')
+for (Project in PJ) {
+  fn <- sprintf('maneuvers/maneuvers%s', Project)
+  load(fn)
+  lstAll <- c(lstAll, lst)
+}
+
+lstAll <- gsub('maneuver ', '', lstAll)
+lstAll <- gsub('speed run', 'speed-run', lstAll)
+lstAll <- gsub('  *', ';', lstAll)
+lstAll <- gsub('--', ';', lstAll)
+lstAll <- gsub(',', '', lstAll)
+sink(file='ManeuversGV.csv')
+print (lstAll)
+sink()
