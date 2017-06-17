@@ -427,7 +427,7 @@ ui <- fluidPage (
                                                                                                                choices=CHP)),
                                                                                          column(4, actionButton('infoSR', label='Info'))
                                                                                        ),
-                                                                                       sliderInput('sliderSR', label='set delay [ms]', min=-5000, max=5000, step=50, value=0),
+                                                                                       slide  tabsetPanel (id='whichTab', type='pills',rInput('sliderSR', label='set delay [ms]', min=-5000, max=5000, step=50, value=0),
                                                                                        selectInput('varSR', label='other variable (type-3 plot)', 
                                                                                                    choices=sort((DataFileInfo(sprintf ('%s%s/%srf01.nc', DataDirectory(), ProjectPP, ProjectPP)))$Variables), selected='RTX')
                                                                          ),
@@ -735,7 +735,7 @@ ui <- fluidPage (
                                                   )
                                                 )
                                                 ),
-                                      tabPanel ('T probe icing/wetting'),
+                                      tabPanel ('in-cloud T/DP check'),
                                       tabPanel ('T/DP match'),
                                       tabPanel ('missing/frozen var'),
                                       tabPanel ('bad DP cavity P')
