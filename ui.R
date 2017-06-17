@@ -427,7 +427,7 @@ ui <- fluidPage (
                                                                                                                choices=CHP)),
                                                                                          column(4, actionButton('infoSR', label='Info'))
                                                                                        ),
-                                                                                       slide  tabsetPanel (id='whichTab', type='pills',rInput('sliderSR', label='set delay [ms]', min=-5000, max=5000, step=50, value=0),
+                                                                                       sliderInput('sliderSR', label='set delay [ms]', min=-5000, max=5000, step=50, value=0),
                                                                                        selectInput('varSR', label='other variable (type-3 plot)', 
                                                                                                    choices=sort((DataFileInfo(sprintf ('%s%s/%srf01.nc', DataDirectory(), ProjectPP, ProjectPP)))$Variables), selected='RTX')
                                                                          ),
@@ -735,8 +735,50 @@ ui <- fluidPage (
                                                   )
                                                 )
                                                 ),
-                                      tabPanel ('in-cloud T/DP check'),
-                                      tabPanel ('T/DP match'),
+                                      tabPanel ('in-cloud check',
+                                                fluidRow (
+                                                  column(3, numericInput('concd', label='CONCD', value=10, min=10, max=1000, step=10)),
+                                                  column(3, numericInput('lwcd', label='PLWCD', value=0.1, min=0.05, max=2, step=0.05)),
+                                                  column(3, numericInput('csec', label='seconds', value=2, min=1, max=20, step=1)),
+                                                  column(3, numericInput('sigIC', label='sigma to remove', value=3, step=1))
+                                                ),
+                                                fluidRow(
+                                                  column (1, actionButton ('resetTIC', label='reset time')),
+                                                  column(1, actionButton ('resetIC', label='reset flag')),
+                                                  column (1, actionButton ('prevIC', label='prev')),
+                                                  column(1, actionButton ('nextIC', label='next')),
+                                                  column(2, actionButton ('setBadIC', label='flag interval as bad')),
+                                                  column(2, actionButton ('saveIC', label='save reject intervals'))
+                                                ),
+                                                # Sidebar with slider inputs for display interval and flag interval
+                                                sidebarLayout(
+                                                  sidebarPanel(
+                                                    sliderInput("timesIC",
+                                                                "time range:",
+                                                                min = minT,
+                                                                max = maxT, step=60,
+                                                                timeFormat='%F %T',
+                                                                timezone='+0000',
+                                                                value = c(minT, maxT),
+                                                                dragRange=TRUE),
+                                                    fluidRow (
+                                                      column(6, selectInput ('pltIC', label='plot type', choices=c('scatterplot', 'histogram'),
+                                                                             selected='scatterplot')),
+                                                      column(6, selectInput ('pvarIC', label='plot variable', choices=c('CONCD', 'PLWCD', 
+                                                                                                                        'WIC', 'ATX/DPXC'),
+                                                                             selected='CONCD'))
+                                                    ),
+                                                    checkboxInput('allIC', label='All flights for this project'),
+                                                    radioButtons ('inCloud', label='list of rejected times',
+                                                                  choices=chIC)
+                                                  ),
+                                                  
+                                                  # Show a plot of the measurements
+                                                  mainPanel(
+                                                    plotOutput("inCloudPlot"),
+                                                    plotOutput("ICtimePlot", brush=brushOpts(id='plot_brushIC', delay=3000, delayType='debounce', resetOnNew=TRUE))
+                                                  )
+                                                )),
                                       tabPanel ('missing/frozen var'),
                                       tabPanel ('bad DP cavity P')
                                       )
