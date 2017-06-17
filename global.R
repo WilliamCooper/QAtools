@@ -270,6 +270,8 @@ ProjectPP <- 'ARISTO2017'
 ProjectKF <- 'CSET'
 Flight <- 1
 FlightKF <- 1
+ProjectKP <- 'CSET'
+FlightKP <- 1
 
 getNext <- function(Project) {
   Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), Project),
@@ -1116,6 +1118,26 @@ setNA <- function (.x, .v) {
   X <- zoo::na.approx (as.vector (.x), maxgap=1000, na.rm=FALSE)
   X[is.na(X)] <- .v
   return (X)
+}
+saveICEvents <- function () {
+  save(BadCloudEvents, file='BadCloudEvents.Rdata')
+}
+if (file.exists('BadCloudEvents.Rdata')) {
+  load('BadCloudEvents.Rdata')
+  if (nrow(BadCloudEvents) > 0) {
+    chIC <- vector('character', nrow(BadCloudEvents))
+    for (i in 1:nrow(BadCloudEvents)) {
+      u <- ifelse (BadCloudEvents$Rej[i], 'Y', 'N')
+      print (s <- sprintf ('%s %d %s rf%02d %s-%s', u, i, BadCloudEvents$Project[i], BadCloudEvents$Flight[i],
+                           formatTime(BadCloudEvents$Start[i]), formatTime(BadCloudEvents$End[i])))
+      chIC[i] <- sprintf ('%d', i)
+      names(chIC)[i] <- s
+    }
+  } else {
+    chIC <- 'none'
+  }
+} else {
+  chIC <- 'none'
 }
 itmL <- 0
 addDPERR <- function (Data) {

@@ -2988,5 +2988,281 @@ server <- function(input, output, session) {
     abline(h=0)
     abline(v=input$dqftimes[1], lwd=0.5, lty=2); abline(v=input$dqftimes[2], lwd=0.5, lty=2)
   })
+  
+  ## in-cloud stuff:
+  getDataIC <- reactive({                     ## data
+    Project <- input$ProjectKP
+    Flight <- input$FlightKP
+    if (grepl('HIPPO', Project)) {
+      ProjDir <- 'HIPPO'
+    } else {
+      ProjDir <- Project
+    }
+    
+    dfile <- sprintf ('Data%s.Rdata', Project)
+    if (file.exists(dfile)) {
+      load(dfile)    # loads DataIC
+    } else {
+      DataIC <- data.frame()
+      VarListIC <- standardVariables (c('CONCD_', 'PLWCD_', 'DBARD_', 'CCDP_'))
+      #Data <- getNetCDF(fname, VarListIC)
+      Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjDir),
+                              sprintf ("%srf...nc$", Project)))
+      if (!is.na (Fl[1])) {
+        for (Flt in Fl) {
+          FltIC <- sub('.*rf', '', sub ('.nc$', '', Flt))
+          FltIC <- as.integer (FltIC)
+          fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), 
+                            ProjDir, Project, FltIC)
+          print (fname)
+          DataIC <- rbind (DataIC, getNetCDF(fname, VarListIC, F=FltIC))
+        }
+      }
+      namesData <- names(DataIC)
+      namesData[which(grepl('CONCD_', namesData))] <- 'CONCD'
+      namesData[which(grepl('PLWCD_', namesData))] <- 'PLWCD'
+      namesData[which(grepl('DBARD_', namesData))] <- 'DBARD'
+      namesData[which(grepl('CCDP_', namesData))] <- 'CCDP'
+      names(DataIC) <- namesData
+      save(DataIC, file=dfile)
+    }
+    if (!input$allIC) {
+      Data <- DataIC[DataIC$RF == Flight,]
+    } else {
+      Data <- DataIC
+    }
+    Data$InCloud <- Data$CONCD > input$concd & Data$PLWCD > input$lwcd
+    Data$InCloud[is.na(Data$InCloud)] <- FALSE
+    # require csec-prior-seconds to also be in cloud:
+    ix <- which(Data$InCloud)
+    ixx <- ix;
+    for (i in ixx) {
+      tst <- TRUE
+      for (j in 1:input$csec) {
+        tst <- tst & Data$InCloud[i-j]
+      }
+      if (!tst) {
+        ix[which(i == ix)] <- -1
+      }
+      # if (!Data$InCloud[i-2] || !Data$InCloud[i-1]) {
+      #   ix[which(i == ix)] <- -1
+      # }
+    }
+    ix <- ix[ix > 0]
+    Data <<- Data
+    times <- c(Data$Time[1], Data$Time[nrow(Data)])
+    print (sprintf ('times = %s %s', times[1], times[2]))
+    updateSliderInput (session, 'timesIC', min=times[1], max=times[2], value=times)
+    Data$IC <- rep(FALSE, nrow(Data))
+    Data$IC[ix] <- TRUE
+    return (Data)
+  })
+  
+  observeEvent (input$plot_brushIC, {
+    xmin <- as.integer(input$plot_brushIC$xmin)
+    xmax <- as.integer(input$plot_brushIC$xmax)
+    T1 <- as.POSIXlt(xmin, origin='1970-01-01', tz='UTC')
+    T2 <- as.POSIXlt(xmax, origin='1970-01-01', tz='UTC')
+    TB1 <- T1$hour*10000 + T1$min*100 + T1$sec
+    TB2 <- T2$hour*10000 + T2$min*100 + T2$sec
+    print (sprintf ('brush times are %d %d', TB1, TB2))
+    updateSliderInput (session, 'timesIC', value=c(T1, T2))
+  }) 
+  
+  observeEvent (input$resetTIC, {
+    step <- 60
+    minT <- Data$Time[1]
+    minT <- minT - as.integer (minT) %% step + step
+    maxT <- Data$Time[nrow(Data)]
+    maxT <- maxT - as.integer (maxT) %% step
+    times <- c(minT, maxT)
+    updateSliderInput (session, 'timesIC', value=times)
+  })
+  
+  observeEvent (input$nextIC, {
+    times <- isolate(input$timesIC)
+    dt <- difftime (times[2], times[1])
+    times <- times + dt
+    updateSliderInput (session, 'timesIC', value=times)
+  } )
+  
+  observeEvent (input$prevIC, {
+    times <- isolate(input$timesIC)
+    dt <- difftime (times[2], times[1])
+    times <- times - dt
+    updateSliderInput (session, 'timesIC', value=times)
+  } )
+  
+  
+  # observeEvent (input$add, {
+  #   DFP <- isolate(input$Project)
+  #   DFF <- isolate (input$Flight)
+  #   times <- isolate (input$times)
+  #   print (sprintf ('adding to CloudEvent data.frame, values are %s %d %s %s', DFP, DFF, times[1], times[2]))
+  #   print ('before adding:')
+  #   print (CloudEvents)
+  #   CloudEvents <<- rbind(CloudEvents, data.frame(Project=DFP, Flight=DFF, Start=times[1], End=times[2]))
+  #   print ('after')
+  #   print (CloudEvents)
+  # })
+  
+  observeEvent (input$resetIC, {
+    itm <- isolate (input$inCloud)
+    if (length(itm) > 0 && itm != 'none') {
+      itm <- as.integer(itm)
+      times <- c(BadCloudEventsSave$Start[itm], BadCloudEventsSave$End[itm])
+      updateSliderInput (session, 'timesIC', value=times)
+      BadCloudEvents$Rej[itm] <<- 0
+      BadCloudEvents$Start[itm] <<- BadCloudEventsSave$Start[itm]
+      BadCloudEvents$End[itm] <<- BadCloudEventsSave$End[itm]
+      flight <- isolate(input$FlightKP)
+      project <- isolate(input$ProjectKP)
+      if (nrow(BadCloudEvents) >= itm) {
+        print (s <- sprintf ('N %d %s rf%02d %s-%s', itm, project, flight,
+                             formatTime(BadCloudEvents$Start[itm]), formatTime(BadCloudEvents$End[itm])))
+        chIC[itm] <<- sprintf ('%d', itm)
+        names(chIC)[itm] <<- s
+        updateRadioButtons(session, inputId='inCloud', choices=chIC, selected=itm)
+      }
+    }
+  })
+  
+  observeEvent (input$setBadIC, {
+    if (!exists ('BadCloudEvents')) {
+      BadCloudEvents <<- data.frame()
+    }
+    times <- isolate (input$timesIC)
+    project <- isolate (input$ProjectKP)
+    flight <- isolate (input$FlightKP)
+    BadCloudEvents <<- rbind(BadCloudEvents, data.frame(Project=project, Flight=flight, Start=times[1], 
+                                                        End=times[2], Rej=1))
+    BadCloudEventsSave <<- BadCloudEvents
+    if (nrow(BadCloudEvents) > 0) {
+      chIC <- vector('character', nrow(BadCloudEvents))
+      for (i in 1:nrow(BadCloudEvents)) {
+        u <- ifelse (BadCloudEvents$Rej[i], 'Y', 'N')
+        print (s <- sprintf ('%s %d %s rf%02d %s-%s', u, i, BadCloudEvents$Project[i], BadCloudEvents$Flight[i],
+                             formatTime(BadCloudEvents$Start[i]), formatTime(BadCloudEvents$End[i])))
+        chIC[i] <- sprintf ('%d', i)
+        names(chIC)[i] <- s
+      }
+      chIC <<- chIC
+      updateRadioButtons(session, inputId='inCloud', choices=chIC, selected=sprintf('%d', nrow(BadCloudEvents)))
+      # minT <- DataTDP$Time[which (DataTDP$Time >= DQF$Start[1])[1]]
+      # step <- 10
+      # minT <- minT - as.integer (minT) %% step - step
+      # maxT <- DataTDP$Time[which (DataTDP$Time >= DQF$End[1])[1]]
+      # maxT <- maxT - as.integer (maxT) %% step + step
+      # times <- c(minT-120, maxT+120)
+      # updateSliderInput (session, 'timesTDP', value=times)
+      # updateSliderInput (session, 'dqftimes', min=times[1], max=times[2], value=c(DQF$Start[1], DQF$End[1]))
+    }
+  })
+  
+  observeEvent (input$saveIC, {
+    print ('saving BadCloudEvents data.frame')
+    saveICEvents()
+  })
+  
+  observeEvent (input$searchIC, {
+    project <- isolate (input$ProjectKP)
+    flight <- isolate (input$FlightKP)
+    constructIC(project, flight)
+    if (nrow(DIC) > 0) {
+      chDIC <- vector('character', nrow(DIC))
+      for (i in 1:nrow(DIC)) {
+        u <- ifelse (DIC$Use[i], 'Y', 'N')
+        print (s <- sprintf ('%s %d %s-%s', u, i, 
+                             formatTime(DIC$Start[i]), formatTime(DIC$End[i])))
+        chDIC[i] <- sprintf ('%d', i)
+        names(chDIC)[i] <- s
+      }
+      updateRadioButtons(session, inputId='inCloud', choices=chDIC, selected='1')
+      minT <- DataIC$Time[which (DataIC$Time >= DIC$Start[1])[1]]
+      step <- 10
+      minT <- minT - as.integer (minT) %% step - step
+      maxT <- DataIC$Time[which (DataIC$Time >= DIC$End[1])[1]]
+      maxT <- maxT - as.integer (maxT) %% step + step
+      times <- c(minT-120, maxT+120)
+      updateSliderInput (session, 'timesIC', value=times)
+    }
+  })
+  
+  output$inCloudPlot <- renderPlot({
+    input$ProjectKP
+    input$FlightKP
+    data <- getDataIC()
+    times <- input$timesIC
+    i1 <- which(data$Time >= times[1])[1]
+    i2 <- which(data$Time >= times[2])[1]
+    d <- data[i1:i2,]
+    ## make sensitive to changes in radioButtons:
+    input$inCloud
+    ## eliminate times included in BadCloudEvents
+    if (exists('BadCloudEvents')) {
+      for (i in 1:nrow(BadCloudEvents)) {
+        if (BadCloudEvents$Rej[i] < 1) {next}
+        j1 <- which(d$Time >= BadCloudEvents$Start[i])[1] 
+        j2 <- which(d$Time >= BadCloudEvents$End[i])[1] 
+        print (sprintf ('event %d j1=%d, j2=%d times are %s--%s', i, j1, j2, BadCloudEvents$Start[i], BadCloudEvents$End[i]))
+        if (!is.na(j1) && !is.na(j2) && j2-j1 > 0) {
+          d <- d[-c(j1:j2),]
+        }
+      }
+    }
+    if (sum(d$IC, na.rm=TRUE) < 2) {
+      plot(c(-1,1), c(-1,1), type='n')
+      text (0,0,labels='no in-cloud data for this flight')
+    } else {
+      # fm <- lm(ATX ~ DPXC, data=d[d$IC,])
+      d$ATX <- setNA(d$ATX, 0)
+      d$DPXC <- setNA(d$DPXC, 0)
+      df <- with(d[d$IC,], DemingFit(ATX, DPXC))
+      rsd <- df[1]+df[2]*d$ATX[d$IC]-d$DPXC[d$IC]
+      # print(df)        
+      # print(rsd)
+      irm <- which(abs(rsd) > input$sigIC*df[3])
+      # print (sprintf( 'irm is %d', irm))
+      dd <- d[d$IC,]
+      if (length(irm) > 0) {
+        dd <- dd[-irm,]
+      }
+      if (nrow(dd) < 2 || sum(dd$IC, na.rm=TRUE) < 2) {
+        plot(c(-1,1), c(-1,1), type='n')
+        text (0,0,labels='no in-cloud data for this flight')
+      } else {
+        if (input$pltIC == 'scatterplot') {
+          with(dd, plotWAC(data.frame(DPXC, ATX), xlab='dew point', type='p', pch=20))
+          lines(c(-50,50), c(-50,50), col='darkorange', lwd=2, lty=2)
+          df <- with(dd, DemingFit(ATX, DPXC))
+          rmsu <- with(dd, sqrt(mean((ATX-DPXC)^2, na.rm=TRUE)))
+          title(sprintf ('Deming fit: ATX=%.2f+%.2f*DPXC, rms=%.2f, 1:1 rms=%.2f for %d points', df[1], df[2], df[3], rmsu, sum(dd$IC)))
+          print (df)
+        } else {
+          hist (dd$ATX-dd$DPXC, breaks=c(min(min(dd$ATX-dd$DPXC, na.rm=TRUE),-2.1),(0:40)*0.1-2,max(max(dd$ATX-dd$DPXC, na.rm=TRUE),2.1)), 
+                xlim=c(-2,2), xlab='ATX-DPXC',
+                main=sprintf ('mean %.2f sd %.2f', mean(dd$ATX-dd$DPXC, na.rm=TRUE),
+                              sd(dd$ATX-dd$DPXC, na.rm=TRUE)))
+        }
+      }
+    }
+  })
+  
+  output$ICtimePlot <- renderPlot({
+    input$ProjectKP
+    input$FlightKP
+    data <- getDataIC()
+    times <- input$timesIC
+    i1 <- which(data$Time >= times[1])[1]
+    i2 <- which(data$Time >= times[2])[1]
+    pv <- input$pvarIC
+    if (pv == 'ATX/DPXC') {
+      pv <- c('ATX', 'DPXC')
+    }
+    plotWAC(data[i1:i2,c('Time',pv)])
+    d <- data[i1:i2,]
+    d[!d$IC, pv[1]] <- NA
+    lines(d$Time, d[,pv[1]], lwd=3, col='red')
+  })
 }
 
