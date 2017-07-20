@@ -5,6 +5,8 @@ rm(list=ls(all=TRUE))
 suppressMessages (
   library(shiny, quietly=TRUE, warn.conflicts=FALSE)
 )
+library(shinyBS, quietly=TRUE, warn.conflicts=FALSE)
+
 suppressMessages (suppressWarnings (
   library(Ranadu, quietly=TRUE, warn.conflicts=FALSE))
 )
@@ -1043,6 +1045,10 @@ loadVRPlot <- function (Project, Production, Flight, psq) {
   return (VRPlot)
 }
 load ('CalibrationExercise/CalData.Rdata')
+chooseQVar <- function (fname, inp) {
+  quickPlotVar <<- setVariableList (fname, single=TRUE)
+}
+
 options("digits"=4)
 SummarizeFit <- function(ft) {
   options("digits"=4)
@@ -1120,7 +1126,7 @@ setNA <- function (.x, .v) {
   return (X)
 }
 saveICEvents <- function () {
-  save(BadCloudEvents, file='BadCloudEvents.Rdata')
+  save(BadCloudEvents, file='inCloud/BadCloudEvents.Rdata')
 }
 if (file.exists('BadCloudEvents.Rdata')) {
   load('BadCloudEvents.Rdata')

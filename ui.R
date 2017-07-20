@@ -8,7 +8,7 @@
 ui <- fluidPage (
   
   # Application title
-  titlePanel("QA / QC Functions"),
+  titlePanel("QA / QC Tools"),
   tabsetPanel (id='whichTab', type='pills',
                tabPanel ('Guide',
                          includeHTML ('Information.html')),
@@ -605,9 +605,18 @@ ui <- fluidPage (
                                                           'etc., here.')))),
                                                 htmlOutput ('txtCalc1')
                                                 ),
-                                      tabPanel('Other Programs'
+                                      # tabPanel ('Basic time-series plot',
+                                      #           selectInput ('bplotVar', label='Variable(s)',
+                                      #                        choices='ATX')
+                                      #           
+                                      #           ),
+                                      tabPanel('Other Programs',
+                                               tabsetPanel (id='whichOtherP', type='pills',
+                                                            tabPanel ('start ncplot'),
+                                                            tabPanel ('Basic time-series plot'),
+                                                            tabPanel ('Basic size-distribution')
                                                # actionButton (inputId='Ran', label = 'Start Ranadu')
-                                      ))),
+                                      )))),
                tabPanel ('Review',
                          # titlePanel (tags$h1 ('Data Review')),
                          tags$script(HTML("$(function() {
@@ -625,13 +634,14 @@ ui <- fluidPage (
                            ),
                            column (5, wellPanel (
                              fluidRow (
-                               column (4, numericInput (inputId='Flight', label='Flight', value=1,
+                               column (3, numericInput (inputId='Flight', label='Flight', value=1,
                                                         min=1, max=99, step=1, width='80px')),
                                column (2, radioButtons ('typeFlight', label=NULL, choices=c('rf', 'tf', 'ff'),
                                                         width='70px', inline=TRUE)),
                                # column (2, checkboxInput ('Production', label='PR')),
-                               column (4, numericInput (inputId='plot', label='plot', value=1,
-                                                        min=1, max=49, step=1, width='80px'))))),
+                               column (3, numericInput (inputId='plot', label='plot', value=1,
+                                                        min=1, max=49, step=1, width='80px')),
+                               column(3, actionButton ('qcheck', label='quick', icon=icon('file-image-o'), width='80px'))))),
                            column(4, wellPanel (
                              fluidRow (
                                column (4, actionButton (inputId='savePDF', label='PDF', icon=icon('file-pdf-o'))),
@@ -656,6 +666,8 @@ ui <- fluidPage (
                                        column (3, numericInput ('minZ', 'Zmin-km', 2, width='90px')),
                                        column (3, numericInput ('maxROC', 'abs ROC', 5, width='90px')))
                                      ))), widths=c(3,9)),
+                         bsModal("quickCheck", title=NULL, trigger='qcheck', size = "large", plotOutput("quickPlot")),
+                         
                          
                          
                          sidebarLayout (sidebarPanel(width=3,
@@ -737,10 +749,11 @@ ui <- fluidPage (
                                                 ),
                                       tabPanel ('in-cloud check',
                                                 fluidRow (
+                                                  column(2, actionButton ('infoIC', label='Info')),
                                                   column(3, numericInput('concd', label='CONCD', value=10, min=10, max=1000, step=10)),
                                                   column(3, numericInput('lwcd', label='PLWCD', value=0.1, min=0.05, max=2, step=0.05)),
-                                                  column(3, numericInput('csec', label='seconds', value=2, min=1, max=20, step=1)),
-                                                  column(3, numericInput('sigIC', label='sigma to remove', value=3, step=1))
+                                                  column(2, numericInput('csec', label='seconds', value=2, min=1, max=20, step=1)),
+                                                  column(2, numericInput('sigIC', label='sigma to remove', value=3, step=1))
                                                 ),
                                                 fluidRow(
                                                   column (1, actionButton ('resetTIC', label='reset time')),

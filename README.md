@@ -1,4 +1,4 @@
-# QAfunctions
+# QAtools
 A Shiny app for data quality assurance testing.
 
 This repository has the content for an extended Shiny app that provides functions to use when reviewing 

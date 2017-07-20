@@ -680,6 +680,15 @@ server <- function(input, output, session) {
     ))
   })
   
+  observeEvent (input$infoIC, {
+    showModal(modalDialog(
+      includeHTML('inCloud/inCloud.html'),
+      title = "Instructions and Expected Results",
+      size='l',
+      easyClose = TRUE
+    ))
+  })
+  
   observeEvent (input$infoSR, {
     showModal(modalDialog(
       includeHTML('maneuvers/SRMan.html'),
@@ -815,6 +824,17 @@ server <- function(input, output, session) {
     ))
   })
   
+  observeEvent (input$qcheck, {
+    chooseQVar (fname)
+    ## check if any requested variables not present in Data:
+    if (any (!(quickPlotVar %in% VarList))) {
+      VarList <<- unique (c(VarList, quickPlotVar))
+      # print (c(VarList, quickPlotVar))
+      isolate (reac$newdata <- reac$newdata + 1)
+    }
+    isolate (reac$quick <- reac$quick + 1)
+  })
+  
   
   observe ({                          ## global time
     if (Trace) {print ('entering global-time observer')}
@@ -823,7 +843,7 @@ server <- function(input, output, session) {
   
   ################ REACTIVES ########################
   
-  reac <- reactiveValues (newdata=FALSE, newdisplay=FALSE)
+  reac <- reactiveValues (newdata=FALSE, newdisplay=FALSE, quick = 0)
   
   flightType <- reactive ({              ## typeFlight
     ## reset typeFlight to rf
@@ -842,6 +862,9 @@ server <- function(input, output, session) {
       for (j in 1:length (VRPlot[[i]])) {
         VarList <- c(VarList, VRPlot[[i]][j])
       }
+    }
+    if (exists ('quickPlotVar')) {
+      VarList <- c(VarList, quickPlotVar)
     }
     VarList <- unique (VarList)
     VarList <- VarList[!is.na(VarList)]
@@ -2999,7 +3022,7 @@ server <- function(input, output, session) {
       ProjDir <- Project
     }
     
-    dfile <- sprintf ('Data%s.Rdata', Project)
+    dfile <- sprintf ('inCloud/DataIC%s.Rdata', Project)
     if (file.exists(dfile)) {
       load(dfile)    # loads DataIC
     } else {
@@ -3264,5 +3287,21 @@ server <- function(input, output, session) {
     d[!d$IC, pv[1]] <- NA
     lines(d$Time, d[,pv[1]], lwd=3, col='red')
   })
+  
+  output$quickPlot <- renderPlot ({
+    reac$quick
+    if (Trace) {print ('quickPlot: entered')}
+    Data <- data ()
+    if (!(quickPlotVar %in% names (Data))) {
+      isolate(reac$newdata <- reac$newdata + 1)
+      isolate (reac$quick <- reac$quick + 1)
+      return ()
+    }
+    times <- isolate(input$times)
+    Data <- Data[Data$Time >= times[1] & Data$Time <= times[2], ]
+    plotWAC(Data[, c('Time', quickPlotVar)])
+  })
+  
+  
 }
 
