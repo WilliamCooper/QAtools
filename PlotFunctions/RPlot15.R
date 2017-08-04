@@ -4,46 +4,73 @@ RPlot15 <- function(data, Seq=NA) {
   if (is.na(Seq) || (Seq == 1)) {
     op <- par (mar=c(2,4,1,1)+0.1,oma=c(1.1,0,0,0))
     CU <- VRPlot[[15]]
-    CU <- CU[which("CONCU" == substr(CU, 1, 5) | "CONCN" == substr(CU, 1, 5))]
-    va <- vector()
-    for (c in CU) {
-      nm <- names(data)[grepl(c, names(data))]
-      if (length (nm) > 1) {nm <- nm[1]}  ## handle multiple probes
-      v <- sub("_.*", "", c)
-      data[, v] <- SmoothInterp (data[, nm])
-      va <- c(va, v)
-    }
-    # remove zeroes for log plot:
-    for (v in va) {
-      data[!is.na(data[, v]) & (data[, v] <= 0), v] <- NA
-    }
+    ## only use CONCU or CONCN for the first plot
     
-    plotWAC (data[, c("Time", va)], 
-             logxy='y', ylim=c(1,1.e5), 
-             ylab=expression (paste ("CONCy [cm"^"-3"*"]")))
-    title ("1-min filter", cex.main=0.75)
+    ## select those from VRPlot[[15]] needed for the first panel:
+    V15a <- c('CONCU_', 'CONCN', 'CONCP_', 'CONCU100_', 'CONCU500_', 'CNCONC')  ## either CONCN or CONCN_WCN
+    CU1 <- vector()
+    for (v in CU) {    ## why not the simpler charmatch? Because it doesn't work for multiple probes
+      if (any(grepl(v, V15a))) {
+        CU1 <- c(CU1, v)
+      }
+    }
+    if (length(CU1) > 0) {
+      va <- vector()
+      for (c in CU1) {
+        nm <- names(data)[grepl(c, names(data))]
+        if (length (nm) > 1) {nm <- nm[1]}  ## if not explicitly given, select first match
+        # v <- sub("_.*", "", c)
+        data[, nm] <- SmoothInterp (data[, nm])
+        va <- c(va, nm)
+      }
+      # remove zeroes for log plot:
+      for (v in va) {
+        data[!is.na(data[, v]) & (data[, v] <= 0), v] <- NA
+      }
+      
+      if (length(va) > 0) {
+        plotWAC (data[, c("Time", va)], 
+          logxy='y', ylim=c(1,1.e5), 
+          ylab=expression (paste ("CONCy [cm"^"-3"*"]")))
+        title ("1-min filter", cex.main=0.75)
+      } else {
+        plot (0,0, xlim=c(data$Time[1], data$Time[nrow(data)]), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+        text (data$Time[1], 0.8, 'no particle measurements', adj=0.5)
+      }
+    } else {
+      plot (0,0, xlim=c(data$Time[1], data$Time[nrow(data)]), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+      tc <- data$Time[nrow(data) %/% 2]
+      text (tc, 0.8, labels='no particle measurements')
+    }
     op <- par (mar=c(5,4,1,1)+0.1)
     C <- VRPlot[[15]]
-    C <- C[which("CONC" == substr(C, 1, 4) & "CONCU" != substr(C,1,5))]
+    C <- C[which("CONC" == substr(C, 1, 4) & "CONCU" != substr(C,1,5) & "CONCP" != substr(C,1,5))]
     va2 <- vector()
     for (c in C) {
       nm <- names(data)[grepl(c, names(data))]
-      v <- sub("_.*", "", c)
-      data[, v] <- SmoothInterp (data[, nm])
-      va2 <- c(va2, v)
+      # v <- sub("_.*", "", c)
+      data[, nm] <- SmoothInterp (data[, nm])
+      va2 <- c(va2, nm)
     }
+    print (c("va2", va2))
     for (v in va2) {
       data[!is.na(data[, v]) & (data[, v] <= 0), v] <- NA
     }
-    plotWAC (data[, c("Time", va2)],
+    if (length(va2) > 0) {
+      plotWAC (data[, c("Time", va2)],
              logxy='y', ylim=c(0.001,1e4), ylab=expression(paste("CONCy [cm"^"-3"*"]")))
-    title ("1-min filter", cex.main=0.75)
+      title ("1-min filter", cex.main=0.75)
+    } 
     AddFooter ()
     if (!is.na(Seq) && (Seq == 1)) {return ()}
   }
   op <- par (mar=c(5,4,1,1)+0.1)
   nm6 <- names(data)[grepl("USHFLW_", names(data))]
-  if (length(nm6) == 0) {return()}
+  if (length(nm6) == 0) {
+      plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+      text (0.5, 0.8, 'no housekeeping variables for the UHSAS')
+      return()
+  }
   USHFLW <- data[, nm6]
   nm7 <- names(data)[grepl("USMPFLW_", names(data))]
   USMPFLW <- data[, nm7]

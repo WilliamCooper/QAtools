@@ -223,6 +223,10 @@ server <- function(input, output, session) {
     isolate (np <- input$plot)
     if (length (input$PlotVar) < 1) {return()}
     PVar <- input$PlotVar
+    if (Trace) {
+      print (sprintf ('PlotVar observer: ncol(data) is %d', ncol(data())))
+      print (sort(names(data())))
+    }
     if ((length(data ()) < 2) || any (!(PVar %in% names (data ())))) {
       print ('need new data')
       reac$newdata <- TRUE
@@ -1676,7 +1680,7 @@ server <- function(input, output, session) {
     reac$newdisplay <- TRUE
     if (file.exists(fname)) {
       D <- getNetCDF (fname, VarList)
-      if (length (D) > 1) {
+      if (ncol (D) > 1) {
         fname.last <<- fname
         return (D)
       } else {
@@ -1697,19 +1701,46 @@ server <- function(input, output, session) {
         fname.last <<- fname
         # print (sprintf ('data returned with dimensions %d', dim(Data)))
         return (Data)
-      }
-      ## try tf01
-      fn <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory (), input$Project,
-        input$Project, 'tf', input$Flight)
-      if (file.exists (fn)) {
-        warning (sprintf ('switched to tf%02d because rf%02d does not exist',
-          input$Flight, input$Flight))
-        updateRadioButtons (session, 'typeFlight', label=NULL, selected='tf')
-        typeFlight <<- 'tf'
-        return (getNetCDF (fn, VarList))
       } else {
-        if (Trace) {print ('error in data, returning -1')}
-        return (-1)
+        ## try tf (maybe project hasn't started)
+        fn <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory (), input$Project,
+          input$Project, 'tf', input$Flight)
+        if (file.exists (fn)) {
+          warning (sprintf ('switched to tf%02d because rf%02d does not exist',
+            input$Flight, input$Flight))
+          updateRadioButtons (session, 'typeFlight', label=NULL, selected='tf')
+          typeFlight <<- 'tf'
+          return (getNetCDF (fn, VarList))
+        }
+        ## return a substitute to avoid looping
+        Project <- input$Project
+        ProjectDir <- Project
+        if (grepl('HIPPO', ProjectDir)) {ProjectDir <- 'HIPPO'}
+          Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjectDir),
+            sprintf ("%srf...nc", Project)), decreasing = TRUE)[1]
+          if (is.na (Fl)) {
+            Flight <- 1
+          } else {
+            Flight <- sub (".*rf", '',  sub (".nc", '', Fl))
+            Flight <- as.numeric(Flight)
+          }
+          fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory (), ProjectDir, Project, Flight)
+          if (file.exists(fname)) {
+            warning (sprintf ('returning highest-numbered file %s instead', fname))
+            updateNumericInput(session, 'Flight', value=Flight)
+            D <- getNetCDF (fname, VarList)
+            if (length (D) > 1) {
+              fname.last <<- fname
+              return (D)
+            } else {
+              print (sprintf ('fname=%s', fname))
+              print (VarList)
+              ## stopping to prevent looping
+              stop ('variable not found; stopping to avoid looping')
+            }
+          } else {
+            stop ('file not found; stopping to avoid looping')
+          }
       }
     }
   })
@@ -1783,6 +1814,7 @@ server <- function(input, output, session) {
       for (n in namesV) {
         Data[!is.na(Data[ ,n]) & (abs(Data[,n]+32767) < 1), n] <- NA
       }
+      DataVa <<- Data
       # Data <- Data[(Data$Time > input$times[1]) & (Data$Time < input$times[2]), ]
       Data <- Data[(Data$Time > times[1]) & (Data$Time < times[2]), ]
       if (nrow (Data) <= 0) {
@@ -1834,9 +1866,12 @@ server <- function(input, output, session) {
           FigDatestr),1,outer=T,cex=0.75)
       }
       if (input$limits) {
+        DataV <- transferAttributes(DataV, DataVa)
         eval(parse(text=sprintf("RPlot%d(DataV, Seq=%d)",
           psq[1, input$plot], psq[2, input$plot])))
       } else {
+        Data <- transferAttributes(Data, DataVa)
+        DataVc <<- Data
         eval(parse(text=sprintf("RPlot%d(Data, Seq=%d)",
           psq[1, input$plot], psq[2, input$plot])))
       }

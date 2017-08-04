@@ -18,6 +18,8 @@ options (stringsAsFactors=FALSE)
 Trace <- FALSE
 Trace <- TRUE
 
+## temporary, pending update of Ranadu package:
+source ("../Ranadu/R/getNetCDF.R")
 minT <- as.POSIXct(0, origin='2012-05-29', tz='UTC')
 maxT <- as.POSIXct(3600*8, origin='2012-05-29', tz='UTC')
 step <- 60
@@ -30,6 +32,35 @@ Flight <- 1
 FlightKF <- 1
 ProjectKP <- 'CSET'
 FlightKP <- 1
+
+## Attributes of variabloes are lost when subsetting. 
+## Use this to restore them.
+transferAttributes <- function (dsub, d) {
+  ds <- dsub
+  ## ds and dsub are the new variables; 
+  ## d is the original with attributes
+  A <- attributes (d)
+  A$Dimensions$Time$len <- nrow (ds)
+  A$row.names <- 1:nrow (ds)
+  A$names <- names (ds)
+  attributes (ds) <- A
+  for (nm in names (ds)) {
+    if ((nm != 'Time') && exists ('specialData') &&
+        (nm %in% names (specialData))) {next}
+    var <- sprintf ("d$%s", nm)
+    A <- attributes (eval (parse (text=var)))
+    if (!grepl ('Time', nm)) {
+      A$dim[1] <- nrow (ds)
+      A$class <- NULL
+    } else {
+      A$dim <- nrow (ds)
+    }
+    # print (sprintf ('tA: nm=%s, A=%s', nm, A))
+    attributes (ds[,nm]) <- A
+  }
+  return(ds)
+}
+
 
 ## for the 'frozen' section:   #################################
 slctd <- 1

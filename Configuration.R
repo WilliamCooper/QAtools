@@ -34,15 +34,16 @@ if (Project == "ARISTO2017") {
   VRPlot$PV11 <- c("AKRD", "PITCH", "GGVSPD", "TASX", "SSRD", "WDC", "WSC", "GGVEW", "GGVNS")
   VRPlot$PV12 <- c("PITCH", "PITCH_IRS2", "ROLL", "ROLL_IRS2", "THDG", "THDG_IRS2")
   VRPlot$PV13 <- c("ACINS", "ACINS_IRS2", "VSPD", "VSPD_A", "ALT_A", "GGALT")
-  VRPlot$PV14 <- NA
-  VRPlot$PV15 <- c("CONC1DC_", "CONCD_")
-  VRPlot$PV16 <- c("DBAR1DC_", "DBARD_", "PLWC", "PLWC1DC_", "PLWCC", "PLWCD_", "RICE", "TCNTD_", "REJDOF_", "AVGTRNS_", "CDPLSRP_")
+  VRPlot$PV14 <- NA    ## not present
+                                               ## note: must specify multiple probe names explicitly
+  VRPlot$PV15 <- c("CONC1DC_RWO", "CONCD_RWII", "CONCD_RWIO")  ## there are two CDP probes on ARISTO2017
+  VRPlot$PV16 <- c("DBAR1DC_RWO", "DBARD_RWII", "DBARD_RWIO", "PLWC", "PLWC1DC_", "PLWCC", "PLWCD_RWII", "PLWCD_RWIO", "RICE", "TCNTD_RWII", "REJDOF_RWII", "AVGTRNS_RWII", "CDPLSRP_RWII")
   VRPlot$PV17 <- c("PSXC", "ATX", "DPXC")
   VRPlot$PV18 <- c("PSXC", "ATX", "DPXC", "GGALT")
   VRPlot$PV19 <- c("THETA", "THETAV", "THETAE", "THETAP", "THETAQ", "PSXC", "ATX", "PSXC", "EWX")
-  VRPlot$PV20 <- c("CCDP_", "TASX")
+  VRPlot$PV20 <- c("CCDP_RWII", "CCDP_RWIO", "TASX")
   VRPlot$PV21 <- c(NA)
-  VRPlot$PV22 <- c("C1DC_", "TASX")
+  VRPlot$PV22 <- c("C1DC_RWO", "TASX")
   VRPlot$PV23 <- c(NA)
   VRPlot$PV24 <- c("ATX", "TASX")
   VRPlot$PV25 <- c("ATX", "TASX")

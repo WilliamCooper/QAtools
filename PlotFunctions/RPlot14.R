@@ -13,6 +13,9 @@ RPlot14 <- function(data, ...) {
   op <- par (mar=c(5,4,1,1)+0.1)
   if ("IRBC" %in% VRPlot[[21]] && "IRTC" %in% VRPlot[[21]]) {
     plotWAC (data[, c("Time", "IRBC", "IRTC")], ylab="IRxC", legend.position='bottom')
+  } else {
+    plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+    text (0.5, 0.8, 'no IR radiation measurements')
   }
   AddFooter ()
 }

@@ -131,7 +131,7 @@ RPlot5 <- function (data, Seq=NA) {
   # if (!("EW_VXL" %in% VEW) && ("EW_VXL" %in% names(data))) {VEW <- c(VEW, "EW_VXL")}
   plotWAC (data[, c("Time", c(VEW))], ylab="EWy [hPa]", 
            logxy='y', ylim=c(1e-2, 100),legend.position='bottom',cex.lab=1.5,cex.axis=1.5)
-  lineWAC (data$Time, MurphyKoop (data$ATX, data$PSXC), col='cyan', lty=2)
+  lines (data$Time, MurphyKoop (data$ATX, data$PSXC), col='cyan', lty=2)
   # pulling legend out of plotWAC to increase font size
   # legend('bottomright',c("EW@ATX","EW_DPL", "EW_DPR", "EW_VXL"),col=c("cyan","blue","darkgreen","red"),text.col=c("cyan","blue","darkgreen","red"),lty=c(2,1,1,1),lwd=c(2,1,1,1))
   title ("cyan line: equilibrium vapor pressure at ATX")
