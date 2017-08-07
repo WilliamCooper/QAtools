@@ -21,25 +21,25 @@ ui <- fluidPage (
           tabsetPanel (id='whichsugg', type='pills',
             tabPanel ('PSXC/QCXC',
               includeHTML('HTML/SuggestionPQ.html')
-              ),
+            ),
             tabPanel ('ATX',
               includeHTML('HTML/SuggestionATX.html')
-              ),
+            ),
             tabPanel ('Humidity',
               includeHTML('HTML/SuggestionHumidity.html')
-              ),
+            ),
             tabPanel ('INS performance',
               includeHTML('HTML/SuggestionINS.html')
-              ),
+            ),
             tabPanel ('WIC',
               includeHTML('HTML/SuggestionWIC.html')
-              ),
+            ),
             tabPanel ('WD/WS',
               includeHTML('HTML/SuggestionWDWS.html')
-              ),
+            ),
             tabPanel ('LWC and particles',
               includeHTML('HTML/SuggestionLWC.html')
-              ),
+            ),
             tabPanel ('...')
           )
         ),
@@ -878,7 +878,18 @@ ui <- fluidPage (
               
             ))),
         
-        tabPanel ('bad DP cavity P')
+        tabPanel ('check DP cavity P',
+          sidebarLayout(
+            sidebarPanel(
+              selectInput ('cavType', 'type of plot', choices=c('scatterplot', 'time series', 'histogram')),
+              includeHTML ('HTML/cavInfo.html')
+            ),
+            mainPanel(
+              plotOutput('cavPlot'),
+              includeHTML ('HTML/cavInfo2.html')
+            )
+          )
+        )
       )
     ),
     tabPanel ('Special',

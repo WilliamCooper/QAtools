@@ -12,6 +12,8 @@ suppressMessages (suppressWarnings (
 )
 options (stringsAsFactors=FALSE)
 
+library(tictoc)
+
 ## if this is set TRUE then messages will print in the console
 ## indicating which functions are entered, to trace the sequence
 ## of interactions when window entries are changed.
@@ -19,7 +21,8 @@ Trace <- FALSE
 Trace <- TRUE
 
 ## temporary, pending update of Ranadu package:
-source ("../Ranadu/R/getNetCDF.R")
+# source ("../Ranadu/R/getNetCDF.R")
+# source ('getNetCDF.R')
 minT <- as.POSIXct(0, origin='2012-05-29', tz='UTC')
 maxT <- as.POSIXct(3600*8, origin='2012-05-29', tz='UTC')
 step <- 60
@@ -177,6 +180,9 @@ searchFrozen <- function (Data, useH, whichFrozen, sdLimit, pcntLimit) {
   return(frozenQ)
 }
 ## end of the 'frozen' section #################################
+
+## for the cavity-pressure-check section
+load('CAVPcoefficients.Rdata')  ## loads cfL and cfR for fits
 
 ## for the Resolution exercise:
 xp <- (-600:600)/100
@@ -754,7 +760,7 @@ testPlot <- function (k) {
 PJ <- c('ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
   'DEEPWAVE', 'CONTRAST', 'SPRITE-II', 'MPEX', 'DC3', 'HEFT10', 'IDEAS-4',
   'TORERO', 'HIPPO-5', 'HIPPO-4', 'HIPPO-3', 'HIPPO-2', 'DC3-TEST',
-  'HIPPO-1','PREDICT', 'START08', 'PACDEX', 'TREX')
+  'HIPPO-1','PREDICT', 'START08', 'PACDEX', 'TREX', 'WINTER')
 CHP <- c('recovery factor', 'angle of attack', 'airspeed dependence')
 DataDir <- DataDirectory ()
 for (P in PJ) {

@@ -1716,31 +1716,31 @@ server <- function(input, output, session) {
         Project <- input$Project
         ProjectDir <- Project
         if (grepl('HIPPO', ProjectDir)) {ProjectDir <- 'HIPPO'}
-          Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjectDir),
-            sprintf ("%srf...nc", Project)), decreasing = TRUE)[1]
-          if (is.na (Fl)) {
-            Flight <- 1
+        Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjectDir),
+          sprintf ("%srf...nc", Project)), decreasing = TRUE)[1]
+        if (is.na (Fl)) {
+          Flight <- 1
+        } else {
+          Flight <- sub (".*rf", '',  sub (".nc", '', Fl))
+          Flight <- as.numeric(Flight)
+        }
+        fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory (), ProjectDir, Project, Flight)
+        if (file.exists(fname)) {
+          warning (sprintf ('returning highest-numbered file %s instead', fname))
+          updateNumericInput(session, 'Flight', value=Flight)
+          D <- getNetCDF (fname, VarList)
+          if (length (D) > 1) {
+            fname.last <<- fname
+            return (D)
           } else {
-            Flight <- sub (".*rf", '',  sub (".nc", '', Fl))
-            Flight <- as.numeric(Flight)
+            print (sprintf ('fname=%s', fname))
+            print (VarList)
+            ## stopping to prevent looping
+            stop ('variable not found; stopping to avoid looping')
           }
-          fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory (), ProjectDir, Project, Flight)
-          if (file.exists(fname)) {
-            warning (sprintf ('returning highest-numbered file %s instead', fname))
-            updateNumericInput(session, 'Flight', value=Flight)
-            D <- getNetCDF (fname, VarList)
-            if (length (D) > 1) {
-              fname.last <<- fname
-              return (D)
-            } else {
-              print (sprintf ('fname=%s', fname))
-              print (VarList)
-              ## stopping to prevent looping
-              stop ('variable not found; stopping to avoid looping')
-            }
-          } else {
-            stop ('file not found; stopping to avoid looping')
-          }
+        } else {
+          stop ('file not found; stopping to avoid looping')
+        }
       }
     }
   })
@@ -4088,6 +4088,49 @@ server <- function(input, output, session) {
     d <- data[i1:i2,]
     d[!d$IC, pv[1]] <- NA
     lines(d$Time, d[,pv[1]], lwd=3, col='red')
+  })
+  
+  output$cavPlot <- renderPlot({
+    fname <<- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), input$ProjectKP, input$ProjectKP, input$FlightKP)
+    D <- getNetCDF (fname, standardVariables (c('CAVP_DPL', 'CAVP_DPR', 'AKRD')))
+    if ('CAVP_DPL' %in% names(D)) {
+      D <- D[!is.na(D$TASX) & D$TASX > 90, ]
+      D$PCAV_DPL <- with(D, cfL[1]+cfL[2]*PSXC+cfL[3]*QCXC+cfL[4]*MACHX+cfL[5]*AKRD)
+      D$PCAV_DPR <- with(D, cfR[1]+cfR[2]*PSXC+cfR[3]*QCXC+cfR[4]*MACHX+cfR[5]*AKRD)
+      sdL <- with (D, sd(CAVP_DPL-PCAV_DPL, na.rm=TRUE))
+      sdR <- with (D, sd(CAVP_DPR-PCAV_DPR, na.rm=TRUE))
+      if (input$cavType == 'scatterplot') {
+        layout(matrix(2:1, ncol = 2), widths = c(5,5), heights = 1)
+        op <- par (mar=c(5,4,1,1)+0.1)
+        with (D, plotWAC (data.frame (CAVP_DPL, PCAV_DPL), type='p', pch=20, xlab='CAVP_DPL'))
+        lines(c(0,1000), c(0,1000), col='darkorange', lwd=2, lty=2)
+        offset <- 10 * sqrt(2)
+        lines(c(0,1000), c(offset,1000+offset), col='darkorange', lwd=1, lty=3)
+        lines(c(0,1000), c(-offset,1000-offset), col='darkorange', lwd=1, lty=3)
+        title(sprintf('standard deviation %.1f', sdL))
+        with (D, plotWAC (data.frame (CAVP_DPR, PCAV_DPR), type='p', pch=20, xlab='CAVP_DPR'))
+        lines(c(0,1000), c(0,1000), col='darkorange', lwd=2, lty=2)
+        offset <- 10 * sqrt(2)
+        lines(c(0,1000), c(offset,1000+offset), col='darkorange', lwd=1, lty=3)
+        lines(c(0,1000), c(-offset,1000-offset), col='darkorange', lwd=1, lty=3)
+        title(sprintf('standard deviation %.1f', sdR))
+      } else if (input$cavType == 'time series') {
+        layout (matrix (1:2, ncol=1), width=1, heights=c(5,6))
+        op <- par (mar=c(2,4,1,1)+0.1)
+        with (D, plotWAC (data.frame (Time, CAVP_DPL, PCAV_DPL)))
+        op <- par (mar=c(5,4,1,1)+0.1)
+        with (D, plotWAC (data.frame (Time, CAVP_DPR, PCAV_DPR)))
+      } else if (input$cavType == 'histogram') {
+        layout (matrix (1:2, ncol=1), width=1, heights=c(5,5))
+        op <- par (mar=c(5,4,1,1)+0.1)
+        with (D, hist (CAVP_DPL - PCAV_DPL, breaks=50, xlim=c(-50,50)))
+        op <- par (mar=c(5,4,1,1)+0.1)
+        with (D, hist (CAVP_DPR - PCAV_DPR, breaks=50, xlim=c(-50,50)))
+      }
+    } else {
+      plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+      text (0.5, 0.8, labels='no cavity pressure measurements present')
+    }
   })
   
   output$quickPlot <- renderPlot ({
