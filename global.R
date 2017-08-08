@@ -36,7 +36,7 @@ FlightKF <- 1
 ProjectKP <- 'CSET'
 FlightKP <- 1
 
-## Attributes of variabloes are lost when subsetting. 
+## Attributes of variables are lost when subsetting. 
 ## Use this to restore them.
 transferAttributes <- function (dsub, d) {
   ds <- dsub
