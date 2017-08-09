@@ -72,19 +72,30 @@ RPlot5 <- function (data, Seq=NA) {
   }
   
   if (is.na(Seq) || Seq == 3) {
+    if (Trace) {print (c('RPlot5: names in data:', names(data)))}
+    # if (!("CAVP_DPL" %in% names(data))) {
+    #   data$CAVP_DPL <- data$PSXC*(1.065+0.001575*data$QCFC
+    #                               - 1.2498*MachNumber (data$PSXC, data$QCFC)^2)
+    # } else {  # calculate from formula
+    #   data$CAVPF_DPL <- data$PSXC*(1.065+0.001575*data$QCFC
+    #                                - 1.2498*MachNumber (data$PSXC, data$QCFC)^2)
+    # }
     if (!("CAVP_DPL" %in% names(data))) {
-      data$CAVP_DPL <- data$PSXC*(1.065+0.001575*data$QCFC
-                                  - 1.2498*MachNumber (data$PSXC, data$QCFC)^2)
+      data$CAVP_DPL <- with(data, cavcfL[1] + cavcfL[2] * PSXC + cavcfL[3] * QCXC + cavcfL[4] * MACHX + cavcfL[5] * AKRD)
     } else {  # calculate from formula
-      data$CAVPF_DPL <- data$PSXC*(1.065+0.001575*data$QCFC
-                                   - 1.2498*MachNumber (data$PSXC, data$QCFC)^2)
+      data$CAVPF_DPL <- with(data, cavcfL[1] + cavcfL[2] * PSXC + cavcfL[3] * QCXC + cavcfL[4] * MACHX + cavcfL[5] * AKRD)
     }
-    if (!("CAVP_DPR" %in% names (data))) {
-      data$CAVP_DPR <- data$PSXC*(1.0162 +0.003024*data$QCFC
-                                  - 1.34521*MachNumber (data$PSXC, data$QCFC)^2)
-    } else {
-      data$CAVPF_DPR <- data$PSXC*(1.0162 +0.003024*data$QCFC
-                                   - 1.34521*MachNumber (data$PSXC, data$QCFC)^2)
+    # if (!("CAVP_DPR" %in% names (data))) {
+    #   data$CAVP_DPR <- data$PSXC*(1.0162 +0.003024*data$QCFC
+    #                               - 1.34521*MachNumber (data$PSXC, data$QCFC)^2)
+    # } else {
+    #   data$CAVPF_DPR <- data$PSXC*(1.0162 +0.003024*data$QCFC
+    #                                - 1.34521*MachNumber (data$PSXC, data$QCFC)^2)
+    # }
+    if (!("CAVP_DPR" %in% names(data))) {
+      data$CAVP_DPR <- with(data, cavcfR[1] + cavcfR[2] * PSXC + cavcfR[3] * QCXC + cavcfR[4] * MACHX + cavcfR[5] * AKRD)
+    } else {  # calculate from formula
+      data$CAVPF_DPR <- with(data, cavcfR[1] + cavcfR[2] * PSXC + cavcfR[3] * QCXC + cavcfR[4] * MACHX + cavcfR[5] * AKRD)
     }
     # DP cavity pressures and VCSEL laser intensity:
     layout(matrix(1:2, ncol = 1), widths = 1, heights = c(5,5))

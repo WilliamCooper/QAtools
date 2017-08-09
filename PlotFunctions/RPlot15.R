@@ -3,6 +3,11 @@ RPlot15 <- function(data, Seq=NA) {
   layout(matrix(1:2, ncol = 1), widths = 1, heights = c(5,6))
   if (is.na(Seq) || (Seq == 1)) {
     op <- par (mar=c(2,4,1,1)+0.1,oma=c(1.1,0,0,0))
+    if (is.na(VRPlot[[15]][1])) {
+      plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+      text (0.5, 0.8, 'no particle or hydrometeor measurements', adj=0.5)
+      return()
+    } 
     CU <- VRPlot[[15]]
     ## only use CONCU or CONCN for the first plot
     

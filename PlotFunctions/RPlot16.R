@@ -1,6 +1,11 @@
 ### plot 16: DBAR (mean diameters) and PLWC (liquid water content)
 # do 1-min smoothing; otherwise, too noisy
 RPlot16 <- function (data, Seq=NA) {
+  if (is.na(VRPlot[[16]][1])) {
+    plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+    text (0.5, 0.8, 'no LWC or DBAR measurements')
+    return()
+  }
   if (is.na (Seq) || Seq == 1) {
     if (any(grepl("DBAR1DC_", VRPlot[[16]]))) {
       layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,6))

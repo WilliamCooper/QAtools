@@ -641,7 +641,7 @@ ui <- fluidPage (
             tabPanel ('Basic time-series plot'),
             tabPanel ('Basic size-distribution'),
             tabPanel ('Ranadu',
-              includeHTML('../Ranadu/Ranadu.html')
+              includeHTML('HTML/Ranadu.html')
             )
             # actionButton (inputId='Ran', label = 'Start Ranadu')
           )))),
@@ -734,7 +734,8 @@ ui <- fluidPage (
             choices=PJ, selected='ORCAS', width='100px')),
         column(2,
           numericInput (inputId='FlightKP', label='Flight', value=7,
-            min=1, max=99, step=1, width='80px'))
+            min=1, max=99, step=1, width='80px')),
+	column(2, checkboxInput('KPtf', 'test flight', value=FALSE))
       ),                         
       tabsetPanel (id='whichKnown', type='pills',
         tabPanel ('DP overshoot/SS',

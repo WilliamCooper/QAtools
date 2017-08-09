@@ -17,6 +17,44 @@ thdg_offset = -0.35
 # nc_close(NCF)
 # TTvar <- c (N[c(which(grepl("^ATH", N)), which(grepl("^ATF", N)))], "AT_A")
 
+if (Project == "ECLIPSE") {
+  pitch_offset = 0.18
+  roll_offset = -0.12
+  thdg_offset = -0.54
+  VRPlot <- list(PV1 = c("LATC", "LONC", "WDC", "WSC"))
+  VRPlot$PV2 <- c("LATC", "LONC", "WDC", "WSC", "GGALT", "PALT", "PSXC")
+  VRPlot$PV3 <- c("ATH1", "ATH2", "AT_A")
+  VRPlot$PV4 <- c("ATH1", "ATH2", "AT_A")
+  VRPlot$PV5 <- c("DP_DPL", "DP_DPR", "ATX", "CAVP_DPL", "CAVP_DPR", "PSXC", "EW_DPL", "EW_DPR", "MR",
+                  "QCXC", "AKRD", "MACHX")
+  VRPlot$PV6 <- c("PSF", "PS_A", "PSXC")
+  VRPlot$PV7 <- c("QCF", "QCR", "QC_A", "QCFC", "QCRC", "TAS_A", "TASF", "TASR", "MACH_A", "MACHF", "MACHR")
+  VRPlot$PV8 <- c("PSF", "PS_A", "QCF", "QC_A")
+  VRPlot$PV9 <- c("IWD", "WDC", "IWS", "WSC", "WIC")
+  VRPlot$PV10 <- c("GGVEW", "VEW", "VEWC", "GGVNS", "VNS", "VNSC", "GGQUAL")
+  VRPlot$PV11 <- c("AKRD", "PITCH", "GGVSPD", "TASX", "SSRD", "WDC", "WSC", "GGVEW", "GGVNS")
+  VRPlot$PV12 <- c("PITCH", "PITCH_IRS2", "ROLL", "ROLL_IRS2", "THDG", "THDG_IRS2")
+  VRPlot$PV13 <- c("ACINS", "ACINS_IRS2", "VSPD", "VSPD_A", "ALT_A", "GGALT")
+  VRPlot$PV14 <- NA    ## not present
+  ## note: must specify multiple probe names explicitly
+  VRPlot$PV15 <- NA
+  VRPlot$PV16 <- NA
+  VRPlot$PV17 <- c("PSXC", "ATX", "DPXC")
+  VRPlot$PV18 <- c("PSXC", "ATX", "DPXC", "GGALT")
+  VRPlot$PV19 <- c("THETA", "THETAV", "THETAE", "THETAP", "PSXC", "ATX", "PSXC", "EWX")
+  VRPlot$PV20 <- NA
+  VRPlot$PV21 <- c(NA)
+  VRPlot$PV22 <- NA
+  VRPlot$PV23 <- c(NA)
+  VRPlot$PV24 <- c("ATX", "TASX")
+  VRPlot$PV25 <- c("ATX", "TASX")
+  VRPlot$PV26 <- c("TASX", "ATX")
+  VRPlot$PV27 <- c("TASX", "ATX")
+  VRPlot$PV28 <- c("TASX", "ATX")
+  VRPlot$PV29 <- c("TASX", "ATX")
+  VRPlot$PV30 <- c("TASX", "ATX")
+}
+
 if (Project == "ARISTO2017") {
   pitch_offset = 0.18
   roll_offset = -0.12
@@ -25,7 +63,8 @@ if (Project == "ARISTO2017") {
   VRPlot$PV2 <- c("LATC", "LONC", "WDC", "WSC", "GGALT", "PALT", "PSXC")
   VRPlot$PV3 <- c("ATH1", "ATH2", "AT_A")
   VRPlot$PV4 <- c("ATH1", "ATH2", "AT_A")
-  VRPlot$PV5 <- c("DP_VXL", "DP_DPL", "DP_DPR", "ATX", "CAVP_DPL", "CAVP_DPR", "PSXC", "LSRINT_VXL", "EW_DPL", "EW_DPR", "EW_VXL", "MR")
+  VRPlot$PV5 <- c("DP_VXL", "DP_DPL", "DP_DPR", "ATX", "CAVP_DPL", "CAVP_DPR", "PSXC", "LSRINT_VXL", 
+                  "EW_DPL", "EW_DPR", "EW_VXL", "MR", "QCXC", "AKRD", "MACHX")
   VRPlot$PV6 <- c("PSF", "PS_A", "PSXC")
   VRPlot$PV7 <- c("QCF", "QCR", "QC_A", "QCFC", "QCRC", "TAS_A", "TASF", "TASR", "MACH_A", "MACHF", "MACHR")
   VRPlot$PV8 <- c("PSF", "PS_A", "QCF", "QC_A")
@@ -62,7 +101,8 @@ if (Project == "ORCAS") {
   VRPlot$PV2 <- c("LATC", "LONC", "WDC", "WSC", "GGALT", "PALT", "PSXC")
   VRPlot$PV3 <- c("ATH1", "ATH2", "ATF1", "AT_A")
   VRPlot$PV4 <- c("ATH1", "ATH2", "ATF1", "AT_A")
-  VRPlot$PV5 <- c("DP_VXL", "DP_DPL", "DP_DPR", "ATX", "CAVP_DPL", "CAVP_DPR", "EW_DPL", "EW_DPR", "EW_VXL")
+  VRPlot$PV5 <- c("DP_VXL", "DP_DPL", "DP_DPR", "ATX", "CAVP_DPL", "CAVP_DPR", "EW_DPL", "EW_DPR", "EW_VXL",
+                  "QCXC", "AKRD", "MACHX")
   VRPlot$PV6 <- c("PSF", "PS_A", "PSXC")
   VRPlot$PV7 <- c("QCF", "QCR", "QC_A", "QCFC", "QCRC", "TAS_A", "TASF", "TASR", "MACH_A", "MACHF", "MACHR")
   VRPlot$PV8 <- c("PSF", "PS_A", "QCF", "QC_A")
@@ -99,7 +139,8 @@ if (Project == "CSET") {
   VRPlot$PV2 <- c("LATC", "LONC", "WDC", "WSC", "GGALT", "PALT", "PSXC")
   VRPlot$PV3 <- c("ATH1", "ATH2", "ATF1", "AT_A")
   VRPlot$PV4 <- c("ATH1", "ATH2", "ATF1", "AT_A")
-  VRPlot$PV5 <- c("DP_VXL", "DP_DPL", "DP_DPR", "ATX", "CAVP_DPL", "CAVP_DPR", "PSXC", "LSRINT_VXL", "EW_DPL", "EW_DPR", "EW_VXL", "MR")
+  VRPlot$PV5 <- c("DP_VXL", "DP_DPL", "DP_DPR", "ATX", "CAVP_DPL", "CAVP_DPR", "PSXC", "LSRINT_VXL", 
+                  "EW_DPL", "EW_DPR", "EW_VXL", "MR", "QCXC", "AKRD", "MACHX")
   VRPlot$PV6 <- c("PSF", "PS_A", "PSXC")
   VRPlot$PV7 <- c("QCF", "QCR", "QC_A", "QCFC", "QCRC", "TAS_A", "TASF", "TASR", "MACH_A", "MACHF", "MACHR")
   VRPlot$PV8 <- c("PSF", "PS_A", "QCF", "QC_A")
@@ -135,7 +176,8 @@ if (Project == "NOREASTER") {
   VRPlot$PV2 <- c("LATC", "LONC", "WDC", "WSC", "GGALT", "PALT", "PSXC")
   VRPlot$PV3 <- c("ATHR1", "ATHR2", "ATFH1", "ATFH2", "AT_A")
   VRPlot$PV4 <- VRPlot$PV3
-  VRPlot$PV5 <- c("DP_DPL", "DP_DPR", "ATX", "CAVP_DPL", "CAVP_DPR", "PSXC", "EW_DPL", "EW_DPR", "MR")
+  VRPlot$PV5 <- c("DP_DPL", "DP_DPR", "ATX", "CAVP_DPL", "CAVP_DPR", "PSXC", "EW_DPL", "EW_DPR", "MR",
+                  "QCXC", "AKRD", "MACHX")
   VRPlot$PV6 <- c("PSF", "PS_A", "PSXC")
   VRPlot$PV7 <- c("QCF", "QCR", "QC_A", "QCFC", "QCRC", "TAS_A", "TASF", "TASR", "MACH_A", "MACHF", "MACHR")
   VRPlot$PV8 <- c("PSF", "PS_A", "QCF", "QC_A")
@@ -171,7 +213,8 @@ if (Project == "HCRTEST") {
   VRPlot$PV2 <- c("LATC", "LONC", "WDC", "WSC", "GGALT", "PALT", "PSXC")
   VRPlot$PV3 <- c("ATHR1", "ATHR2", "ATFH1", "ATFH2", "AT_A")
   VRPlot$PV4 <- VRPlot$PV3
-  VRPlot$PV5 <- c("DP_VXL", "DP_DPL", "DP_DPR", "ATX", "CAVP_DPL", "CAVP_DPR", "PSXC", "LSRINT_VXL", "EW_DPL", "EW_DPR", "EW_VXL", "MR")
+  VRPlot$PV5 <- c("DP_VXL", "DP_DPL", "DP_DPR", "ATX", "CAVP_DPL", "CAVP_DPR", "PSXC", "LSRINT_VXL", 
+    "EW_DPL", "EW_DPR", "EW_VXL", "MR", "QCXC", "AKRD", "MACHX")
   VRPlot$PV6 <- c("PSF", "PS_A", "PSXC")
   VRPlot$PV7 <- c("QCF", "QCR", "QC_A", "QCFC", "QCRC", "TAS_A", "TASF", "TASR", "MACH_A", "MACHF", "MACHR")
   VRPlot$PV8 <- c("PSF", "PS_A", "QCF", "QC_A")
@@ -207,7 +250,8 @@ if (Project == "DEEPWAVE") {
   VRPlot$PV2 <- c("LATC", "LONC", "WDC", "WSC", "GGALT", "PALT", "PSXC")
   VRPlot$PV3 <- c("ATHR1", "ATHR2", "ATRL", "AT_A")
   VRPlot$PV4 <- c("ATHR1", "ATHR2", "ATRL", "AT_A")
-  VRPlot$PV5 <- c("DP_VXL", "DP_DPL", "DP_DPR", "ATX", "CAVP_DPL", "CAVP_DPR", "PSXC", "LSRINT_VXL", "EW_DPL", "EW_DPR", "EW_VXL", "MR")
+  VRPlot$PV5 <- c("DP_VXL", "DP_DPL", "DP_DPR", "ATX", "CAVP_DPL", "CAVP_DPR", "PSXC", "LSRINT_VXL", 
+                  "EW_DPL", "EW_DPR", "EW_VXL", "MR", "QCXC", "AKRD", "MACHX")
   VRPlot$PV6 <- c("PSF", "PS_A", "PSXC")
   VRPlot$PV7 <- c("QCF", "QCR", "QC_A", "QCFC", "QCRC", "TAS_A", "TASF", "TASR", "MACH_A", "MACHF", "MACHR")
   VRPlot$PV8 <- c("PSF", "PS_A", "QCF", "QC_A")
@@ -243,7 +287,8 @@ if (Project == "CONTRAST") {
   VRPlot$PV2 <- c("LATC", "LONC", "WDC", "WSC", "GGALT", "PALT", "PSXC")
   VRPlot$PV3 <- c("ATFH1", "ATFH2", "ATHR1", "ATHR2", "AT_A")
   VRPlot$PV4 <- VRPlot$PV3
-  VRPlot$PV5 <- c("DP_VXL", "DP_DPL", "DP_DPR", "ATX", "CAVP_DPL", "CAVP_DPR", "PSXC", "LSRINT_VXL", "EW_DPL", "EW_DPR", "EW_VXL", "MR")
+  VRPlot$PV5 <- c("DP_VXL", "DP_DPL", "DP_DPR", "ATX", "CAVP_DPL", "CAVP_DPR", "PSXC", "LSRINT_VXL", 
+                  "EW_DPL", "EW_DPR", "EW_VXL", "MR", "QCXC", "AKRD", "MACHX")
   VRPlot$PV6 <- c("PSF", "PS_A", "PSXC")
   VRPlot$PV7 <- c("QCF", "QCR", "QC_A", "QCFC", "QCRC", "TAS_A", "TASF", "TASR", "MACH_A", "MACHF", "MACHR")
   VRPlot$PV8 <- c("PSF", "PS_A", "QCF", "QC_A")
@@ -279,7 +324,8 @@ if (Project == "SPRITE-II") {
   VRPlot$PV2 <- c("LATC", "LONC", "WDC", "WSC", "GGALT", "PALT", "PSXC")
   VRPlot$PV3 <- c("ATHR1", "ATHR2", "ATRL", "AT_A")
   VRPlot$PV4 <- VRPlot$PV3
-  VRPlot$PV5 <- c("DP_DPL", "DP_DPR", "ATX", "CAVP_DPL", "CAVP_DPR", "PSXC", "EW_DPL", "EW_DPR", "MR")
+  VRPlot$PV5 <- c("DP_DPL", "DP_DPR", "ATX", "CAVP_DPL", "CAVP_DPR", "PSXC", "EW_DPL", "EW_DPR", "MR",
+                  "QCXC", "AKRD", "MACHX")
   VRPlot$PV6 <- c("PSF", "PS_A", "PSXC")
   VRPlot$PV7 <- c("QCF", "QCR", "QC_A", "QCFC", "QCRC", "TAS_A", "TASF", "TASR", "MACH_A", "MACH_A2")
   VRPlot$PV8 <- c("PSF", "PS_A", "QCF", "QC_A")
@@ -314,7 +360,8 @@ if (Project == "MPEX") {
   VRPlot$PV2 <- c("LATC", "LONC", "WDC", "WSC", "GGALT", "PALT", "PSXC")
   VRPlot$PV3 <- c("ATH2", "ATF1", "AT_A")
   VRPlot$PV4 <- VRPlot$PV3
-  VRPlot$PV5 <- c("DP_VXL", "DP_DPL", "DP_DPR", "ATX", "CAVP_DPL", "CAVP_DPR", "PSXC", "EW_DPL", "EW_DPR", "EW_VXL", "MR")
+  VRPlot$PV5 <- c("DP_VXL", "DP_DPL", "DP_DPR", "ATX", "CAVP_DPL", "CAVP_DPR", "PSXC", 
+                  "EW_DPL", "EW_DPR", "EW_VXL", "MR", "QCXC", "AKRD", "MACHX")
   VRPlot$PV6 <- c("PSF", "PS_A", "PSXC")
   VRPlot$PV7 <- c("QCF", "QCR", "QC_A", "QCFC", "QCRC", "TAS_A", "TASF", "TASR", "MACH_A", "MACHX")
   VRPlot$PV8 <- c("PSF", "PS_A", "QCF", "QC_A")
@@ -365,7 +412,7 @@ if (Project == "DC3") {
   #  VRPlot$PV5 <- c(VRPlot$PV5, "PSXC", "QCFC", "LSRINT_VXL")
   ## list of vapor pressures to plot (there is no EW_VXL in HIPPO-2)
   ## then list "MR" (will calculate mixing ratios corresponding to EW)
-  VRPlot$PV5 <- c(VRPlot$PV5, "EW_DPL", "EW_DPR", "EW_VXL", "MR")  # H2OMR_GMD not in HIPPO-3 files?
+  VRPlot$PV5 <- c(VRPlot$PV5, "EW_DPL", "EW_DPR", "EW_VXL", "MR", "QCXC", "AKRD", "MACHX")  # H2OMR_GMD not in HIPPO-3 files?
   ## pressure measurements, first is reference
   VRPlot$PV6 <- c("PSXC", "PS_A", "PSF")
   ## dynamic pressure measurements, uncorrected, first is reference

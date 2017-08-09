@@ -1,6 +1,9 @@
 ### plot 20: CDP/CS100 (FSSP) size distributions
 RPlot20 <- function (data, Seq=NA) {
-  if (is.na (VRPlot$PV20) || (length(VRPlot$PV20) < 1)) {return ()}
+  if (is.na (VRPlot$PV20) || (length(VRPlot$PV20) < 1)) {
+    plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+    text (0.5, 0.8, 'no cloud-droplet measurements')
+    return ()}
   ## needs CCDP_xxx and SP100_xxx; references fname from calling environment
   # ptm <- proc.time()
   # tic('RPlot20')
@@ -18,7 +21,11 @@ RPlot20 <- function (data, Seq=NA) {
     nm2 <- nms[grep ('CS100_', nms)]
     CellLimitsF <- attr(data[,nm2[1]], 'CellSizes')
   }
-  
+  if (length (nm1) < 1 && length (nm2) < 1) {
+    plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+    text (0.5, 0.8, 'no cloud-droplet measurements')
+    return ()
+  }
   
   layout(matrix(1:6, ncol = 2), widths = c(5,5), heights = c(5,5,6))
   idx1 <- getIndex (data$Time, StartTime)

@@ -1,7 +1,11 @@
 ### plot 22: 2DC size distributions
 RPlot22 <- function (data, Seq=NA) {
   ## needs C1DC_LWOI; references fname from calling environment
-  if (is.na (VRPlot$PV22) || (length(VRPlot$PV22) < 1)) {return ()}
+  if (is.na (VRPlot$PV22) || (length(VRPlot$PV22) < 1)) {
+    plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+    text (0.5, 0.8, 'no 2DC measurements')
+    return ()
+  }
   kount = 0
   nms <- names(data)
   nm1 <- nm2 <- character(0)

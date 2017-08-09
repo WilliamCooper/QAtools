@@ -182,7 +182,7 @@ searchFrozen <- function (Data, useH, whichFrozen, sdLimit, pcntLimit) {
 ## end of the 'frozen' section #################################
 
 ## for the cavity-pressure-check section
-load('CAVPcoefficients.Rdata')  ## loads cfL and cfR for fits
+load('CAVPcoefficients.Rdata')  ## loads cavcfL and cavcfR for fits
 
 ## for the Resolution exercise:
 xp <- (-600:600)/100
@@ -757,7 +757,7 @@ testPlot <- function (k) {
 ## assemble a list of projects for which an appropriately named rf01
 ## exists in the data directory:
 
-PJ <- c('ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
+PJ <- c('ECLIPSE', 'ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
   'DEEPWAVE', 'CONTRAST', 'SPRITE-II', 'MPEX', 'DC3', 'HEFT10', 'IDEAS-4',
   'TORERO', 'HIPPO-5', 'HIPPO-4', 'HIPPO-3', 'HIPPO-2', 'DC3-TEST',
   'HIPPO-1','PREDICT', 'START08', 'PACDEX', 'TREX', 'WINTER')

@@ -4091,12 +4091,16 @@ server <- function(input, output, session) {
   })
   
   output$cavPlot <- renderPlot({
-    fname <<- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), input$ProjectKP, input$ProjectKP, input$FlightKP)
+    if (input$KPtf) {
+      fname <<- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), input$ProjectKP, input$ProjectKP, input$FlightKP)
+    } else {
+      fname <<- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), input$ProjectKP, input$ProjectKP, input$FlightKP)
+    }
     D <- getNetCDF (fname, standardVariables (c('CAVP_DPL', 'CAVP_DPR', 'AKRD')))
     if ('CAVP_DPL' %in% names(D)) {
       D <- D[!is.na(D$TASX) & D$TASX > 90, ]
-      D$PCAV_DPL <- with(D, cfL[1]+cfL[2]*PSXC+cfL[3]*QCXC+cfL[4]*MACHX+cfL[5]*AKRD)
-      D$PCAV_DPR <- with(D, cfR[1]+cfR[2]*PSXC+cfR[3]*QCXC+cfR[4]*MACHX+cfR[5]*AKRD)
+      D$PCAV_DPL <- with(D, cavcfL[1]+cavcfL[2]*PSXC+cavcfL[3]*QCXC+cavcfL[4]*MACHX+cavcfL[5]*AKRD)
+      D$PCAV_DPR <- with(D, cavcfR[1]+cavcfR[2]*PSXC+cavcfR[3]*QCXC+cavcfR[4]*MACHX+cavcfR[5]*AKRD)
       sdL <- with (D, sd(CAVP_DPL-PCAV_DPL, na.rm=TRUE))
       sdR <- with (D, sd(CAVP_DPR-PCAV_DPR, na.rm=TRUE))
       if (input$cavType == 'scatterplot') {

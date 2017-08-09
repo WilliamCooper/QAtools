@@ -1,7 +1,11 @@
 ### plot 21: UHSAS and SP200 (PCASP) size distributions
 RPlot21 <- function (data, Seq=NA) {
   ## needs CUHSAS_xxx, SP200_xxx; references fname from calling environment
-  if (is.na (VRPlot$PV21) || (length(VRPlot$PV21) < 1)) {return ()}
+  if (is.na (VRPlot$PV21) || (length(VRPlot$PV21) < 1)) {
+    plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+    text (0.5, 0.8, 'no UHSAS/PCASP measurements')
+    return ()
+  }
   kount = 0
   plotTest <- 50
   nms <- names(data)

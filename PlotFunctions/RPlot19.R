@@ -38,13 +38,19 @@ RPlot19 <- function (data, Seq=NA) {
   # plots vs pressure:
   layout(matrix(2:1, ncol = 2), widths = c(5,5), heights = 1)
   op <- par (mar=c(5,2,1,1)+0.1)
+  vp <- VRPlot$PV19[match(c('THETAE', 'THETAP', 'THETAQ'), VRPlot$PV19)]
   yl <- c(max (data$PSXC, na.rm=TRUE), min (data$PSXC, na.rm=TRUE))
   plot (data[, c("THETAP", "PSXC")], type='l', col='blue', 
         xlab='Ad. Pot. T. [K]', ylab='P [hPa]', xlim=c(250,350), ylim=yl)
   points (data$THETAE, data$PSXC, type='l', col='green')
-  points (data$THETAQ, data$PSXC, type='l', col='red')
-  legend ("topright", legend=c("THETAP", "THETAE", "THETAQ"), 
-          lwd=1, col=c('blue', 'green', 'red'), cex=0.75)
+  if ('THETAQ' %in% vp) {
+    points (data$THETAQ, data$PSXC, type='l', col='red')
+    legend ("topright", legend=c("THETAP", "THETAE", "THETAQ"), 
+            lwd=1, col=c('blue', 'green', 'red'), cex=0.75)
+  } else {
+    legend ("topright", legend=c("THETAP", "THETAE"), 
+      lwd=1, col=c('blue', 'green'), cex=0.75)
+  }
   op <- par (mar=c(5,5,1,1)+0.1)
   plot (data[, c("THETA", "PSXC")], type='l', col='blue', xlab='Pot. T. [K]', 
         ylim=yl, ylab='P [hPa]')

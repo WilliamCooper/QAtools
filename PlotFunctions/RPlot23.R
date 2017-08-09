@@ -2,7 +2,11 @@
 
 RPlot23 <- function (data, Seq=NA) { 
   ## needs COFLOW_AL, CORAW_AL, INLETP_AL, FO3_ACD, CO2_PIC
-  if (!('CORAW_AL' %in% names (data))) {return ()}
+  if (!('CORAW_AL' %in% names (data))) {
+    plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+    text (0.5, 0.8, 'no CO measurements')
+    return ()
+  }
   op <- par (mfrow=c(2,1), mar=c(5,5,2,2)+0.1,oma=c(1.1,0,0,0))
   ## beware of all-missing case:
   if (!any(!is.na(data$CORAW_AL))) {return ()}
