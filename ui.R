@@ -938,7 +938,42 @@ ui <- fluidPage (
         ),
         tabPanel ('Add filtered WIF/WIX'),
         tabPanel ('Comp-filter AKRD'),
-        tabPanel ('Add height-above-terrain')
+        tabPanel ('Add height-above-terrain',
+	##########
+          tags$head(tags$script(HTML('Shiny.addCustomMessageHandler("jsCode",function(message) {eval(message.value);});'))),
+          fluidRow (
+            column (6, actionButton ('RunHOT', h3("Click Here to Run the HOT Processor"),
+              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"))
+          ),
+          sidebarLayout(
+            sidebarPanel(h4('Run Arguments:'),
+              fluidRow (
+                column (7, selectInput (inputId='ProjectHOT', label=NULL,
+                  choices=PJ, selected=Project, width='100px'))
+			),
+              fluidRow (
+                column (5, numericInput (inputId='FlightHOT', label='Flight', value=Flight,
+                  min=1, max=99, step=1, width='80px')),
+                column (3, checkboxInput ('ALLHOT', label='ALL?',
+                  value=FALSE)),
+                column (3, checkboxInput ('NEXTHOT', label='Next',
+                  value=FALSE))
+              ),
+              fluidRow (
+                column (4, checkboxInput ('genPlotHOT', label='plots?', value=genPlot)),
+                column (4, numericInput ('viewPlotHOT', label='view', value=1,
+                  min=1, max=8, step=1, width='80'))
+              )
+            ),
+            
+            mainPanel(
+              textOutput('runParHOT'),
+              plotOutput("resultPlotHOT")
+            )
+          )
+		  
+		  )
+	##########
         
       )
     )
