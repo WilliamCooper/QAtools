@@ -1,4 +1,5 @@
 
+
 ## clear global environment that might be left from the last run
 rm(list=ls(all=TRUE))
 setwd('~/RStudio/QAtools')
@@ -13,6 +14,7 @@ suppressMessages (suppressWarnings (
 options (stringsAsFactors=FALSE)
 
 library(tictoc)
+require(numDeriv, quietly = TRUE, warn.conflicts=FALSE) ## needed, KalmanFilter
 
 ## if this is set TRUE then messages will print in the console
 ## indicating which functions are entered, to trace the sequence
@@ -35,6 +37,8 @@ Flight <- 1
 FlightKF <- 1
 ProjectKP <- 'CSET'
 FlightKP <- 1
+ProjectHOT <- 'CSET'
+FlightHOT <- 1
 
 ## Attributes of variables are lost when subsetting. 
 ## Use this to restore them.
@@ -433,6 +437,12 @@ firstRun <- TRUE
 messg <- 'waiting for run'
 progressExists <- FALSE
 
+## for HeightOfTerrain:
+NEXTHOT <- FALSE
+ALLHOT <- FALSE
+genPlotHOT <- TRUE
+viewPlotHOT <- 1
+
 getNext <- function(Project) {
   Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), Project),
     sprintf ("%srf..KF.nc", Project)), decreasing = TRUE)[1]
@@ -440,6 +450,19 @@ getNext <- function(Project) {
     Flight <- 1
   } else {
     Flight <- sub (".*rf", '',  sub ("KF.nc", '', Fl))
+    Flight <- as.numeric(Flight)+1
+  }
+  return (Flight)
+}
+
+
+getNextHOT <- function(Project) {
+  Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), Project),
+    sprintf ("%srf..Z.nc", Project)), decreasing = TRUE)[1]
+  if (is.na (Fl)) {
+    Flight <- 1
+  } else {
+    Flight <- sub (".*rf", '',  sub ("Z.nc", '', Fl))
     Flight <- as.numeric(Flight)+1
   }
   return (Flight)
@@ -530,6 +553,121 @@ ShowProgress <- function(NSTEP, progress, Flight) {
   #   }
   # }
 }
+
+ShowProgressHOT <- function(progress, Flight) {
+  PLOOP <- 1
+  TimeEstimate <- 600
+  while (PLOOP) {
+    Sys.sleep (1)
+    PLOOP <- PLOOP + 1
+    if (PLOOP > TimeEstimate) {break}
+    M <- system('tail -n 5 ../HeightOfTerrain/HOTlog', intern=TRUE)
+    print (M)
+    if (any (grepl ('download done', M))) {
+      PLOOP <- FALSE
+      progress$set(message = 'calc. new variables',
+        detail = sprintf('flight %d', Flight), value=80)
+    } else if (any (grepl('SRTM data', M))) {
+      MM <- which (grepl ('SRTM data', M))
+      M <- M[MM[length(MM)]]
+      P <- sub ('.*data ', '', sub ('% do.*', '', M))
+      # print (sprintf ('progress is %d', as.integer(P)))
+      progress$set(message = 'retrieve SRTM',
+        detail = sprintf('flight %d', Flight), value=as.integer (0.8 * as.integer (P)))
+    }
+  }
+  PLOOP <- 1
+  TimeEstimate <- 20
+  while (PLOOP) {
+    Sys.sleep (1)
+    PLOOP <- PLOOP + 1
+    if (PLOOP > TimeEstimate) {break}
+    M <- system('tail -n 5 ../HeightOfTerrain/HOTlog', intern=TRUE)
+    if (any (grepl ('modify netCDF', M))) {
+      progress$set(message = 'write new netCDF',
+        detail = sprintf('flight %d', Flight), value=96)
+      break
+    }
+    if (any (grepl ('find SFC', M))) {
+      MM <- which (grepl ('find SFC', M))
+      M <- M[MM[length(MM)]]
+      P <- sub ('.*SFC ', '', sub ('% do.*', '', M))
+      progress$set(message = 'calculate SFC',
+        detail = sprintf('flight %d', Flight), 
+        value=80 + as.integer (0.16 * as.integer(P)))
+    }
+  }
+  PLOOP <- 1
+  while (PLOOP) {
+    Sys.sleep (1)
+    PLOOP <- PLOOP + 1
+    if (PLOOP > TimeEstimate) {break}
+    M <- system('tail -n 5 ../HeightOfTerrain/HOTlog', intern=TRUE)
+    if (any (grepl ('DONE', M))) {
+      PLOOP <- FALSE
+    }
+  }
+  progress$set(message = '  -- DONE -- ',
+        detail = sprintf('flight %d', Flight), value=100)
+}
+
+runScriptHOT <- function (ssn) {
+	print (sprintf ('entered runScriptHOT, %srf%02d', ProjectHOT, FlightHOT))
+  if (file.exists ('../HeightOfTerrain/HOTplots/track.png')) {
+    system('rm ../HeightOfTerrain/HOTplots/*png')
+  }
+  system ('rm ../HeightOfTerrain/HOTlog')
+  
+  ProjectDir <- ProjectHOT
+  if ('HIPPO' %in% ProjectDir) {ProjectDir <- 'HIPPO'}
+  if (ALLHOT) {
+    ## get list of files to process:
+    Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjectDir),
+      sprintf ("%srf...nc", ProjectHOT)))
+    if (!is.na (Fl[1])) {
+      for (Flt in Fl) {
+        FltHOT <- sub ('.nc$', 'Z.nc', Flt)
+        if (file.exists (sprintf ("%s%s/%s",
+          DataDirectory (), ProjectDir, FltHOT))) {next}
+        if (file.exists ('../HeightOfTerrain/HOTplots/Track.png')) {
+          system('rm ../HeightOfTerrain/HOTplots/*png')
+        }
+        Flight <- sub('.*rf', '', sub ('.nc$', '', Flt))
+        Flight <- as.numeric (Flight)
+        updateNumericInput (ssn, 'FlightHOT', value=Flight)
+        progress$set(message = 'read data, initialize',
+          detail = sprintf('flight %d', Flight),
+          value=0)
+        cmd <- sprintf('cd ../HeightOfTerrain;Rscript HeightOfTerrain.R %s %d | tee -a HOTlog',
+          ProjectHOT, Flight)
+        # print (sprintf ('run command: %s', cmd))
+        system (cmd, wait=FALSE)
+        # print (sprintf ('returned from command %s', cmd))
+        ShowProgressHOT (progress, Flight)
+      }
+    }
+  } else if (NEXTHOT) {
+    Flight <- getNextHOT(ProjectHOT)
+    updateNumericInput (ssn, 'FlightHOT', value=Flight)
+    progress$set(message = 'read data, initialize',
+      detail = sprintf('flight %d', Flight),
+      value=0)
+    cmd <- sprintf('cd ../HeightOfTerrain;Rscript HeightOfTerrain.R %s %d %s | tee -a HOTlog',
+      ProjectHOT, Flight, genPlotHOT)
+    system (cmd, wait=FALSE)
+    ShowProgressHOT (progress, Flight)
+  } else {
+    progress$set(message = 'read data, initialize',
+      detail = sprintf('flight %d', FlightHOT),
+      value=0)
+    cmd <- sprintf('cd ../HeightOfTerrain;Rscript HeightOfTerrain.R %s %d %s | tee -a HOTlog',
+      ProjectHOT, FlightHOT, genPlotHOT)
+    system (cmd, wait=FALSE)
+    ShowProgressHOT (progress, FlightHOT)
+  }
+  return()
+}
+
 runScript <- function (ssn) {
   if (file.exists ('../KalmanFilter/KFplots/Position.png')) {
     system('rm ../KalmanFilter/KFplots/*png')

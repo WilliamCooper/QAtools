@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=windows-1252"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 5.1.4.2 (Windows)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changedby" content="William Cooper"/>
+	<meta name="changed" content="2017-08-26T12:42:45.940000000"/>
+	<meta name="originator" content="TeX4ht (http://www.tug.org/tex4ht/)"/>
+	<meta name="src" content="HeightOfTerrain.tex"/>
+	<meta name="created" content="00:00:00">
+	<meta name="changedby" content="Al Cooper">
+	<meta name="changed" content="2017-08-13T13:15:06.965023596">
+	<style type="text/css">
+		h3.cjk { font-family: "Source Han Sans CN Regular" }
+		h3.ctl { font-family: "Lohit Devanagari" }
+	</style>
+</head>
+<body lang="en-US" dir="ltr">
+<h3 class="western"><a name="x1-1000"></a>Instructions for the
+Height-of-Terrain Tab</h3>
+<p><!--l. 135-->The height-of-terrain tab has code for adding two
+variables to netCDF files, SFC and ALTG. SFC is the height of the
+surface below the aircraft location (m MSL) and ALTG is the altitude
+of the aircraft above the surface. SFC + ALTG = GGALT, the altitude
+as measured by the GPS receiver on the aircraft.<!--l. 141--> 
+</p>
+<p>The controls for this tab allow you to select the project and
+flight (or all flights, using the &ldquo;ALL&rdquo; checkbox). Before
+the processing script can run, it must download the terrain data if
+it is not already present, and this may take as much as 10 min per
+flight. The program checks the range in latitude and longitude
+covered by the flight(s) and downloads all the data needed to cover
+those locations. The data source is described below. The result is a
+plot of the flight track and one showing the time series of three
+variables {SFC, ALTG, GGALT}. The processor also produces a new
+netCDF file in the same location as the original file with &rsquo;Z&rsquo;
+appended to the name (e.g., CSETrf01Z.nc).<!--l. 151-->  
+</p>
+<h3 class="western"><a name="x1-2000"></a>The Source For Data</h3>
+<p><a name="x1-2001f1"></a><a name="x1-2002f2"></a><!--l. 153-->During
+the Shuttle Radar Topography Mission (SRTM) of 2000,<a href="HeightOfTerrain2.html#fn1x0">1</a>
+<a href="HeightOfTerrain3.html#fn2x0">2</a> the altitude of the
+Earth&rsquo;s surface was mapped from 56S to 60N latitude with
+resolution of 3 arc-sec or about 90 m at the equator. For the US and
+territories, the resolution was 1 arc-sec or about 30 m. The data
+from this mission are archived at this web site:
+<a href="http://www.webgis.com/srtm3.html">http://www.webgis.com/srtm3.html</a>.
+The files can be download in individual files that span 1 degree by 1
+degree. Some files are missing because they are entirely over ocean,
+where the values should be interpreted as zero. The format of these
+files leads to the need for some processing that is documented here.<!--l. 164-->
+</p>
+<p>The R code that downloaded these files is in the &rsquo;chunk&rsquo;
+of this document called &rsquo;download-zip-files&rsquo;. Initially,
+this was tested for DEEPWAVE, for which the range downloaded covered
+40S to 48S and 165E to 175E. After unzipping, the data set was about
+115 MB. The heights in the 3-arc-sec files are presented in 1201<i><b>&times;</b></i>1201
+arrays where the edges duplicate the values in the adjacent arrays.
+The missing-value flag is -32768. The format is row-major, i.e., the
+1201 values for the first west-to-east row are presented first, then
+the next row to the north, etc. Because R is inherently column-major,
+there are some aspects of indexing in the code provided here that
+have indices reversed from what might have been expected. The
+unpacked files have 2,884,802 bytes.<!--l. 177--> 
+</p>
+<p><a name="x1-2003f3"></a>The reference location for each 1-degree
+by 1-degree array is the name of the individual file (e.g.,
+&quot;S43E173.hgt&quot; has a reference position of 43<sup>&#8728;</sup>S
+and 173<sup>&#8728;</sup>E at the center of the lower left element of
+the array). The values give the height in meters above the
+WGS84/EGM96 geoid. The measurement uncertainty was about 9 m at 90%
+confidence<a href="HeightOfTerrain4.html#fn3x0">3</a> (Farr et
+al.~2007), but there are some biases. The SAR-radar technique did not
+penetrate fully through vegetation and so might reflect the top of
+the vegetation canopy or some level intermediate between the canopy
+and the surface, and the radar penetrated a few meters into snow and
+so measured a height between the snow cover and the terrain (as
+measured in Feb.&nbsp;2000). Also, there are some gaps, especially in
+mountainous areas.</p>
+<p>Some additional information is available at this <a href="https://drive.google.com/open?id=0B1kIUH45ca5AR2puc2RsQ0RjcE0">link.</a></p>
+<p><!--l. 191--></p>
+</body>
+</html>

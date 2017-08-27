@@ -960,15 +960,17 @@ ui <- fluidPage (
                   value=FALSE))
               ),
               fluidRow (
-                column (4, checkboxInput ('genPlotHOT', label='plots?', value=genPlot)),
-                column (4, numericInput ('viewPlotHOT', label='view', value=1,
-                  min=1, max=8, step=1, width='80'))
+                # column (4, checkboxInput ('genPlotHOT', label='select plots', 
+                # value=genPlot)),
+                column (6, selectInput ('viewPlotHOT', label='select plot',
+                  choices=c('flight track', 'time-height')))
               )
             ),
             
             mainPanel(
               textOutput('runParHOT'),
-              plotOutput("resultPlotHOT")
+              plotOutput("resultPlotHOT", height='550px'),
+              includeHTML ('HTML/HeightOfTerrain.html')
             )
           )
 		  
