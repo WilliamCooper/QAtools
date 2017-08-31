@@ -735,7 +735,7 @@ ui <- fluidPage (
         column(2,
           numericInput (inputId='FlightKP', label='Flight', value=7,
             min=1, max=99, step=1, width='80px')),
-	column(2, checkboxInput('KPtf', 'test flight', value=FALSE))
+        column(2, checkboxInput('KPtf', 'test flight', value=FALSE))
       ),                         
       tabsetPanel (id='whichKnown', type='pills',
         tabPanel ('DP overshoot/SS',
@@ -936,10 +936,48 @@ ui <- fluidPage (
             )
           )
         ),
-        tabPanel ('Add filtered WIF/WIX'),
+        tabPanel ('Options for Vertical Wind',
+          tags$head(tags$script(HTML('Shiny.addCustomMessageHandler("jsCode",function(message) {eval(message.value);});'))),
+          fluidRow (
+            column (6, actionButton ('RunWIF', 
+              h3("Click Here to Run the WI Options Processor"),
+              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"))
+          ),
+          sidebarLayout(
+            sidebarPanel(h4('Run Arguments:'),
+              fluidRow (
+                column (7, selectInput (inputId='ProjectWIF', label=NULL,
+                  choices=PJ, selected=ProjectWIF, width='100px'))
+              ),
+              fluidRow (
+                column (5, numericInput (inputId='FlightWIF', label='Flight', value=Flight,
+                  min=1, max=99, step=1, width='80px')),
+                column (3, checkboxInput ('ALLWIF', label='ALL?',
+                  value=FALSE)),
+                column (3, checkboxInput ('NEXTWIF', label='Next',
+                  value=FALSE))
+              ),
+              fluidRow (
+                column (8, checkboxGroupInput ('choicesWIF', 
+                  label='variables to plot', choices=c('WIY', 'WIF', 'WIC', 'WIS', 'AKRD', 'AKY'),
+                  inline=TRUE)),
+                column (4, selectInput ('viewPlotWIF', label='select plot',
+                  choices=c('time series', 'histogram')))
+              )
+            ),
+            
+            mainPanel(
+              textOutput('runParWIF'),
+              plotOutput("resultPlotWIF", height='550px'),
+              includeHTML ('HTML/WIoptions.html')
+            )
+          )
+          
+        ),
+        ##########
         tabPanel ('Comp-filter AKRD'),
         tabPanel ('Add height-above-terrain',
-	##########
+          ##########
           tags$head(tags$script(HTML('Shiny.addCustomMessageHandler("jsCode",function(message) {eval(message.value);});'))),
           fluidRow (
             column (6, actionButton ('RunHOT', h3("Click Here to Run the HOT Processor"),
@@ -950,7 +988,7 @@ ui <- fluidPage (
               fluidRow (
                 column (7, selectInput (inputId='ProjectHOT', label=NULL,
                   choices=PJ, selected=Project, width='100px'))
-			),
+              ),
               fluidRow (
                 column (5, numericInput (inputId='FlightHOT', label='Flight', value=Flight,
                   min=1, max=99, step=1, width='80px')),
@@ -973,9 +1011,9 @@ ui <- fluidPage (
               includeHTML ('HTML/HeightOfTerrain.html')
             )
           )
-		  
-		  )
-	##########
+          
+        )
+        ##########
         
       )
     )

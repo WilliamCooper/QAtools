@@ -10,7 +10,7 @@ server <- function(input, output, session) {
   ################ REACTIVES ########################
   
   reac <- reactiveValues (newdata=FALSE, newdisplay=FALSE, quick = 0,
-    plotFrozen=0, HTMLFrozen=0, newplotTDP=0)
+    plotFrozen=0, HTMLFrozen=0, newplotTDP=0, HOTplot=0, WIFplot=0)
   ## RSessions stuff:
   output$S1E1Plot <- renderPlot ({
     V <- input$S1Var
@@ -2220,9 +2220,177 @@ server <- function(input, output, session) {
     }
   })
   
+  ##########
+  observeEvent (input$RunHOT, {
+    runScriptHOT(session)
+    progress$set(message = 'processing is complete', detail=sprintf ('Flight %d', FlightHOT), value=99)
+    reac$HOTplot <- reac$HOTplot + 1
+  })
+  
+  exprProjectHOT <- quote ({
+    if (input$ProjectHOT != ProjectHOT) {
+      ProjectHOT <<- input$ProjectHOT
+    }
+  })
+  obsProjectHOT <- observe (exprProjectHOT, quoted=TRUE)
+  
+  observeEvent (input$RunWIF, {
+    runScriptWIF(session)
+    reac$WIFplot <- reac$WIFplot + 1
+  })
+  
+  exprProjectHOT <- quote ({
+    if (input$ProjectHOT != ProjectHOT) {
+      ProjectHOT <<- input$ProjectHOT
+    }
+  })
+  obsProjectHOT <- observe (exprProjectHOT, quoted=TRUE)
+  
+  exprProjectWIF <- quote ({
+    if (input$ProjectWIF != ProjectWIF) {
+      ProjectWIF <<- input$ProjectWIF
+    }
+  })
+  
+  obsProjectHOT <- observe (exprProjectHOT, quoted=TRUE)
+  
+  exprFlightHOT <- quote ({
+    if (input$FlightHOT != FlightHOT) {
+      FlightHOT <<- input$FlightHOT
+      progress$set(message = 'ready to run', detail = sprintf('flight %d', FlightHOT))
+    }
+  })
+  obsFlightHOT <- observe (exprFlightHOT, quoted=TRUE)
+  
+  
+  exprFlightWIF <- quote ({
+    if (input$FlightWIF != FlightWIF) {
+      FlightWIF <<- input$FlightWIF
+      progress$set(message = 'ready to run', detail = sprintf('flight %d', FlightWIF))
+    }
+  })
+  obsFlightWIF <- observe (exprFlightWIF, quoted=TRUE)
+  
+  exprNEXTHOT <- quote ({
+    if (input$NEXTHOT != NEXTHOT) {
+      NEXTHOT <<- input$NEXTHOT
+      if (NEXTHOT) {FlightHOT <- 'NEXT'}
+    }
+  })
+  obsNEXTHOT <- observe (exprNEXTHOT, quoted=TRUE)
+  
+  exprALLHOT <- quote ({
+    if (input$ALLHOT != ALLHOT) {
+      ALLHOT <<- input$ALLHOT
+      if (ALLHOT) {
+        js_string <- 'alert("For ALL, previously generated files are skipped; delete to reprocess. This run may require several 10s of minutes.")'
+        session$sendCustomMessage(type='jsCode', list(value = js_string))
+      }
+    }
+  })
+  obsALLHOT <- observe (exprALLHOT, quoted=TRUE)
+  
+  exprNEXTWIF <- quote ({
+    if (input$NEXTWIF != NEXTWIF) {
+      NEXTWIF <<- input$NEXTWIF
+      if (NEXTWIF) {FlightWIF <- 'NEXT'}
+    }
+  })
+  obsNEXTWIF <- observe (exprNEXTWIF, quoted=TRUE)
+  
+  exprALLWIF <- quote ({
+    if (input$ALLWIF != ALLWIF) {
+      ALLWIF <<- input$ALLWIF
+      if (ALLWIF) {
+        js_string <- 'alert("For ALL, previously generated files are skipped; delete to reprocess. This run may require several 10s of minutes.")'
+        session$sendCustomMessage(type='jsCode', list(value = js_string))
+      }
+    }
+  })
+  obsALLWIF <- observe (exprALLWIF, quoted=TRUE)
+  
+  # exprGenPlotHOT <- quote ({
+  #   if (input$genPlotHOT != genPlotHOT) {
+  #     genPlotHOT <<- input$genPlotHOT
+  #   }
+  # })
+  # obsGenPlotHOT <- observe (exprGenPlotHOT, quoted=TRUE)
+  
+  # exprViewPlotHOT <- quote ({
+  #   if (input$viewPlotHOT != viewPlotHOT) {
+  #     viewPlotHOT <<- input$viewPlotHOT
+  #   }
+  # })
+  # obsViewPlotHOT <- observe (exprViewPlotHOT, quoted=TRUE)
+  
+  output$runParHOT <- renderText({
+    if (!progressExists) {
+      progress <- Progress$new(session, min=0, max=100)
+    }
+    # on.exit(progress$close())
+    
+    progress$set(message = 'ready to run')
+    progress$set (value=1)
+    progress <<- progress
+    progressExists <<- TRUE
+    messg <<- sprintf ("%srf%02d.nc",
+      input$ProjectHOT, input$FlightHOT)
+    messg <- NULL
+  })
+  
+  output$resultPlotWIF <- renderPlot ({
+    reac$WIFplot
+    Project <- input$ProjectWIF
+    if (grepl ('HIPPO', Project)) {
+      ProjectDir <- 'HIPPO'
+    } else {
+      ProjectDir <- Project
+    }
+    fname <- sprintf ('%s%s/%srf%02dY.nc', DataDirectory (), ProjectDir,
+      Project, input$FlightWIF)
+    if (file.exists (fname)) {
+      D <- getNetCDF (fname, standardVariables (c('WIY', 'WIF', 'WIS', 'AKRD', 'AKY')))
+      PV <- input$choicesWIF
+      if (length (PV) > 0) {
+        clr <- c('blue', 'forestgreen', 'red', 'magenta', 'cyan', 'darkorange', 'brown')
+        if (grepl ('time ',input$viewPlotWIF)) {
+          cls <- vector()
+          ch <- c('WIY', 'WIC', 'WIF', 'WIS', 'AKRD', 'AKY')
+          for (i in 1:length(PV)) {
+            cls <- c(cls, clr[which (PV[i] == ch)])
+          }
+          plotWAC(data.frame (D$Time, D[, PV]), col=cls)
+        } else {
+            g <- ggplot(data=D, aes(..density..))
+            g <- g + geom_freqpoly (aes(x=D[, PV[1]]), na.rm=TRUE, binwidth=0.1)
+            g <- g + theme_WAC()
+            print(g)
+        }
+      } else {
+        print ('no variables selected')
+      }
+    } else {
+      print ('file does not (yet) exist; run processor')
+    }
+  })
+  
+  output$resultPlotHOT <- renderImage({
+    
+    plotNoHOT <- ifelse (grepl('flight track', input$viewPlotHOT),1,2)
+    reac$HOTplot
+    pname <- c('../HeightOfTerrain/HOTplots/track.png',
+      '../HeightOfTerrain/HOTplots/HOT.png')
+    # Return a list containing the filename
+    list(src = pname[plotNoHOT],
+      contentType = 'image/png',
+      width = 900,
+      height = 600,
+      alt = "Waiting for Plots")
+  }, deleteFile=FALSE)
+  
   observeEvent (input$Run, {
     runScript(session)
-    progress$set(message = 'processing is complete', detail=sprintf ('Flight %d', Flight), value=99)
+    progress$set(message = 'processing is complete', detail=sprintf ('Flight %d', FlightKF), value=99)
     updateNumericInput(session, 'viewPlot', value=3)
   })
   
@@ -2312,7 +2480,7 @@ server <- function(input, output, session) {
     progress <<- progress
     progressExists <<- TRUE
     messg <<- sprintf ("%srf%02d.nc dt=%d AK=%s SS=%s Simple=%s",
-      input$Project, input$Flight, input$NSTEP, input$newAK, input$newSS, input$simple)
+      input$ProjectKF, input$FlightKF, input$NSTEP, input$newAK, input$newSS, input$simple)
     messg <- NULL
   })
   

@@ -39,6 +39,8 @@ ProjectKP <- 'CSET'
 FlightKP <- 1
 ProjectHOT <- 'CSET'
 FlightHOT <- 1
+ProjectWIF <- 'CSET'
+FlightWIF <- 1
 
 ## Attributes of variables are lost when subsetting. 
 ## Use this to restore them.
@@ -443,6 +445,9 @@ ALLHOT <- FALSE
 genPlotHOT <- TRUE
 viewPlotHOT <- 1
 
+NEXTWIF <- FALSE
+ALLWIF <- FALSE
+
 getNext <- function(Project) {
   Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), Project),
     sprintf ("%srf..KF.nc", Project)), decreasing = TRUE)[1]
@@ -554,6 +559,103 @@ ShowProgress <- function(NSTEP, progress, Flight) {
   # }
 }
 
+ShowProgressWIF <- function(progress, Flight) {
+  AllDone <- ifelse (Flight == 'All', FALSE, TRUE)
+  repeat {
+    PLOOP <- 1
+    TimeEstimate <- 600
+    Fl <- 0
+    P <- 0
+    while (PLOOP) {
+      Sys.sleep (1)
+      PLOOP <- PLOOP + 1
+      if (PLOOP > TimeEstimate) {break}
+      M <- system('tail -n 3 newAKRD/AKRDlog', intern=TRUE)
+      print (M)
+      if (length (M) < 1) {next}
+      if (any (grepl ('No more', M)) || any(grepl ('All Done', M))) {
+        progress$set (message = 'no more files to process', value=0)
+        return ()
+      }
+      iw <- which (grepl ('flight is', M))
+      if (length(iw) > 0) {
+        Fl <- as.integer (sub ('.*rf', '', sub ('.nc.*', '', M[iw[1]])))
+        P <- P +  4
+        progress$set(message = 'reading data',
+          detail = sprintf('flight %d', Fl), value=P)
+      }
+      if (any (grepl ('calculate new', M))) {
+        PLOOP <- FALSE
+        P <- 40
+        progress$set(message = 'calculating WIF etc',
+          detail = sprintf('flight %d', Fl), value=P)
+      } 
+    }
+    PLOOP <- 1
+    while (PLOOP) {
+      Sys.sleep (1)
+      PLOOP <- PLOOP + 1
+      if (PLOOP > TimeEstimate) {break}
+      M <- system('tail -n 3 newAKRD/AKRDlog', intern=TRUE)
+      print (M)
+      if (any (grepl ('netCDF file', M))) {
+        PLOOP <- FALSE
+        P <- 60
+        progress$set(message = 'add variables to file',
+          detail = sprintf('flight %d', Fl), value=P)
+      } else {
+        P <- P + 4
+        progress$set(message = 'calculating WIF etc',
+          detail = sprintf('flight %d', Fl), value=P)
+      }
+    }
+    PLOOP <- 1
+    while (PLOOP) {
+      Sys.sleep (1)
+      PLOOP <- PLOOP + 1
+      if (PLOOP > TimeEstimate) {break}
+      M <- system('tail -n 3 newAKRD/AKRDlog', intern=TRUE)
+      print (M)
+      if (any (grepl ('attributes', M))) {
+        PLOOP <- FALSE
+        P <- 80
+        progress$set(message = 'add attributes',
+          detail = sprintf('flight %d', Fl), value=P)
+      } else {
+        P <- P + 2
+        progress$set(message = 'add variables to file',
+          detail = sprintf('flight %d', Fl), value=P)
+      }
+    }
+    PLOOP <- 1
+    while (PLOOP) {
+      Sys.sleep (1)
+      PLOOP <- PLOOP + 1
+      if (PLOOP > TimeEstimate) {break}
+      M <- system('tail -n 3 newAKRD/AKRDlog', intern=TRUE)
+      if (any (grepl ('DONE', M))) {
+        PLOOP <- FALSE
+        progress$set(message = 'DONE',
+          detail = sprintf('flight %d', Fl), value=100)
+      } else {
+        P <- P + 2
+        progress$set(message = 'add attributes',
+          detail = sprintf('flight %d', Fl), value=P)
+      }
+    }
+    progress$set(message = '  -- DONE -- ',
+      detail = sprintf('flight %d', Fl), value=100)
+      ## read again (time to write all-done message)
+    M <- system('tail -n 5 newAKRD/AKRDlog', intern=TRUE)
+    if (any (grepl ('All Done', M))) {
+      AllDone <- TRUE
+      progress$set(message = 'AKRD script has finished',
+        detail = sprintf ('flight %s', Flight))
+    }
+    if (AllDone) {break}
+  }
+}
+
 ShowProgressHOT <- function(progress, Flight) {
   PLOOP <- 1
   TimeEstimate <- 600
@@ -608,11 +710,44 @@ ShowProgressHOT <- function(progress, Flight) {
     }
   }
   progress$set(message = '  -- DONE -- ',
-        detail = sprintf('flight %d', Flight), value=100)
+    detail = sprintf('flight %d', Flight), value=100)
+}
+
+runScriptWIF <- function (ssn) {
+  print (sprintf ('entered runScriptWIF, %srf%02d', ProjectWIF, FlightWIF))
+  system ('rm newAKRD/AKRDlog')
+  
+  ProjectDir <- ProjectWIF
+  if ('HIPPO' %in% ProjectDir) {ProjectDir <- 'HIPPO'}
+  if (ALLWIF) {
+    Flight <- 'All'
+    progress$set(message = 'read data, initialize',
+      detail = sprintf('flight %s', Flight),
+      value=0)
+    cmd <- sprintf ('cd newAKRD;Rscript AKRD.R %s %s | tee -a AKRDlog',
+      ProjectWIF, Flight)
+  } else if (NEXTWIF) {
+    Flight <- 'NEXT'
+    progress$set(message = 'read data, initialize',
+      detail = sprintf('flight %s', Flight),
+      value=0)
+    cmd <- sprintf ('cd newAKRD;Rscript AKRD.R %s %s | tee -a AKRDlog',
+      ProjectWIF, Flight)
+  } else {
+    Flight <- FlightWIF
+    progress$set(message = 'read data, initialize',
+      detail = sprintf('flight %d', Flight),
+      value=0)
+    cmd <- sprintf ('cd newAKRD;Rscript AKRD.R %s %d | tee -a AKRDlog',
+      ProjectWIF, Flight)
+  }
+  system (cmd, wait=FALSE)
+  ShowProgressWIF (progress, Flight)
+  return()
 }
 
 runScriptHOT <- function (ssn) {
-	print (sprintf ('entered runScriptHOT, %srf%02d', ProjectHOT, FlightHOT))
+  print (sprintf ('entered runScriptHOT, %srf%02d', ProjectHOT, FlightHOT))
   if (file.exists ('../HeightOfTerrain/HOTplots/track.png')) {
     system('rm ../HeightOfTerrain/HOTplots/*png')
   }
