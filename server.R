@@ -2350,20 +2350,28 @@ server <- function(input, output, session) {
       Project, input$FlightWIF)
     if (file.exists (fname)) {
       D <- getNetCDF (fname, standardVariables (c('WIY', 'WIF', 'WIS', 'AKRD', 'AKY')))
-      PV <- input$choicesWIF
+      PV <- sort (input$choicesWIF)
       if (length (PV) > 0) {
-        clr <- c('blue', 'forestgreen', 'red', 'magenta', 'cyan', 'darkorange', 'brown')
+        ch <- c('WIY', 'WIC', 'WIF', 'WIS', 'AKRD', 'AKY')
+        clr <- c('blue', 'forestgreen', 'red', 'magenta', 'black', 'darkorange', 'cyan')
         if (grepl ('time ',input$viewPlotWIF)) {
           cls <- vector()
-          ch <- c('WIY', 'WIC', 'WIF', 'WIS', 'AKRD', 'AKY')
           for (i in 1:length(PV)) {
             cls <- c(cls, clr[which (PV[i] == ch)])
           }
           plotWAC(data.frame (D$Time, D[, PV]), col=cls)
         } else {
-            g <- ggplot(data=D, aes(..density..))
-            g <- g + geom_freqpoly (aes(x=D[, PV[1]]), na.rm=TRUE, binwidth=0.1)
-            g <- g + theme_WAC()
+            i <- 1
+            cls <- vector ()
+            g <- ggplot(data=D)
+            cls <- vector ()
+            i <- 1
+            while (i <= length(PV)) {
+              g <- g + geom_freqpoly (aes_(as.name(PV[i]), as.name('..density..'), color=PV[i]), binwidth=0.1, show.legend=TRUE, na.rm=TRUE)
+              cls <- c (cls, clr[which(PV[i] == ch)])
+              i <- i + 1
+            }
+            g <- g + scale_colour_manual ('', labels=PV, breaks=PV, values=cls)+theme_WAC()+theme(legend.position=c(0.7,0.95))
             print(g)
         }
       } else {

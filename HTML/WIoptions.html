@@ -1,0 +1,50 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=windows-1252"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 5.1.4.2 (Windows)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changedby" content="William Cooper"/>
+	<meta name="changed" content="2017-08-27T15:43:44.539000000"/>
+	<meta name="originator" content="TeX4ht (http://www.tug.org/tex4ht/)"/>
+	<meta name="src" content="HeightOfTerrain.tex"/>
+	<meta name="created" content="00:00:00">
+	<meta name="changedby" content="William Cooper">
+	<meta name="changed" content="2017-08-26T12:42:45.940000000">
+	<meta name="created" content="00:00:00">
+	<meta name="changedby" content="Al Cooper">
+	<meta name="changed" content="2017-08-13T13:15:06.965023596">
+	<style type="text/css">
+		h3.cjk { font-family: "Source Han Sans CN Regular" }
+		h3.ctl { font-family: "Lohit Devanagari" }
+	</style>
+</head>
+<body lang="en-US" dir="ltr">
+<h3 class="western"><a name="x1-1000"></a>Instructions for the
+&ldquo;Options for Vertical Wind&rdquo; Tab</h3>
+<p>This tab has options for the addition of two variables to netCDF
+files, WIF (resulting from high-pass filtering of the vertical wind
+to eliminate undesirable offsets) and WIY (produced by the
+complementary-filter representation of angle of attack). The new
+variable for angle of attack, AKY, is also added to the files. 
+</p>
+<p>To use this tab, select the checkboxes indicating which variables
+are to be added to the data files and select the &ldquo;Run WI
+Options&rdquo; button. You can also use the &ldquo;Next&rdquo; button
+to process the next unprocessed flight, or the &ldquo;All&rdquo;
+button to process all flights for a selected project. The resulting
+files are named with a &ldquo;X&rdquo; suffix following this pattern:
+&ldquo;CSETrf01X.nc&rdquo;. Selecting an already processed flight
+will reprocess that flight; selecting &ldquo;All&rdquo; will process
+only flights that have not yet been processed.</p>
+<p>The WIF calculation will work for all projects, but for projects
+preceding DEEPWAVE the WIY solution will produce unsatisfactory
+results so that should not be used unless new calibration
+coefficients for AKY are determined. The calibration coefficients for
+AKY were determined from a combination of data from DEEPWAVE, CSET,
+and ORCAS. This is documented in the Kalman Filter technical note and
+in a more extensive memo referenced in that technical note.<!--l. 135--></p>
+<p><!--l. 191--></p>
+</body>
+</html>
