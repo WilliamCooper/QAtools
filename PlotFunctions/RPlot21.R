@@ -38,7 +38,7 @@ RPlot21 <- function (data, Seq=NA) {
       if (is.na(data$Time[j])) {next}
       if (!is.na(data$TASX[j]) && (data$TASX[j] < 60)) {next}
       CUHSAStot <- sum (data[j, nm], na.rm=TRUE)
-      ## convert distributions to number per cm per um
+      ## convert distributions to number per cm^3 per um
       data[j, nm] <- data[j, nm] / diff(CellLimitsU)
       data[j, nm][data[j, nm] <= 0] <- 1e-4
       if (length (nm1) > 1) {

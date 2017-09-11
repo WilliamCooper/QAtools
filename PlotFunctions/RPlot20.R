@@ -45,7 +45,7 @@ RPlot20 <- function (data, Seq=NA) {
       if (is.na(data$TASX[j]) || data$TASX[j] < 60) {next}
       # if (any(is.na(data[j, nm]))) {next}
       # if (all(data[j, nm] < 1)) {next}
-      ## convert distributions to number per cm per um
+      ## convert distributions to number per cm^3 per um
       CDPtot <- sum (data[j, nm], na.rm=TRUE)
       data[j, nm] <- data[j, nm] / diff(CellLimitsD)
       data[j, nm][data[j, nm] <= 0] <- 1e-4

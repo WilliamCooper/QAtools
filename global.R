@@ -397,6 +397,7 @@ ProjectSeekManeuvers <- function (inp) {
     print (lst)
     print (sprintf ('End of list for project %s', Project))
     save(lst, file=sprintf('maneuvers/maneuvers%s', Project))
+    return (1)
   }
   
 }

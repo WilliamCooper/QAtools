@@ -261,11 +261,22 @@ server <- function(input, output, session) {
     updateNumericInput (session, 'plot', value=vp)
   })
   
-  observeEvent (input$Tmaneuvers, {
-    msg <- 'This takes several minutes and cannot be interrupted.'
-    showNotification(msg, action = NULL, duration = 15, closeButton = TRUE,
-      id = 'noticeMan', type = "warning")
+  # observeEvent (input$Tmaneuvers, {
+  #   msg <- 'This takes several minutes and cannot be interrupted.'
+  #   showNotification(msg, action = NULL, duration = 15, closeButton = TRUE,
+  #     id = 'noticeMan', type = "warning")
+  #   ProjectSeekManeuvers (inp=input)
+  # })
+  
+  observeEvent(input$no_button,{
+    showNotification ('search skipped', action=NULL, duration=4, id='noticeNo', type='default')
+  })
+  
+  observeEvent(input$yes_button,{
+    showNotification ('search is underway...', action=NULL, duration=NULL, id='noticeWait', 
+      type='default', closeButton=FALSE)
     ProjectSeekManeuvers (inp=input)
+    removeNotification (id='noticeWait')
   })
   
   observeEvent (input$reconfigure, saveConfig ())
@@ -3659,7 +3670,7 @@ server <- function(input, output, session) {
   
   output$plotSR <- renderPlot ({
     item <- as.integer(input$selSR)
-    if (length(item) < 1) {return('no plot selected')}
+    if (is.na(item[1]) || length(item) < 1) {return('no plot selected')}
     ProjDir <- input$ProjectPP
     if (grepl('HIPPO', ProjDir)) {ProjDir <- 'HIPPO'}
     M <- 1

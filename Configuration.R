@@ -28,7 +28,7 @@ if (Project == "ECLIPSE") {
   VRPlot$PV5 <- c("DP_DPL", "DP_DPR", "ATX", "CAVP_DPL", "CAVP_DPR", "PSXC", "EW_DPL", "EW_DPR", "MR",
                   "QCXC", "AKRD", "MACHX")
   VRPlot$PV6 <- c("PSF", "PS_A", "PSXC")
-  VRPlot$PV7 <- c("QCF", "QCR", "QC_A", "QCFC", "QCRC", "TAS_A", "TASF", "TASR", "MACH_A", "MACHF", "MACHR")
+  VRPlot$PV7 <- c("QCF", "QCR", "QC_A", "QCFC", "QCRC", "TAS_A", "TASR", "TASF", "MACH_A", "MACHR", "MACHF")
   VRPlot$PV8 <- c("PSF", "PS_A", "QCF", "QC_A")
   VRPlot$PV9 <- c("IWD", "WDC", "IWS", "WSC", "WIC")
   VRPlot$PV10 <- c("GGVEW", "VEW", "VEWC", "GGVNS", "VNS", "VNSC", "GGQUAL")

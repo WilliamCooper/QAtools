@@ -11,7 +11,7 @@ ui <- fluidPage (
   titlePanel("QA / QC Tools"),
   tabsetPanel (id='whichTab', type='pills',
     tabPanel ('Guide',
-      includeHTML ('Information.html')),
+      includeHTML ('HTML/Information.html')),
     tabPanel ('Background',
       helpText('Suggestion: start with the "Review" tab for all plots,',
         'then "Past Projects" tab, then review "Known Problems".',
@@ -441,7 +441,10 @@ ui <- fluidPage (
               #              choices=PJ, selected='CSET', width='100px'),
               checkboxGroupInput ('manS', 'types of maneuver', choices=c('speed run', 'pitch', 'yaw', 'circle', 'reverse heading'), 
                 selected=c('speed run', 'pitch', 'yaw', 'circle', 'reverse heading'), inline=TRUE),
-              actionButton ('Tmaneuvers', 'Search')
+              actionButton ('Tmaneuvers', 'Search'),
+              bsModal ('warnSearch', 'Warning', 'Tmaneuvers', includeHTML('HTML/warnSearch.html'),
+                actionButton("yes_button", "Yes"),
+                actionButton("no_button", "No"))
             ),
             tabPanel ('Speed Run',
               sidebarLayout (

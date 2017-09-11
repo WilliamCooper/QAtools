@@ -12,17 +12,17 @@ RPlot15 <- function(data, Seq=NA) {
     ## only use CONCU or CONCN for the first plot
     
     ## select those from VRPlot[[15]] needed for the first panel:
-    V15a <- c('CONCU_', 'CONCN', 'CONCP_', 'CONCU100_', 'CONCU500_', 'CNCONC')  ## either CONCN or CONCN_WCN
+    V15a <- c('CONCU_', 'CONCN', 'CONCP_', 'CONCU100_', 'CONCU500_', 'CNCONC_')  ## either CONCN or CONCN_WCN
     CU1 <- vector()
-    for (v in CU) {    ## why not the simpler charmatch? Because it doesn't work for multiple probes
-      if (any(grepl(v, V15a))) {
+    for (v in V15a) {    ## why not the simpler charmatch? Because it doesn't work for multiple probes
+      if (any(grepl(v, CU))) {
         CU1 <- c(CU1, v)
       }
     }
     if (length(CU1) > 0) {
       va <- vector()
       for (c in CU1) {
-        nm <- names(data)[grepl(c, names(data))]
+        nm <- names(data)[which(grepl(c, names(data)))]
         if (length (nm) > 1) {nm <- nm[1]}  ## if not explicitly given, select first match
         # v <- sub("_.*", "", c)
         data[, nm] <- SmoothInterp (data[, nm])
@@ -49,7 +49,8 @@ RPlot15 <- function(data, Seq=NA) {
     }
     op <- par (mar=c(5,4,1,1)+0.1)
     C <- VRPlot[[15]]
-    C <- C[which("CONC" == substr(C, 1, 4) & "CONCU" != substr(C,1,5) & "CONCP" != substr(C,1,5))]
+    C <- C[which("CONC" == substr(C, 1, 4) & "CONCU" != substr(C,1,5) & 
+        "CONCN" != substr(C,1,5) & "CONCP" != substr(C,1,5))]
     va2 <- vector()
     for (c in C) {
       nm <- names(data)[grepl(c, names(data))]
