@@ -3699,7 +3699,7 @@ server <- function(input, output, session) {
       DSR$dH <- c(0, diff(DSR$GGALT))
       DSR$AOAREF <- with(DSR, PITCH - dH * 180 / (TASX * pi))
       DG <- with(DSR, data.frame(Time, AKRD, AOAREF, WIC))
-      fm <- lm(AOAREF ~ (ADIFR / QCF), data=DSR)
+      fm <- lm(AOAREF ~ I(ADIFR / QCF), data=DSR)
       cf <- coef(fm)
       rms <- summary(fm)$sigma
       ggplotWAC(DG)+ggtitle(sprintf('fit coef %.3f %.3f rms %.2f deg.', 
