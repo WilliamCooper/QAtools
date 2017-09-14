@@ -527,9 +527,9 @@ ui <- fluidPage (
                     column(3, selectInput('plotTypeCR', label='plot',
                       choices=c('track', 'WS fit', 'SSRD offset'),
                       selected='track')),
-                    column(3, selectInput('setCRT', label='set time for:',
-                      choices=c('leg 1', 'leg 2'),
-                      selected='leg 1')),
+                    # column(3, selectInput('setCRT', label='set time for:',
+                    #   choices=c('leg 1', 'leg 2'),
+                    #   selected='leg 1')),
                     column(2, actionButton('saveCR', label='save\ntimes')),
                     column(2, actionButton('delCR', label='delete'))
                   ),
@@ -537,9 +537,9 @@ ui <- fluidPage (
                     step=5, value=c(minT, maxT),
                     timeFormat='%T',
                     timezone='+0000'
-                  ),
-                  sliderInput('sliderCRSS', label='SSRD offset [deg]', min=-0.2, max=0.2,
-                    step=0.01, value=0)
+                  ) #,
+                  # sliderInput('sliderCRSS', label='SSRD offset [deg]', min=-0.2, max=0.2,
+                  #   step=0.01, value=0)
                   
                 ),
                 mainPanel(

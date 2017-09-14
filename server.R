@@ -1530,14 +1530,14 @@ server <- function(input, output, session) {
     print ('entered saveCR')
     iCR <- as.integer(input$selCR)
     if (Trace) {print (sprintf ('saving new maneuver times for maneuver %d', iCR))}
-    ## irev was set in plotCR
-    # irev <- which(Maneuvers$Project == CR$Project[iCR] & Maneuvers$End == CR$End[iCR] & Maneuvers$Type == CR$Type[iCR] & Maneuvers$Flight == CR$Flight[iCR])
-    Maneuvers$Start[irev] <<- CR$Start[iCR]
-    Maneuvers$End[irev] <<- CR$End[iCR]
-    Maneuvers$Other1[irev] <<- CR$Other1[iCR]
-    Maneuvers$Other2[irev] <<- CR$Other2[iCR]
-    print (sprintf('revised maneuvers irev=%d', irev))
-    print (Maneuvers[irev, ])
+    ## icrm was set in plotCR
+    # icrm <- which(Maneuvers$Project == CR$Project[iCR] & Maneuvers$End == CR$End[iCR] & Maneuvers$Type == CR$Type[iCR] & Maneuvers$Flight == CR$Flight[iCR])
+    Maneuvers$Start[icrm] <<- CR$Start[iCR]
+    Maneuvers$End[icrm] <<- CR$End[iCR]
+    Maneuvers$Other1[icrm] <<- CR$Other1[iCR]
+    Maneuvers$Other2[icrm] <<- CR$Other2[iCR]
+    print (sprintf('revised maneuvers icrm=%d', icrm))
+    print (Maneuvers[icrm, ])
     save(Maneuvers, file='Maneuvers.Rdata')
   })
   
@@ -3207,25 +3207,26 @@ server <- function(input, output, session) {
         selT1 <- DCR$Time[getIndex(DCR, CR$Start[item])]
         selT2 <- DCR$Time[getIndex(DCR, CR$End[item])]
         updateSliderInput (session, 'sliderCR', min=minT, max=maxT, value=c(selT1, selT2))
-        print (c('updating time slider, limits are:', minT, maxT))
-        r3CR <<- getIndex(DCR, CR$Other1[item]); r4CR <<- getIndex (DCR, CR$Other2[item])
-        if (Trace) {print(sprintf('countCR section r4CR is %d', r4CR))}
+        print (c('updating time slider, limits are:', formatTime(minT), formatTime(maxT)))
+        # r3CR <<- getIndex(DCR, CR$Other1[item]); r4CR <<- getIndex (DCR, CR$Other2[item])
+        # if (Trace) {print(sprintf('countCR section r4CR is %d', r4CR))}
         countCR <<- countCR + 1
       }
-      r1CR <<- which(DCR$Time >= input$sliderCR[1])[1]
-      r2CR <<- which(DCR$Time >= input$sliderCR[2])[1]
+      selT1 <- input$sliderCR[1]; selT2 <- input$sliderCR[2]
+      r1CR <<- which(DCR$Time >= selT1)[1]
+      r2CR <<- which(DCR$Time >= selT2)[1]
       
       if (is.na(r1CR)) {r1CR <<- 1}
       if (is.na(r2CR)) {r2CR <<- nrow(DCR)}
       r1 <- r1CR:r2CR
       ## save the selected limits in the CR data.frame
-      irev <- which(Maneuvers$Project == CR$Project[item] & Maneuvers$End == CR$End[item] & 
+      icrm <- which(Maneuvers$Project == CR$Project[item] & Maneuvers$End == CR$End[item] & 
           Maneuvers$Type == CR$Type[item] & Maneuvers$Flight == CR$Flight[item])[1]
-      if (!is.na(irev)) {irev <<- irev}
-      ## get the appropriately formatted four times:
+      if (!is.na(icrm)) {icrm <<- icrm}
+      ## get the appropriately formatted times:
       CR$Start[item] <<- as.integer(gsub(':', '', formatTime(DCR$Time[r1CR])))
       CR$End[item] <<- as.integer(gsub(':', '', formatTime(DCR$Time[r2CR])))
-      if (Trace) {print (sprintf ('new maneuver %d limits are %d %d', irev,
+      if (Trace) {print (sprintf ('new maneuver %d limits are %d %d', icrm,
         CR$Start[item], CR$End[item]))}
       ## this is not saved in the Maneuvers database until 'save times' is clicked with this item selected
       # re <- r[-which(r %in% rp)]
@@ -3235,6 +3236,7 @@ server <- function(input, output, session) {
       ## adjust for SSRD shift:
       if (input$plotTypeCR == 'track') {
         plotTrack (DCR, xc=NA, .Spacing=2, lty=3)
+        plotTrack (DCR, xc=NA, .Spacing=100, .Range=r1, .Add=TRUE, col='forestgreen', lwd=3)
         # plotTrack (DCR, xc=NA, .Spacing=100, .Range=r1, .Add=TRUE, col='red', lwd=5)  ## xc=NA is flag to plot a drifting track
         # plotTrack (DCR, xc=NA, .Spacing=100, .Range=r2, .Add=TRUE, col='forestgreen', lwd=3)
         ## find the wind from GPS only
@@ -3253,8 +3255,8 @@ server <- function(input, output, session) {
         dV <- 0.5
         dG <- 0.5
         DCR$AKRD <- DCR$ATTACK
-        A <- nlm (csq, c(wx, wy, dV, dG), DCR, hessian=TRUE)
-        rms <- sqrt(A$minimum / nrow (DCR))
+        A <- nlm (csq, c(wx, wy, dV, dG), DCR[r1, ], hessian=TRUE)
+        rms <- sqrt(A$minimum / nrow (DCR[r1, ]))
         bestFit <- A$estimate
         print (bestFit)
         
