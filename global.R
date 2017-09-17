@@ -1,7 +1,7 @@
 
 
 ## clear global environment that might be left from the last run
-rm(list=ls(all=TRUE))
+rm(list=ls( ))
 setwd('~/RStudio/QAtools')
 suppressMessages (
   library(shiny, quietly=TRUE, warn.conflicts=FALSE)
@@ -1649,46 +1649,51 @@ constructDQF <- function (project, flight) {
   Data$DPLQUAL <- ifelse (abs(Data$CBAL) > 3, -10, 0)
   Data$DPLQUAL[abs(Data$CBAL) > 10] <- -20
   ## find candidates for overshooting, but skip if data.frame already exists:
-  fileDQF <- sprintf ('DQF%srf%02d.Rdata', project, flight)
+  fileDQF <- sprintf ('Problems/DQF%srf%02d.Rdata', project, flight)
   if (file.exists(fileDQF)) {
     load(fileDQF)
   } else {
-    i1 <- i2 <- 1
-    iL <- nrow(Data)
-    Elim=20
-    DQF <- data.frame()
-    while (!is.na(i1)) {
-      i1 <- which(Data$DPERR[i2:iL] > Elim & Data$TASX[i2:iL] > 130)[1]+i2-1
-      if (is.na(i1)) {break}
-      i2 <- which (Data$DPERR[i1:iL] <= Elim)[1]-1+i1
-      if (mean(Data$MIRRTMP_DPL[i1:i2], na.rm=TRUE) > -20) {
-        print (sprintf ('overshoot candidate %s--%s', 
-          Data$Time[i1], Data$Time[i2]))
-        DQF <- rbind (DQF, data.frame(Start=Data$Time[i1], End=Data$Time[i2], 
-          qfStart=Data$Time[i1], qfEnd=Data$Time[i2], Use=FALSE))
-        # with(Data[(i1-120):(i2+120),], plotWAC (data.frame (Time, MIRRTMP_DPL, MT_DPL,
-        #                                                     DPERR, ATX)))
-        # abline(h=15, lty=3, lwd=2, col='magenta')
-        # abline(v=Data$Time[i1], lwd=0.5, lty=2); abline(v=Data$Time[i2], 
-        #                                                 lwd=0.5, lty=2)
-      }
-    }
-    ## add supersaturation events:
-    i1 <- i2 <- 1
-    iL <- nrow(Data)
-    Data$SS <- Data$DP_DPL - Data$ATX
-    while (!is.na(i1)) {
-      i1 <- which(Data$SS[i2:iL] > 2 & Data$TASX[i2:iL] > 100)[1]+i2-1
-      if (is.na(i1)) {break}
-      i2 <- which (Data$SS[i1:iL] <= 2)[1]-1+i1
-      if (mean(Data$MIRRTMP_DPL[i1:i2], na.rm=TRUE) > -20) {
-        print (sprintf ('supersaturation candidate %s--%s', 
-          Data$Time[i1], Data$Time[i2]))
-        DQF <- rbind (DQF, data.frame(Start=Data$Time[i1], End=Data$Time[i2], 
-          qfStart=Data$Time[i1], qfEnd=Data$Time[i2], Use=FALSE))
-      }
+    DQF <- data.frame ()
+  }
+  i1 <- i2 <- 1
+  iL <- nrow(Data)
+  Elim=20
+  while (!is.na(i1)) {
+    i1 <- which(Data$DPERR[i2:iL] > Elim & Data$TASX[i2:iL] > 130)[1]+i2-1
+    if (is.na(i1)) {break}
+    i2 <- which (Data$DPERR[i1:iL] <= Elim)[1]-1+i1
+    if (mean(Data$MIRRTMP_DPL[i1:i2], na.rm=TRUE) > -20) {
+      print (sprintf ('overshoot candidate %s--%s', 
+        Data$Time[i1], Data$Time[i2]))
+      DQF <- rbind (DQF, data.frame(Start=Data$Time[i1], End=Data$Time[i2], 
+        qfStart=Data$Time[i1], qfEnd=Data$Time[i2], 
+        Use=FALSE, Flag=0, Type='overshoot'))
+      # with(Data[(i1-120):(i2+120),], plotWAC (data.frame (Time, MIRRTMP_DPL, MT_DPL,
+      #                                                     DPERR, ATX)))
+      # abline(h=15, lty=3, lwd=2, col='magenta')
+      # abline(v=Data$Time[i1], lwd=0.5, lty=2); abline(v=Data$Time[i2], 
+      #                                                 lwd=0.5, lty=2)
     }
   }
+  ## add supersaturation events:
+  i1 <- i2 <- 1
+  iL <- nrow(Data)
+  Data$SS <- Data$DP_DPL - Data$ATX
+  while (!is.na(i1)) {
+    i1 <- which(Data$SS[i2:iL] > 5 & Data$TASX[i2:iL] > 100)[1]+i2-1
+    if (is.na(i1)) {break}
+    i2 <- which (Data$SS[i1:iL] <= 2)[1]-1+i1
+    if (mean(Data$MIRRTMP_DPL[i1:i2], na.rm=TRUE) > -20) {
+      print (sprintf ('supersaturation candidate %s--%s', 
+        Data$Time[i1], Data$Time[i2]))
+      DQF <- rbind (DQF, data.frame(Start=Data$Time[i1], End=Data$Time[i2], 
+        qfStart=Data$Time[i1], qfEnd=Data$Time[i2], 
+        Use=FALSE, Flag=0, Type='supersaturation'))
+    }
+  }
+  ## sort and remove duplicates, keeping 1st (from file)
+  DQF <- DQF[with(DQF, order(Start,End)), ]
+  DQF <- DQF[!duplicated(DQF[,1:2]),]
   DQF <<- DQF
   DQFsave <<- DQF
 }

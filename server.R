@@ -3837,8 +3837,12 @@ server <- function(input, output, session) {
     TB1 <- T1$hour*10000 + T1$min*100 + T1$sec
     TB2 <- T2$hour*10000 + T2$min*100 + T2$sec
     #   print (sprintf ('brush times are %d %d', TB1, TB2))
-    updateSliderInput (session, 'dqftimes', value=c(T1, T2))
-    dfqtimes <<- c(T1, T2)
+    if (grepl ('quality', input$sliderChoiceTDP)) {
+      updateSliderInput (session, 'dqftimes', value=c(T1, T2))
+      dfqtimes <<- c(T1, T2)
+    } else {
+      updateSliderInput (session, 'timesTDP', value=c(T1, T2))
+    }
   }) 
   
   observeEvent (input$searchTDP, {
@@ -3854,6 +3858,7 @@ server <- function(input, output, session) {
         chDQF[i] <- sprintf ('%d', i)
         names(chDQF)[i] <- s
       }
+      chDQF <<- chDQF
       updateRadioButtons(session, inputId='overshoot', choices=chDQF, selected='1')
       minT <- DataTDP$Time[which (DataTDP$Time >= DQF$Start[1])[1]]
       step <- 10
@@ -3868,22 +3873,45 @@ server <- function(input, output, session) {
   
   observeEvent (input$autoFlag, {
     i1 <- i2 <- 1
-    iL <- nrow(DataTDP)
+    iL <- nrow(DataTDP)    
     while (!is.na(i1)) {
       i1 <- which(DataTDP$DPLQUAL[i2:iL] != 0 & DataTDP$TASX[i2:iL] > 100)[1]+i2-1
       DQ <- DataTDP$DPLQUAL[i1]
       if (is.na(i1)) {break}
       i2 <- which (DataTDP$DPLQUAL[i1:iL] != DQ)[1]-1+i1
       if (mean(DataTDP$MIRRTMP_DPL[i1:i2], na.rm=TRUE) > -30) {
-        print (sprintf ('DQ flag %s--%s', 
+        print (sprintf ('DQ flag %d %s--%s', -DQ/10, 
           DataTDP$Time[i1], DataTDP$Time[i2]))
-        DQF <<- rbind (DQF, DataTDP.frame(Start=DataTDP$Time[i1], End=DataTDP$Time[i2], 
+        if (exists ('DQF')) {
+          DQF <<- rbind (DQF, data.frame(Start=DataTDP$Time[i1], End=DataTDP$Time[i2], 
           qfStart=DataTDP$Time[i1], qfEnd=DataTDP$Time[i2], 
-          Use=TRUE, Flag=-DQ/10))
+          Use=TRUE, Flag=-DQ/10, Type='balance'))
+        } else {
+          DQF <<- data.frame(Start=DataTDP$Time[i1], End=DataTDP$Time[i2], 
+            qfStart=DataTDP$Time[i1], qfEnd=DataTDP$Time[i2], 
+            Use=TRUE, Flag=-DQ/10, Type='balance')
+        }
         # with(DataTDP[(i1-120):(i2+120),], plotWAC (DataTDP.frame (Time, MIRRTMP_DPL, MT_DPL,
         #                                                     DPERR, ATX, DPLQUAL)))
         # abline(v=DataTDP$Time[i1], lwd=0.5, lty=2); abline(v=DataTDP$Time[i2], lwd=0.5, lty=2)
       }
+    }
+    ## sort and remove duplicates
+    DQF <- DQF[with(DQF, order(Start,End)), ]
+    DQF <- DQF[!duplicated(DQF[,1:2]),]
+    DQF <<- DQF
+    DQFsave <<- DQF
+    if (nrow(DQF) > 0) {
+      chDQF <- vector('character', nrow(DQF))
+      for (i in 1:nrow(DQF)) {
+        u <- ifelse (DQF$Use[i], 'Y', 'N')
+        print (s <- sprintf ('%s %d %s-%s', u, i, 
+          formatTime(DQF$Start[i]), formatTime(DQF$End[i])))
+        chDQF[i] <- sprintf ('%d', i)
+        names(chDQF)[i] <- s
+      }
+      chDQF <<- chDQF
+      updateRadioButtons(session, inputId='overshoot', choices=chDQF, selected=NA)
     }
   })
   
@@ -3894,46 +3922,131 @@ server <- function(input, output, session) {
     reac$newplotTDP <- reac$newplotTDP + 1
   })
   
-  observeEvent (input$resetTDP, {
+  observeEvent (input$resetSliderAB, {
+    if (grepl ('quality', isolate (input$sliderChoiceTDP))) {
+      if (nrow (DQF) > 0) {
+        itm <- isolate(input$overshoot)
+        if (!is.na(itm) && itm != 'none') {
+          updateSliderInput (session, 'dqftimes', 
+            value=c(DQF$Start[itm], DQF$End[itm]))
+        }
+      }
+    } else if (exists ('DataTDP')) {
+      minT <- DataTDP$Time[1]
+      maxT <- DataTDP$Time[nrow(DataTDP)]
+      timesTDP <<- c(minT, maxT)
+      updateSliderInput (session, 'timesTDP', value=timesTDP)
+    }
+  } )
+
+  
+  observeEvent (input$accAllTDP, {
+    if (exists ('DQF') && nrow(DQF) > 0) {
+      chDQF <- vector('character', nrow(DQF))
+      for (i in 1:nrow(DQF)) {
+        DQF$Use[i] <- TRUE
+        print (s <- sprintf ('Y %d %s-%s', i, 
+          formatTime(DQF$Start[i]), formatTime(DQF$End[i])))
+        chDQF[i] <<- sprintf ('%d', i)
+        names(chDQF)[i] <- s
+      }
+      chDQF <<- chDQF
+      updateRadioButtons(session, inputId='overshoot', choices=chDQF, selected=NA)
+    }
+  }) 
+  
+  # accept and advance to next candidate
+  observeEvent (input$acceptTDP, {
     itm <- isolate (input$overshoot)
     if (length(itm) > 0 && itm != 'none') {
       itm <- as.integer(itm)
-      times <- c(DQFsave$Start[itm], DQFsave$End[itm])
-      updateSliderInput (session, 'dqftimes', value=times)
-      DQF$Use[itm] <<- FALSE
-      DQF$Start[itm] <<- DQFsave$Start[itm]
-      DQF$End[itm] <<- DQFsave$End[itm]
+      # times <- c(DQFsave$Start[itm], DQFsave$End[itm])
+      # updateSliderInput (session, 'dqftimes', value=times)
+      DQF$Use[itm] <<- TRUE
+      # DQF$Start[itm] <<- DQFsave$Start[itm]
+      # DQF$End[itm] <<- DQFsave$End[itm]
       if (nrow(DQF) >= itm) {
-        print (s <- sprintf ('N %d %s-%s', itm, 
+        u <- ifelse (DQF$Use[itm], 'Y', 'N')
+        print (s <- sprintf ('%s %d %s-%s', u, itm, 
           formatTime(DQF$Start[itm]), formatTime(DQF$End[itm])))
         chDQF[itm] <<- sprintf ('%d', itm)
         names(chDQF)[itm] <<- s
-        updateRadioButtons(session, inputId='overshoot', choices=chDQF, selected=itm)
+        if (itm < length (chDQF)) {
+          itm <- itm + 1
+        }
+        updateRadioButtons (session, inputId='overshoot', selected=itm)
+      }
+    }
+  })  
+  
+  observeEvent (input$rejectTDP, {
+    itm <- isolate (input$overshoot)
+    if (length(itm) > 0 && itm != 'none') {
+      itm <- as.integer(itm)
+      # times <- c(DQFsave$Start[itm], DQFsave$End[itm])
+      # updateSliderInput (session, 'dqftimes', value=times)
+      DQF$Use[itm] <<- FALSE
+      # DQF$Start[itm] <<- DQFsave$Start[itm]
+      # DQF$End[itm] <<- DQFsave$End[itm]
+      if (nrow(DQF) >= itm) {
+        u <- ifelse (DQF$Use[itm], 'Y', 'N')
+        print (s <- sprintf ('%s %d %s-%s', u, itm, 
+          formatTime(DQF$Start[itm]), formatTime(DQF$End[itm])))
+        chDQF[itm] <<- sprintf ('%d', itm)
+        names(chDQF)[itm] <<- s
+        if (itm < length (chDQF)) {
+          itm <- itm + 1
+        }
+        updateRadioButtons (session, inputId='overshoot', selected=itm)
       }
     }
   })
   
   observeEvent (input$nextTDP, {
-    times <- input$timesTDP
-    dt <- difftime (times[2], times[1])
-    times[1] <- times[1] + dt
-    times[2] <- times[2] + dt
-    updateSliderInput (session, 'timesTDP', value=times)
+    itm <- as.integer (isolate (input$overshoot)) + 1
+    if (itm <= length (chDQF)) {
+      updateRadioButtons (session, inputId='overshoot', selected=itm)
+    }
   })
   
-  observeEvent (input$prevTDP, {
-    times <- input$timesTDP
-    dt <- difftime (times[2], times[1])
-    times[1] <- times[1] - dt
-    times[2] <- times[2] - dt
-    updateSliderInput (session, 'timesTDP', value=times)
+  observeEvent (input$newTDP, {
+    timesTDP <- isolate(input$timesTDP)
+    dqftimes <- isolate (input$dqftimes)
+    DQFnew <- data.frame (Start=timesTDP[1], End=timesTDP[2],
+      qfStart=dqftimes[1], qfEnd=dqftimes[2], Use=TRUE, Flag=4, Type='user')
+    if (exists ('DQF')) {
+      DQF <<- rbind (DQFnew, DQF)
+    } else {
+      DQF <<- DQFnew
+    }
+    DQFsave <<- DQF
+    chDQF <- vector('character', nrow(DQF))
+    for (i in 1:nrow(DQF)) {
+      u <- ifelse (DQF$Use[i], 'Y', 'N')
+      print (s <- sprintf ('%s %d %s-%s', u, i, 
+        formatTime(DQF$Start[i]), formatTime(DQF$End[i])))
+      chDQF[i] <- sprintf ('%d', i)
+      names(chDQF)[i] <- s
+    }
+    chDQF <<- chDQF
+    updateRadioButtons(session, inputId='overshoot', 
+      choices=chDQF, selected=1)
+    if (Trace) {
+      print ('added new event to DQF')
+      print (str(DQFnew))
+    }
+    reac$newplotTDP <- reac$newplotTDP + 1 
   })
   
   observeEvent (input$saveTDP, {
     project <- isolate (input$ProjectKP)
     flight <- isolate (input$FlightKP)
-    fileDQF <- sprintf ('DQF%srf%02d.Rdata', project, flight)
+    fileDQF <- sprintf ('Problems/DQF%srf%02d.Rdata', project, flight)
+    DQFsave <- DQF
+    DQF <- DQF[DQF$Use == TRUE, ]
+    DQF$Flag[DQF$Flag == 0] <- 3
     save(DQF, file=fileDQF)
+    DQF <- DQFsave
     print (sprintf ('%s saved', fileDQF))
   })
   
@@ -3944,6 +4057,8 @@ server <- function(input, output, session) {
       itm <- as.integer(itm)
       # if (itm == itmL) {DQF$Use[itm] <<- !DQF$Use[itm]}
       # itmL <<- itm
+      # DQF$Use[itm] <<- !DQF$Use[itm]
+      chDQF <- vector('character', nrow(DQF))
       minT <- DataTDP$Time[which (DataTDP$Time >= DQF$Start[itm])[1]]
       step <- 10
       minT <- minT - as.integer (minT) %% step - step
@@ -3983,6 +4098,7 @@ server <- function(input, output, session) {
           formatTime(DQF$Start[itm]), formatTime(DQF$End[itm])))
         chDQF[itm] <<- sprintf ('%d', itm)
         names(chDQF)[itm] <<- s
+        chDQF <<- chDQF
         updateRadioButtons(session, inputId='overshoot', choices=chDQF, selected=itm)
       }
     }
@@ -3990,15 +4106,40 @@ server <- function(input, output, session) {
   
   output$dewpointPlot <- renderPlot({
     reac$newplotTDP
-    if (!exists('DataTDP')) {
+    if (!exists('DataTDP') || input$ProjectKP != ProjectKP || input$FlightKP != FlightKP) {
       getDataTDP(input$ProjectKP, input$FlightKP)
       times <- c(DataTDP$Time[1], DataTDP$Time[nrow(DataTDP)])
       updateSliderInput (session, 'timesTDP', min=times[1], max=times[2], value=times)
+      updateSliderInput (session, 'dqftimes', min=times[1], max=times[2], value=times)
+      ProjectKP <<- input$ProjectKP
+      FlightKP <<- input$FlightKP
+      # load DQF if the data.file exists:
+      fileDQF <- sprintf ('Problems/DQF%srf%02d.Rdata', ProjectKP, FlightKP)
+      if (file.exists (fileDQF)) {
+        load(fileDQF)  ## this reloads DQF for this flight
+        DQF <<- DQF
+        DQFsave <<- DQF
+        ## set the radio buttons appropriately
+        itm <- 1
+        if (nrow(DQF) > 0) {
+          chDQF <- vector('character', nrow(DQF))
+          for (i in 1:nrow(DQF)) {
+            u <- ifelse (DQF$Use[i], 'Y', 'N')
+            print (s <- sprintf ('%s %d %s-%s', u, i, 
+              formatTime(DQF$Start[i]), formatTime(DQF$End[i])))
+            chDQF[i] <- sprintf ('%d', i)
+            names(chDQF)[i] <- s
+          }
+          chDQF <<- chDQF
+          updateRadioButtons(session, inputId='overshoot', 
+            choices=chDQF, selected=NA)
+        }
+      }
     }
     print (sprintf ('TDP time interval is %s -- %s', input$timesTDP[1], input$timesTDP[2]))
-    r1 <- which (DataTDP$Time >= input$timesTDP[1])[1]
-    r2 <- which (DataTDP$Time >= input$timesTDP[2])[1]
-    print (c('TDP r1 r2', r1,r2))
+    r1 <- which (DataTDP$Time >= input$timesTDP[1])[1]; r1 <- ifelse (is.na(r1), 1, r1)
+    r2 <- which (DataTDP$Time >= input$timesTDP[2])[1]; r2 <- ifelse (is.na(r2), nrow(DataTDP), r2)
+    print (c('TDP r1 r2', r1, r2))
     if ('MT_DPL' %in% names (DataTDP)) {
       with (DataTDP[r1:r2,], plotWAC (data.frame (Time, MIRRTMP_DPL, MT_DPL, 
         DPERR, ATX, CBAL, DPLQUAL), 
@@ -4011,7 +4152,13 @@ server <- function(input, output, session) {
         lty=c(1,1,1,2,2), lwd=c(2,1,2,2,1),
         ylim=c(-40,40), legend.position='topleft'))
     }
-    abline(h=15, col='magenta', lwd=2, lty=3)
+    itm <- input$overshoot
+    if (!is.na(itm) && itm != 'none') {
+      itm <- as.integer(itm)
+      title(sprintf('Type=%s; accepted=%s', 
+        DQF$Type[itm], DQF$Use[itm]))
+    }
+    abline(h=15, col='black', lwd=2, lty=3)
     abline(h=0)
     abline(v=input$dqftimes[1], lwd=0.5, lty=2); abline(v=input$dqftimes[2], lwd=0.5, lty=2)
   })
