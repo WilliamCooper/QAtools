@@ -736,7 +736,7 @@ ui <- fluidPage (
           selectInput (inputId='ProjectKP', label='Project',
             choices=PJ, selected='ORCAS', width='100px')),
         column(2,
-          numericInput (inputId='FlightKP', label='Flight', value=7,
+          numericInput (inputId='FlightKP', label='Flight', value=3,
             min=1, max=99, step=1, width='80px')),
         column(2, checkboxInput('KPtf', 'test flight', value=FALSE))
       ),                         
@@ -744,16 +744,24 @@ ui <- fluidPage (
         tabPanel ('DP overshoot/SS',
           fluidRow(
             column (1, actionButton ('searchTDP', label='search')),
-            column (3, actionButton ('addVXL', label='add VSCEL prediction')),
-            column(1, actionButton ('resetTDP', label='reset')),
-            column (1, actionButton ('prevTDP', label='previous')),
-            column(1, actionButton ('nextTDP', label='next')),
-            column(2, actionButton ('autoFlag', label='auto Flag')),
-            column(2, actionButton ('saveTDP', label='save'))
+            column (2, actionButton ('addVXL', label='add VSCEL prediction')),
+            column (2, actionButton ('accAllTDP', label='accept all')),
+            column (1, actionButton ('acceptTDP', label='accept')),
+            column (1, actionButton ('rejectTDP', label='reject')),
+            column (1, actionButton ('newTDP', label='define new')),
+            column (1, actionButton ('nextTDP', label='next')),
+            column (2, actionButton ('autoFlag', label='auto Flag')),
+            column (1, actionButton ('saveTDP', label='save'))
           ),
           # Sidebar with slider inputs for display interval and flag interval
           sidebarLayout(
             sidebarPanel(
+              fluidRow(
+                column(8, selectInput ('sliderChoiceTDP', 'brush affects which slider?',
+                choices=c('display time range', 'data-quality-flag time range'),
+                selected='data-quality-flag time range')),
+                column(4, actionButton ('resetSliderAB', label='reset this slider'))
+              ),
               sliderInput("timesTDP",
                 "time range:",
                 min = minT,
