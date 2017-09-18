@@ -739,7 +739,7 @@ server <- function(input, output, session) {
   
   observeEvent (input$infoFrozen, {
     showModal(modalDialog(
-      includeHTML('frozen/FrozenInfo.html'),
+      includeHTML('HTML/FrozenInfo.html'),
       title = "Instructions and Expected Results",
       size='l',
       easyClose = TRUE
@@ -1462,7 +1462,7 @@ server <- function(input, output, session) {
   
   observeEvent (input$infoPP, {
     showModal(modalDialog(
-      includeHTML('PSXC/PSFIT.html'),
+      includeHTML('HTML/PSFIT.html'),
       title = "Expected Results",
       size='l',
       easyClose = TRUE
@@ -1481,7 +1481,7 @@ server <- function(input, output, session) {
     
   observeEvent (input$infoIC, {
     showModal(modalDialog(
-      includeHTML('inCloud/inCloud.html'),
+      includeHTML('HTML/inCloud.html'),
       title = "Instructions and Expected Results",
       size='l',
       easyClose = TRUE
@@ -1491,7 +1491,7 @@ server <- function(input, output, session) {
 
   observeEvent (input$infoSR, {
     showModal(modalDialog(
-      includeHTML('maneuvers/SRMan.html'),
+      includeHTML('HTML/SRMan.html'),
       title = 'Expected Results',
       size = 'l',
       easyClose = TRUE
@@ -1500,7 +1500,7 @@ server <- function(input, output, session) {
   
   observeEvent (input$infoPM, {
     showModal(modalDialog(
-      includeHTML('maneuvers/PitchManeuver.html'),
+      includeHTML('HTML/PitchManeuver.html'),
       title = 'Expected Results',
       size = 'l',
       easyClose = TRUE
@@ -1509,7 +1509,7 @@ server <- function(input, output, session) {
   
   observeEvent (input$infoYM, {
     showModal(modalDialog(
-      includeHTML('maneuvers/YawManeuver.html'),
+      includeHTML('HTML/YawManeuver.html'),
       title = 'Expected Results',
       size = 'l',
       easyClose = TRUE
@@ -1518,7 +1518,7 @@ server <- function(input, output, session) {
   
   observeEvent (input$infoCR, {
     showModal(modalDialog(
-      includeHTML('maneuvers/CircleManeuver.html'),
+      includeHTML('HTML/CircleManeuver.html'),
       title = 'Expected Results',
       size = 'l',
       easyClose = TRUE
@@ -1554,7 +1554,7 @@ server <- function(input, output, session) {
   
   observeEvent (input$infoRH, {
     showModal(modalDialog(
-      includeHTML('maneuvers/RHManeuver.html'),
+      includeHTML('HTML/RHManeuver.html'),
       title = 'Expected Results',
       size = 'l',
       easyClose = TRUE
@@ -1590,7 +1590,7 @@ server <- function(input, output, session) {
   
   observeEvent (input$infoQC, {
     showModal(modalDialog(
-      includeHTML('PSXC/QCFIT.html'),
+      includeHTML('HTML/QCFIT.html'),
       title = "Expected Results",
       size='m',
       easyClose = TRUE
@@ -1599,7 +1599,7 @@ server <- function(input, output, session) {
   
   observeEvent (input$infoAT, {
     showModal(modalDialog(
-      includeHTML('ATemp/ATFIT.html'),
+      includeHTML('HTML/ATFIT.html'),
       title = "Expected Results",
       size='m',
       easyClose = TRUE
@@ -1608,7 +1608,7 @@ server <- function(input, output, session) {
   
   observeEvent (input$infoAHE, {
     showModal(modalDialog(
-      includeHTML('ATemp/AHE.html'),
+      includeHTML('HTML/AHE.html'),
       title = "Expected Results",
       size='l',
       easyClose = TRUE
@@ -1617,7 +1617,7 @@ server <- function(input, output, session) {
   
   observeEvent (input$infoPHE, {
     showModal(modalDialog(
-      includeHTML('PSXC/PSHeq.html'),
+      includeHTML('HTML/PSHeq.html'),
       title = "Expected Results",
       size='l',
       easyClose = TRUE
