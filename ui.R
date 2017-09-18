@@ -743,6 +743,7 @@ ui <- fluidPage (
       tabsetPanel (id='whichKnown', type='pills',
         tabPanel ('DP overshoot/SS',
           fluidRow(
+            column (1, actionButton ('infoTDP', label='Info')),
             column (1, actionButton ('searchTDP', label='search')),
             column (2, actionButton ('addVXL', label='add VSCEL prediction')),
             column (2, actionButton ('accAllTDP', label='accept all')),
@@ -750,7 +751,7 @@ ui <- fluidPage (
             column (1, actionButton ('rejectTDP', label='reject')),
             column (1, actionButton ('newTDP', label='define new')),
             column (1, actionButton ('nextTDP', label='next')),
-            column (2, actionButton ('autoFlag', label='auto Flag')),
+            column (1, actionButton ('autoFlag', label='auto Flag')),
             column (1, actionButton ('saveTDP', label='save'))
           ),
           # Sidebar with slider inputs for display interval and flag interval

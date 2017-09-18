@@ -1468,7 +1468,17 @@ server <- function(input, output, session) {
       easyClose = TRUE
     ))
   })
+
+  observeEvent (input$infoTDP, {
+    showModal(modalDialog(
+      includeHTML('HTML/overshoot.html'),
+      title = "Instructions",
+      size='l',
+      easyClose = TRUE
+    ))
+  })
   
+    
   observeEvent (input$infoIC, {
     showModal(modalDialog(
       includeHTML('inCloud/inCloud.html'),
@@ -1478,6 +1488,7 @@ server <- function(input, output, session) {
     ))
   })
   
+
   observeEvent (input$infoSR, {
     showModal(modalDialog(
       includeHTML('maneuvers/SRMan.html'),
