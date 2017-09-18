@@ -1,0 +1,214 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 5.3.6.1 (Linux)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changedby" content="Al Cooper"/>
+	<meta name="changed" content="2017-09-17T17:12:11.170302035"/>
+	<meta name="originator" content="TeX4ht (http://www.tug.org/tex4ht/)"/>
+	<meta name="src" content="overshoot.tex"/>
+	<style type="text/css">
+		h3.cjk { font-family: "Source Han Sans CN Regular" }
+		h3.ctl { font-family: "Lohit Devanagari" }
+		h4.cjk { font-family: "Source Han Sans CN Regular" }
+		h4.ctl { font-family: "Lohit Devanagari" }
+	</style>
+</head>
+<body lang="en-US" dir="ltr">
+<h1>Instructions for the DP overshoot/SS tab</h1>
+<h3 class="western"><a name="x1-1000"></a>Background</h3>
+<p class="noindent"><!--l. 125-->The chilled-mirror instruments
+depend on maintaining the mirror temperature in equilibrium with the
+dewpoint, so delays in heating or cooling the mirror can cause the
+measurement to lag behind the right value and then to overshoot when
+reaching the right value. This is common during descents when the
+dewpoint increases rapidly, but it also occurs at other times as
+well. The purpose of the “DP overshoot/SS” tab is to identify
+such regions and possibly tag them for further action, which may
+include setting the measurement to be missing (i.e., the missing
+value flag -32767) or adding a data-quality flag to the output
+indicating that the measurement is suspect. The QAtools Shiny app
+does not add such flags to the archive, but it records time periods
+that might need such flags. Four types of time-interval candidates
+are identified: (i) overshoot; (ii) supersaturation; (iii)
+out-of-balance; and (iv) miscellaneous analist-identified intervals.
+Sets of such intervals can be saved as R data.frames, easily
+converted to EXCEL spreadsheets, that have names like
+DQFCsetrf03.Rdata and are saved in a subdirectory named “Problems”,
+In separate processing, these can be used to modify the archived data
+files, perhaps by adding a data-quality variable or by setting time
+periods for specific variables to be missing.<!--l. 146--> 
+</p>
+<p class="noindent">The first release of QAtools only provides these
+tests for DPL. A future change will add similar capability for DPR,
+but at least for the GV it has been more common for DPR to be
+unusable so this extension has been postponed.<!--l. 151--> 
+</p>
+<h3 class="western"><a name="x1-2000"></a>Instructions</h3>
+<p class="noindent"><!--l. 153-->Once a project and flight are
+selected, a plot will be generated that has these variables: 
+</p>
+<dl>
+	<dt><b>MIRRTMP_DPL</b> 
+	</dt><dd>
+	The left-chilled-mirror temperature. (This tab focusses on DPL
+	because, at least for the GV, DPR is so often questionable that it
+	is seldom useful to consider it. Eventually this tab will include a
+	DPL/DPR selection menu.) 
+	</dd><dt>
+	<b>DPERR</b> 
+	</dt><dd>
+	This variable is an estimate of the error in MIRRTMP_DPL based on
+	its second derivative, as described below, and is a useful predictor
+	of overshoot events. 
+	</dd><dt>
+	<b>ATX</b> 
+	</dt><dd>
+	The temperature, provided for reference. (Normally, the mirror
+	temperature should not exceed the temperature.) 
+	</dd><dt>
+	<b>CBAL</b> 
+	</dt><dd>
+	A running-mean value of the BALANCE variable provided by the
+	instrument, indicating times when the mirror temperature is not in
+	balance with the equilibrium vapor pressure. 
+	</dd><dt>
+	<b>DPLQUAL</b> 
+	</dt><dd>
+	This variable is calculated to be an automatically generated
+	indicator of periods when the data quality of the measurement is
+	questionable and should be flagged. 
+	</dd><dt>
+	<b>MT_DPL</b> 
+	</dt><dd style="margin-bottom: 0.2in">
+	This variable is only shown if the “add VCSEL prediction” button
+	is selected. It is a prediction of what the mirror temperature
+	should be, and it is calculated including compensation for the
+	pressure in the chilled-mirror sensing cavity. The calculation of
+	this variable takes about a minute, and after clicking the button
+	you should wait for the in-progress message at the bottom right of
+	the window to disappear before proceeding. When the VCSEL performs
+	well, departures between this variable and the measured mirror
+	temperature are good indicators of mirror-temperature problems.</dd></dl>
+<p class="noindent">
+<!--l. 181-->If no processing has yet been saved for a particular
+flight, the displayed plot will show these variables for the full
+flight. If previous processing has been saved, a set of candidates
+will be listed in the bottom-left panel, and these can be edited. The
+initial processing steps differ for these two cases: 
+</p>
+<ul>
+	<li/>
+<p style="margin-bottom: 0in"><u>Case 1: No previously saved
+	data-quality file.</u> In this case, the list in the bottom-left
+	panel will include onlyu “none”. The first step then is to
+	generate a list of candidate time intervals where there may be
+	problems. This list will appear when you click the “search”
+	button. These events are candidates for overshooting or unrealistic
+	supersaturation. Additional events will be generated if you click
+	the “auto Flag” button; these are regions flagged on the basis
+	of indications from the instrument that it is not in balance with
+	the existing water-vapor pressure in the instrument cavity. 
+	</p>
+	<li/>
+<p><u>Case 2: A previously saved data-quality file exists for
+	this flight.</u>&nbsp; In that case, a list of candidates will
+	appear in the bottom-left pane. Only candidates previously
+	identified as appropriate to include in the data-quality file and
+	listed with “Y” just right of the indicator button in the list
+	will be saved, however. If you want to see additional candidates and
+	perform the full review again, you can select the “search”
+	button. New candidates added by the search button by default have
+	“N” as the to-be-saved indicator, so you can distinguish newly
+	added events from previously saved events. Usually it is not
+	necessary to repeat the “auto flag” process unless previous
+	processing has rejected an interval, and by default suto-flagged
+	intervals have “Y” as the to-be-saved indicator so they will
+	usually already be in the data-quality file.</p>
+</ul>
+<p class="noindent"><!--l. 210-->In either Case 1 or Case 2, you can
+then proceed to review the candidate events. You can create a list
+with “Y” indicating events to save in the data-quality file and
+“N” indicating events to discard. You can proceed using these
+actions: 
+</p>
+<ol>
+	<li/>
+<p style="margin-bottom: 0in"><a name="x1-2002x1"></a>To
+	change all indicators to “Y”, click the “accept all” button.
+		</p>
+	<li/>
+<p style="margin-bottom: 0in"><a name="x1-2004x2"></a>To
+	review a specific event, by click on its radio button. The display
+	will change to a time interval spanning the event but focused on it.
+	A title line will indicate the type of potentially erroneous event
+	(i.e, “overshoot”, “supersaturation”, “balance” or
+	“other”). Modify the event using one or more of the following: 
+	</p>
+</ol>
+<ul>
+	<ul>
+		<li/>
+<p style="margin-bottom: 0in"><a name="x1-2006x1"></a>There
+		are two time slider controls, one controlling the full period
+		displayed and a second controlling the subset interval to be
+		flagged as questionable. Usually you will not need to change the
+		first, but the second may need fine adjustment. The easiest way to
+		set this interval is to “brush” over the desired time interval
+		(i.e., hold down the left mouse button while sliding the cursor
+		over the desired interval). You can reset this interval to the full
+		displayed interval using the “reset this slider” button, with
+		the “brush affects which slider?” menu set to “data-quality
+		flag...”, or you can move the delimiters on the second time
+		slider (perhaps using the left/right arrows after clicking on the
+		slider delimiters for fine adjustment). When you adjust the
+		data-quality-flag time interval, the “Y/N” indicator is
+		automatically set to “Y”. 
+		</p>
+		<li/>
+<p style="margin-bottom: 0in"><a name="x1-2008x2"></a>Use the
+		“reject” button to reset the indicator to “N”. The display
+		will automatically move to the next candidate if any remain in the
+		list. 
+		</p>
+		<li/>
+<p style="margin-bottom: 0in"><a name="x1-2010x3"></a>Use the
+		“accept” button to accept the event as displayed and move to
+		the next event (if any remain). 
+		</p>
+		<li/>
+<p style="margin-bottom: 0in"><a name="x1-2012x4"></a>Use the
+		“next” button to move to the next event without making any
+		changes to the existing event. This has the same effect as clicking
+		on the next radio button.</p>
+	</ul>
+</ul>
+<ol start="3">
+	<li/>
+<p style="margin-bottom: 0in"><a name="x1-2014x3"></a>To add a
+	user-generated event to the data.frame, use the “define new”
+	button. You need to use both time sliders in this case, the top one
+	to define an appropriate display interval for the event and the
+	bottom or data-quality one to define the limits of the interval
+	containing data to be flagged. 
+	</p>
+	<li/>
+<p><a name="x1-2016x4"></a><a name="textcolor6"></a>When the
+	displayed “Y/N” indicators are set appropriately, click the
+	“save” button. Unless you do, nothing will be saved and you will
+	need to start over when you return to this flight. Changing the
+	project or flight number also replaces the working list with an
+	appropriate one for the new flight. You can save repeatedly because
+	each save overwrites what was saved previously, so it’s useful to
+	save frequently while working through the candidate list.</p>
+</ol>
+<h3 class="western"><a name="x1-3000"></a><!--l. 258-->Additional
+Details</h3>
+<p class="noindent"><!--l. 260-->See the extensive discussion in the
+QAtools User Guide for more information.<!--l. 262--> 
+</p>
+<h4 class="western"><a name="x1-4000"></a>_________________________________________________________________________________________</h4>
+</body>
+</html>
