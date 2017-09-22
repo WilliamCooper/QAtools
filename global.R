@@ -1028,10 +1028,10 @@ testPlot <- function (k) {
   return(k %in% nplots || nplots == 0)
 }
 
-## assemble a list of projects for which an appropriately named rf01
+## assemble a list of projects for which an appropriately named rf01 or tf01
 ## exists in the data directory:
 
-PJ <- c('ECLIPSE', 'ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
+PJ <- c('WECAN-TEST', 'ECLIPSE', 'ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
   'DEEPWAVE', 'CONTRAST', 'SPRITE-II', 'MPEX', 'DC3', 'HEFT10', 'IDEAS-4',
   'TORERO', 'HIPPO-5', 'HIPPO-4', 'HIPPO-3', 'HIPPO-2', 'DC3-TEST',
   'HIPPO-1','PREDICT', 'START08', 'PACDEX', 'TREX', 'WINTER')

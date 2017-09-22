@@ -17,6 +17,77 @@ thdg_offset = -0.35
 # nc_close(NCF)
 # TTvar <- c (N[c(which(grepl("^ATH", N)), which(grepl("^ATF", N)))], "AT_A")
 
+if (Project == "WECAN-TEST") {
+  pitch_offset = 0.178
+  roll_offset = -0.192
+  thdg_offset = -0.536
+  ## track plot: don't change any exc. GGALT
+  ## (PALT and PSXC are included to check the pressure altitude calculation)
+  VRPlot <- list(PV1=c("LATC", "LONC", "WDC", "WSC", "GGALT", "PALT", "PSXC"))
+  ## RPlot2: uses same variables as RPlot1
+  VRPlot[[2]] <- VRPlot[[1]]
+  ## RPlot3: T vs time, specify any number of temperatures
+  VRPlot$PV3 <- c("ATH1", "ATH2", "ATF1", "AT_A")
+  ## RPlot4: compare temperatures in pairs; specify up to five.
+  ## first is reference for comparisons
+  VRPlot$PV4 <- VRPlot$PV3
+  ## the next line should end with ATX and list dewpoints
+  VRPlot$PV5 <- c("DP_DPB", "DP_DPT", "ATX")
+  ## don't use if CAVP not available:
+  VRPlot$PV5 <- c(VRPlot$PV5, "CAVP_DPB", "CAVP_DPT", "PSXC")
+  ## use only if CAVP not available: will plot surrogate CAVP
+  VRPlot$PV5 <- c(VRPlot$PV5, "PSXC", "QCXC")
+  ## list of vapor pressures to plot (there is no EW_VXL in WECAN-TEST)
+  ## then list "MR" (will calculate mixing ratios corresponding to EW)
+  VRPlot$PV5 <- c(VRPlot$PV5, "EW_DPB", "EW_DPT", "MR")  # H2OMR_GMD not in HIPPO-3 files?
+  VRPlot$PV5 <- c(VRPlot$PV5, "AKRD", "MACHX")
+  ## pressure measurements, first is reference
+  VRPlot$PV6 <- c("PSXC", "PS_A", "PSFC", "PSFDC")
+  ## dynamic pressure measurements, uncorrected, first is reference
+  VRPlot$PV7 <- c("QCF", "QCFR", "QCR")                       #plot 7a-top
+  ## dynamic pressure measurements, corrected, first is reference
+  VRPlot$PV7 <- c(VRPlot$PV7, "QCFRC", "QCFC", "QCRC", "QC_A") #plot 7a-bottom
+  ## list TAS measurements to plot vs time
+  VRPlot$PV7 <- c(VRPlot$PV7, "TASF", "TASFR", "TASR", "TAS_A")    #plot 7b-top
+  ## and Mach numbers
+  VRPlot$PV7 <- c(VRPlot$PV7, "MACHF", "MACHFR", "MACHR", "MACH_A") #plot 7b-bottom
+  ## plot 8 is total pressure, sum of 1+2 and 3+4; expect agreement
+  VRPlot$PV8 <- c("PSFD", "QCF", "PSFRD", "QCFR", "PS_A", "QC_A")
+  ## wind direction, speed, vertical wind: keep these unchanged
+  VRPlot$PV9 <- c("WDC", "IWD", "WSC", "IWS", "WIC", "ADIFR")  # need ADIFR for WIX
+  ## IRU velocity errors from differences (Schuler oscillation); don't change
+  VRPlot$PV10 <- c("GGVEW", "VEW", "GGVNS", "VNS", "GGQUAL")
+  ## for plotting effect of complementary filter
+  VRPlot$PV10 <- c(VRPlot$PV10, "VEWC", "VNSC")
+  ## compare calculated AOA/SS vs measured to check sensitivity coefficients
+  ## 3rd variable is aircraft vertical speed, preferable is GGVSPD, not in HIPPO-2
+  VRPlot$PV11 <- c("AKRD", "PITCH", "VSPD_A", "TASX", "SSRD", "WDC", "WSC", "GGVEW", "GGVNS")
+  ## compare IRU attitude angles, IRS1 and IRS2
+  VRPlot$PV12 <- c("PITCH", "PITCH_IRS2", "ROLL", "ROLL_IRS2",  "THDG", "THDG_IRS2")
+  ## compare IRU measurements of acceleration, vertical speed, altitude
+  VRPlot$PV13 <- c("ACINS", "ACINS_IRS2", "VSPD", "VSPD_A", "GGALT", "ALT_A")
+  ## at present there is no RPlot14; UHSAS is handled later
+  VRPlot$PV14 <- c("RSTB", 'RSTB1')
+  ## plot concentrations:
+  VRPlot$PV15 <- NA
+  ## list mean diameters, liquid water, RICE
+  VRPlot$PV16 <- NA
+  ## plot variable for skew-T sounding (don't normally change)
+  VRPlot$PV17 <- c("PSXC", "ATX", "DPXC")
+  VRPlot$PV18 <- c("PSXC", "ATX", "DPXC", "GGALT")
+  ## time history and vertical profile of potential temperatures:
+  VRPlot$PV19 <- c("THETA", "THETAV", "THETAE", "THETAP", "THETAQ", "PSXC")
+  ## additions for checking calculations:
+  VRPlot$PV19 <- c(VRPlot$PV19, "ATX", "PSXC", "EWX")
+  ## plot sample of CDP size distributions
+  VRPlot$PV20 <- NA
+  ## plot sample of UHSAS size distributions; include PCASP if present (not HIPPO-2)
+  VRPlot$PV21 <- NA
+  ## plot sample of 2DC size distributions
+  VRPlot$PV22 <- NA
+  VRPlot$PV23 <- c("CORAW_AL", "CO2_PIC2311", "CO2C_PIC2311")
+}
+
 if (Project == "ECLIPSE") {
   pitch_offset = 0.18
   roll_offset = -0.12
