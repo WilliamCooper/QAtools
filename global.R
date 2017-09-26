@@ -195,7 +195,7 @@ xp <- (-600:600)/100
 xpp <- (0:1000)
 ypp <- pnorm(xpp/500-1, sd=.3)
 
-BadList <- list('ORCASrf12', 'ORCASrf13')
+BadList <- list('ORCASrf12', 'ORCASrf13', 'WINTERrf10', 'NOMADSSrf01')
 
 checkBad <- function (fn) {
   if (any(grepl(fn, BadList))) {
@@ -901,14 +901,17 @@ makeDataFile <- function(Proj, Flt, Vars) {
   } else {
     Ft <- Flt
   }
-  if (checkBad(sprintf ('%srf%02d', Proj, Ft))) {
+  if (Flt != 'ALL' && checkBad(sprintf ('%srf%02d', Proj, Ft))) {
     print ('bad flight -- skipping')
     return(data.frame())
   }
   fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjDir, Proj, Ft)
+  if (!file.exists (fname)) {
+    fname <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), ProjDir, Proj, Ft)
+  }
   if (Trace) {print (sprintf ('fnameG=%s', fname))}
   suppressMessages (suppressWarnings (
-    FI <- DataFileInfo (fname)
+    FI <- DataFileInfo (fname, LLrange=FALSE)
   ))
   
   subVar <- function (AL, FI) {
@@ -954,6 +957,7 @@ makeDataFile <- function(Proj, Flt, Vars) {
     ## loop through all the flights in this project:
     Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjDir),
       sprintf ("%srf...nc$", Proj)))
+    D <- data.frame()
     if (!is.na (Fl[1])) {
       ## eliminate any variables that are not present for all flights:
       FltPP <- sub('.*rf', '', sub ('.nc$', '', Fl))
@@ -961,27 +965,39 @@ makeDataFile <- function(Proj, Flt, Vars) {
       for (Ft in FltPP) {
         if (checkBad (Ftemp <- sprintf ('%srf%02d', Proj, Ft))) {
         } else {
-          if (Trace) {print (sprintf ('ProjDir %s Proj %s Ft %d', ProjDir, Proj, Ft))
             FII <- DataFileInfo (sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjDir, 
-              Proj, Ft))
+              Proj, Ft), LLrange=FALSE)
             im <- match (Vars, FII$Variables)
             if (any(is.na(im))) {
               Vars <- Vars[-which(is.na(im))]
             }
           }
         }
-        D <- data.frame()
-        for (Ft in Fl) {
-          FltPP <- sub('.*rf', '', sub ('.nc$', '', Ft))
-          FltPP <- as.integer (FltPP)
-          if (checkBad(Ftemp <- sprintf ('%srf%02d', Proj, FltPP))) {
-            print (sprintf('bad flight %s -- skipping', Ftemp))
-            next
-          }
-          fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(),
-            ProjDir, Proj, FltPP)
-          D <- rbind (D, getNetCDF (fname, Vars, F=FltPP))
+      }
+      for (Ft in FltPP) {
+        if (Trace) {print (sprintf ('ProjDir %s Proj %s Ft %d', ProjDir, Proj, Ft))
+        if (checkBad(Ftemp <- sprintf ('%srf%02d', Proj, Ft))) {
+          print (sprintf('bad flight %s -- skipping', Ftemp))
+          next
         }
+        fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(),
+          ProjDir, Proj, FltPP)
+        D <- rbind (D, getNetCDF (fname, Vars, F=Ft))
+      }
+    }
+    Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjDir),
+      sprintf ("%stf...nc$", Proj)))
+    if (!is.na(Fl[1])) {
+      for (Ft in Fl) {
+        FltPP <- sub('.*tf', '', sub ('.nc$', '', Ft))
+        FltPP <- as.integer (FltPP)
+        if (checkBad(Ftemp <- sprintf ('%stf%02d', Proj, FltPP))) {
+          print (sprintf('bad flight %s -- skipping', Ftemp))
+          next
+        }
+        fname <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(),
+          ProjDir, Proj, FltPP)
+        D <- rbind (D, getNetCDF (fname, Vars, F=FltPP+50))
       }
     }
   } else {
@@ -1034,7 +1050,7 @@ testPlot <- function (k) {
 PJ <- c('WECAN-TEST', 'ECLIPSE', 'ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
   'DEEPWAVE', 'CONTRAST', 'SPRITE-II', 'MPEX', 'DC3', 'HEFT10', 'IDEAS-4',
   'TORERO', 'HIPPO-5', 'HIPPO-4', 'HIPPO-3', 'HIPPO-2', 'DC3-TEST',
-  'HIPPO-1','PREDICT', 'START08', 'PACDEX', 'TREX', 'WINTER')
+  'HIPPO-1','PREDICT', 'START08', 'PACDEX', 'TREX', 'WINTER', 'NOMADSS')
 CHP <- c('recovery factor', 'angle of attack', 'airspeed dependence')
 DataDir <- DataDirectory ()
 for (P in PJ) {

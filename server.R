@@ -496,6 +496,9 @@ server <- function(input, output, session) {
       ProjDir <- ProjectPP
       if (grepl('HIPPO', ProjectPP)) {ProjDir <- 'HIPPO'}
       fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjDir, ProjectPP, FLT)
+      if (!file.exists (fnamePP)) {
+        fnamePP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), ProjDir, ProjectPP, FLT)
+      }
       if (Trace) {print (sprintf ('fnamePP3=%s', fnamePP))}
       FI <- DataFileInfo (fnamePP)
       VT <- c(ATVARS[ATVARS %in% FI$Variables])
@@ -1468,7 +1471,7 @@ server <- function(input, output, session) {
       easyClose = TRUE
     ))
   })
-
+  
   observeEvent (input$infoTDP, {
     showModal(modalDialog(
       includeHTML('HTML/overshoot.html'),
@@ -1478,7 +1481,7 @@ server <- function(input, output, session) {
     ))
   })
   
-    
+  
   observeEvent (input$infoIC, {
     showModal(modalDialog(
       includeHTML('HTML/inCloud.html'),
@@ -1488,7 +1491,7 @@ server <- function(input, output, session) {
     ))
   })
   
-
+  
   observeEvent (input$infoSR, {
     showModal(modalDialog(
       includeHTML('HTML/SRMan.html'),
@@ -2383,18 +2386,18 @@ server <- function(input, output, session) {
           }
           plotWAC(data.frame (D$Time, D[, PV]), col=cls)
         } else {
-            i <- 1
-            cls <- vector ()
-            g <- ggplot(data=D)
-            cls <- vector ()
-            i <- 1
-            while (i <= length(PV)) {
-              g <- g + geom_freqpoly (aes_(as.name(PV[i]), as.name('..density..'), color=PV[i]), binwidth=0.1, show.legend=TRUE, na.rm=TRUE)
-              cls <- c (cls, clr[which(PV[i] == ch)])
-              i <- i + 1
-            }
-            g <- g + scale_colour_manual ('', labels=PV, breaks=PV, values=cls)+theme_WAC()+theme(legend.position=c(0.7,0.95))
-            print(g)
+          i <- 1
+          cls <- vector ()
+          g <- ggplot(data=D)
+          cls <- vector ()
+          i <- 1
+          while (i <= length(PV)) {
+            g <- g + geom_freqpoly (aes_(as.name(PV[i]), as.name('..density..'), color=PV[i]), binwidth=0.1, show.legend=TRUE, na.rm=TRUE)
+            cls <- c (cls, clr[which(PV[i] == ch)])
+            i <- i + 1
+          }
+          g <- g + scale_colour_manual ('', labels=PV, breaks=PV, values=cls)+theme_WAC()+theme(legend.position=c(0.7,0.95))
+          print(g)
         }
       } else {
         print ('no variables selected')
@@ -2589,7 +2592,15 @@ server <- function(input, output, session) {
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
     fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
-    VL <- c('PSXC', 'PS_A', 'QCXC', 'QC_A', 'TASX', 'GGALT', 'ADIFR', 'QCF', 'ROLL')
+    if (!file.exists (fnamePP)) {
+      fnamePP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
+    }
+    FI <- DataFileInfo (fnamePP, LLrange=FALSE)
+    if (grepl ('130', FI$Platform)) {
+      VL <- c('PSFDC', 'PSFC', 'PS_A', 'PSXC', 'QCXC', 'QC_A', 'QCFRC', 'QCFC', 'TASX', 'GGALT', 'ADIFR', 'QCF', 'ROLL')
+    } else {
+      VL <- c('PSXC', 'PS_A', 'QCXC', 'QC_A', 'TASX', 'GGALT', 'ADIFR', 'QCF', 'ROLL')
+    }
     # print (sprintf('entered PSplot, inputs %s %s %s', input$ProjectPP, input$FlightPP, input$AllPP))
     
     RdataFile <- sprintf ('Data/dataPQ%s.Rdata', input$ProjectPP)
@@ -2629,25 +2640,52 @@ server <- function(input, output, session) {
     # }
     cf <- c(-2.2717351e+00, 1.0044060e+00, 1.7229198e-02, -3.1450368e-06) # ORCAS only
     cf <- c(-2.6239872e+00, 1.0063093e+00, 1.6020764e-02, -4.6657542e-06)  #CSET+ORCAS+DEEPWAVE
-    Data$PSFIT <- with(Data, cf[1] + PS_A * (cf[2] + cf[4] * PS_A) + cf[3] * QC_A)
+    cf130a <- c(-4.033993e-01,  9.963757e-01, -1.478601e-02,  2.501531e-06) # WINTER and NOMADSS
+    cf130b <- c(2.198842e+00, 9.998276e-01, -5.479780e-02, 2.150005e-07)
+    if (grepl ('130', FI$Platform)) {  ## fits to PSFDC and PSFC:
+      Data$PSFIT1 <- with (Data, cf130a[1] + PS_A * (cf130a[2] + cf130a[4] * PS_A) + cf130a[3] * QC_A)
+      Data$PSFIT2 <- with (Data, cf130b[1] + PS_A * (cf130b[2] + cf130b[4] * PS_A) + cf130b[3] * QC_A)
+    } else {
+      Data$PSFIT <- with(Data, cf[1] + PS_A * (cf[2] + cf[4] * PS_A) + cf[3] * QC_A)
+    }
     DataPP <<- Data
     # with(Data, plotWAC(data.frame(Time, PSXC-PS_A), ylim=c(-2,2), ylab='PSXC-PS_A'))
-    M <- with(Data,
-      sprintf('mean and std dev: %.2f +/- %.2f hPa', 
+    if (grepl ('130', FI$Platform)) {
+      M <- with(Data, sprintf('mean and std dev: PSFDC %.2f +/- %.2f hPa PSFC %.2f +/- %.2f', 
+        mean(PSFDC-PSFIT1, na.rm=TRUE), sd(PSFDC-PSFIT1, na.rm=TRUE),
+        mean(PSFC-PSFIT2, na.rm=TRUE), sd(PSFC-PSFIT2, na.rm=TRUE)))
+      b1 <- ceiling(with(Data, (max(PSFDC-PSFIT1, na.rm=TRUE)-min(PSFDC-PSFIT1, na.rm=TRUE))*20))
+      b2 <- ceiling(with(Data, (max(PSFC-PSFIT2, na.rm=TRUE)-min(PSFC-PSFIT2, na.rm=TRUE))*20))
+      with(Data, hist (PSFC-PSFIT2, breaks=b2, xlim=c(-2,2), xlab='PSX-PSFIT [hPa]',
+        border='forestgreen', col='lightblue', freq=FALSE, main=M, cex.main=0.75))
+      with(Data, hist (PSFDC-PSFIT1, breaks=b1, freq=FALSE, add=TRUE, border='blue'))
+      legend('topright', legend=c('PSFDC', 'PSFC'), col=c('blue', 'forestgreen'), lwd=c(2,2))
+      
+    } else {
+      M <- with(Data, sprintf('mean and std dev: %.2f +/- %.2f hPa', 
         mean(PSXC-PSFIT, na.rm=TRUE), sd(PSXC-PSFIT, na.rm=TRUE)))
-    b <- ceiling(with(Data, (max(PSXC-PSFIT, na.rm=TRUE)-min(PSXC-PSFIT, na.rm=TRUE))*20))
-    with(Data, hist (PSXC-PSFIT, breaks=b, xlim=c(-2,2), xlab='PSXC-PSFIT [hPa]',
-      freq=FALSE, main=M))
-    # abline(h=0, lty=2)
-    # abline(h=1, lty=2, col='forestgreen')
-    # abline(h=-1, lty=2, col='forestgreen')
+      b <- ceiling(with(Data, (max(PSXC-PSFIT, na.rm=TRUE)-min(PSXC-PSFIT, na.rm=TRUE))*20))
+      with(Data, hist (PSXC-PSFIT, breaks=b, xlim=c(-2,2), xlab='PSXC-PSFIT [hPa]',
+        freq=FALSE, main=M))
+      # abline(h=0, lty=2)
+      # abline(h=1, lty=2, col='forestgreen')
+      # abline(h=-1, lty=2, col='forestgreen')
+    }
   })
   
   output$PSSplot <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
-    fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), input$ProjectPP, input$ProjectPP, input$FlightPP)
-    VL <- c('PSXC', 'PS_A', 'QCXC', 'QC_A', 'TASX', 'GGALT', 'ADIFR', 'QCF', 'ROLL')
+    fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
+    if (!file.exists(fnamePP)) {
+      fnamePP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), input$ProjectPP, input$ProjectPP, input$FlightPP)
+    }
+    FI <- DataFileInfo (fnamePP, LLrange=FALSE)
+    if (grepl ('130', FI$Platform)) {
+      VL <- c('PSFDC', 'PSFC', 'PS_A', 'PSXC', 'QCXC', 'QC_A', 'QCFRC', 'QCFC', 'TASX', 'GGALT', 'ADIFR', 'QCF', 'ROLL')
+    } else {
+      VL <- c('PSXC', 'PS_A', 'QCXC', 'QC_A', 'TASX', 'GGALT', 'ADIFR', 'QCF', 'ROLL')
+    }
     
     RdataFile <- sprintf ('Data/dataPQ%s.Rdata', input$ProjectPP)
     if (file.exists (RdataFile)) {
@@ -2665,19 +2703,41 @@ server <- function(input, output, session) {
     
     cf <- c(-2.2717351e+00, 1.0044060e+00, 1.7229198e-02, -3.1450368e-06) #CSET only
     cf <- c(-2.6239872e+00, 1.0063093e+00, 1.6020764e-02, -4.6657542e-06)  #CSET+ORCAS+DEEPWAVE
-    Data$PSFIT <- with(Data, cf[1] + PS_A * (cf[2] + cf[4] * PS_A) + cf[3] * QC_A)
-    bs <- with(Data, binStats(data.frame(PSXC-PSFIT, PSXC), bins=10))
-    g <- ggplot(data=bs)
-    g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma, 
-      xmax=ybar+sigma), na.rm=TRUE) 
-    xlow <- floor(min (bs$ybar-bs$sigma, na.rm=TRUE))
-    xhigh <- ceiling(max (bs$ybar+bs$sigma, na.rm=TRUE))
-    if (xhigh < 2) {xhigh <- 2}
-    if (xlow > -2) {xlow <- -2}
-    g <- g + xlim(xlow, xhigh) + theme_WAC()
-    g <- g + xlab('PSXC-PSFIT [hPa]') + ylab('PSXC [hPa]') + ylim(1050, 100) 
-    g <- g + geom_point (aes (x=bs$ybar, y=bs$xc), size=3, colour='blue', na.rm=TRUE)
-    g <- g + geom_label (aes (x=1.9, y=bs$xc, label=sprintf('%d', bs$nb)))
+    cf130a <- c(-4.033993e-01,  9.963757e-01, -1.478601e-02,  2.501531e-06)
+    cf130b <- c(2.198842e+00, 9.998276e-01, -5.479780e-02, 2.150005e-07)
+    if (grepl ('130', FI$Platform)) {  ## fits to PSFDC and PSFC:
+      Data$PSFIT1 <- with (Data, cf130a[1] + PS_A * (cf130a[2] + cf130a[4] * PS_A) + cf130a[3] * QC_A)
+      Data$PSFIT2 <- with (Data, cf130b[1] + PS_A * (cf130b[2] + cf130b[4] * PS_A) + cf130b[3] * QC_A)
+      bsA <- with(Data, binStats(data.frame(PSFDC-PSFIT1, PSXC), bins=10))
+      bsB <- with(Data, binStats(data.frame(PSFC-PSFIT2, PSXC), bins=10))
+      g <- ggplot(data=bsA)
+      g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma, 
+        xmax=ybar+sigma), na.rm=TRUE) 
+      xlow <- floor(min (bsA$ybar-bsA$sigma, na.rm=TRUE))
+      xhigh <- ceiling(max (bsA$ybar+bsA$sigma, na.rm=TRUE))
+      if (xhigh < 2) {xhigh <- 2}
+      if (xlow > -2) {xlow <- -2}
+      g <- g + xlim(xlow, xhigh) + theme_WAC()
+      g <- g + xlab('PSFDC-PSFIT1 [hPa]') + ylab('PSXC [hPa]') + ylim(1050, 400) 
+      g <- g + geom_point (aes (x=bsA$ybar, y=bsA$xc, colour='PSFDC'), size=3, na.rm=TRUE)
+      g <- g + geom_path (aes (x=bsB$ybar, y=bsB$xc, colour='PSFC'), size=1.5, na.rm=TRUE)
+      g <- g + geom_label (aes (x=1.9, y=bsA$xc, label=sprintf('%d', bsA$nb)))
+      g <- g + scale_colour_manual (name='', values=c("PSFDC"="blue", "PSFC"="forestgreen"))
+    } else {
+      Data$PSFIT <- with(Data, cf[1] + PS_A * (cf[2] + cf[4] * PS_A) + cf[3] * QC_A)
+      bs <- with(Data, binStats(data.frame(PSXC-PSFIT, PSXC), bins=10))
+      g <- ggplot(data=bs)
+      g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma, 
+        xmax=ybar+sigma), na.rm=TRUE) 
+      xlow <- floor(min (bs$ybar-bs$sigma, na.rm=TRUE))
+      xhigh <- ceiling(max (bs$ybar+bs$sigma, na.rm=TRUE))
+      if (xhigh < 2) {xhigh <- 2}
+      if (xlow > -2) {xlow <- -2}
+      g <- g + xlim(xlow, xhigh) + theme_WAC()
+      g <- g + xlab('PSXC-PSFIT [hPa]') + ylab('PSXC [hPa]') + ylim(1050, 100) 
+      g <- g + geom_point (aes (x=bs$ybar, y=bs$xc), size=3, colour='blue', na.rm=TRUE)
+      g <- g + geom_label (aes (x=1.9, y=bs$xc, label=sprintf('%d', bs$nb)))
+    }
     print (g)
     
     # with(DataPP, plot(PSXC-PSFIT, PSXC, xlab='PSXC-PSFIT [hPa]', ylab='PSXC [hPa]',
@@ -2688,7 +2748,17 @@ server <- function(input, output, session) {
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
     fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
-    VL <- c('PSXC', 'PS_A', 'QCXC', 'QC_A', 'TASX', 'GGALT', 'ADIFR', 'QCF', 'ROLL')
+    if (!file.exists (fnamePP)) {
+      fnamePP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
+    }
+    
+    
+    FI <- DataFileInfo (fnamePP, LLrange=FALSE)
+    if (grepl ('130', FI$Platform)) {
+      VL <- c('PS_A', 'QCXC', 'QC_A', 'QCFRC', 'QCFC', 'TASX', 'GGALT', 'ADIFR', 'ROLL')
+    } else {
+      VL <- c('PSXC', 'PS_A', 'QCXC', 'QC_A', 'TASX', 'GGALT', 'ADIFR', 'QCF', 'ROLL')
+    }
     RdataFile <- sprintf ('Data/dataPQ%s.Rdata', input$ProjectPP)
     if (file.exists (RdataFile)) {
       load (RdataFile)
@@ -2704,20 +2774,46 @@ server <- function(input, output, session) {
     }
     
     cfq <- c(2.7809637e+00, 9.7968460e-01, -6.7437126e-03, 4.8584555e-06)
-    Data$QCFIT <- with(Data, cfq[1] + PS_A * (cfq[3] + cfq[4] * PS_A) + cfq[2] * QC_A)
-    M <- with(Data,
-      sprintf('mean and std dev: %.2f +/- %.2f hPa', 
-        mean(QCXC-QCFIT, na.rm=TRUE), sd(QCXC-QCFIT, na.rm=TRUE)))
-    b <- ceiling(with(Data, (max(QCXC-QCFIT, na.rm=TRUE)-min(QCXC-QCFIT, na.rm=TRUE))*20))
-    with(Data, hist (QCXC-QCFIT, breaks=b, xlim=c(-2,2), xlab='QCXC-QCFIT [hPa]',
-      freq=FALSE, main=M))
+    cfqA <- c(-7.922e-01, -6.355e-04, 1.115e-06, 1.041e+00)
+    cfqB <- c(-1.824e+00, -2.161e-03, 1.486e-06, 1.060e+00)
+    if (grepl ('130', FI$Platform)) {
+      Data$QCFIT3 <- with(Data, cfqA[1] + PS_A * (cfqA[2] + cfqA[3] * PS_A) + cfqA[4] * QC_A)
+      Data$QCFIT4 <- with(Data, cfqB[1] + PS_A * (cfqB[2] + cfqB[3] * PS_A) + cfqB[4] * QC_A)
+      M <- with(Data,
+        sprintf('mean and std dev: (QCFRC) %.2f +/- %.2f hPa, (QCFC) %.2f +/- %.2f hPa', 
+          mean(QCFRC-QCFIT4, na.rm=TRUE), sd(QCFRC-QCFIT4, na.rm=TRUE),
+          mean(QCFC-QCFIT3, na.rm=TRUE), sd(QCFC-QCFIT3, na.rm=TRUE)))
+      b4 <- ceiling(with(Data, (max(QCFRC-QCFIT4, na.rm=TRUE)-min(QCFRC-QCFIT4, na.rm=TRUE))*20))
+      b3 <- ceiling(with(Data, (max(QCFC-QCFIT3, na.rm=TRUE)-min(QCFC-QCFIT3, na.rm=TRUE))*20))
+      with(Data, hist (QCFRC-QCFIT4, breaks=b4, xlim=c(-2,2), xlab='QCFRC-QCFIT4 [hPa]',
+        border='forestgreen', col='lightblue', freq=FALSE, main=M, cex.main=0.75))
+      with(Data, hist (QCFC-QCFIT3, breaks=b3, xlim=c(-2,2), 
+        border='blue', freq=FALSE, add=TRUE))
+      legend('topright', legend=c('QCFRC', 'QCFC'), col=c('forestgreen', 'blue'), lwd=c(2,2))
+    } else {
+      Data$QCFIT <- with(Data, cfq[1] + PS_A * (cfq[3] + cfq[4] * PS_A) + cfq[2] * QC_A)
+      M <- with(Data,
+        sprintf('mean and std dev: %.2f +/- %.2f hPa', 
+          mean(QCXC-QCFIT, na.rm=TRUE), sd(QCXC-QCFIT, na.rm=TRUE)))
+      b <- ceiling(with(Data, (max(QCXC-QCFIT, na.rm=TRUE)-min(QCXC-QCFIT, na.rm=TRUE))*20))
+      with(Data, hist (QCXC-QCFIT, breaks=b, xlim=c(-2,2), xlab='QCXC-QCFIT [hPa]',
+        freq=FALSE, main=M))
+    }
   })
   
   output$QCSplot <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
-    fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), input$ProjectPP, input$ProjectPP, input$FlightPP)
-    VL <- c('PSXC', 'PS_A', 'QCXC', 'QC_A', 'TASX', 'GGALT', 'ADIFR', 'QCF', 'ROLL')
+    fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), input$ProjectPP, input$ProjectPP, input$FlightPP)
+    if (!file.exists (fnamePP)) {
+      fnamePP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
+    }
+    FI <- DataFileInfo (fnamePP, LLrange=FALSE)
+    if (grepl ('130', FI$Platform)) {
+      VL <- c('PS_A', 'QCXC', 'QC_A', 'QCFRC', 'QCFC', 'TASX', 'GGALT', 'ADIFR', 'ROLL')
+    } else {
+      VL <- c('PSXC', 'PS_A', 'QCXC', 'QC_A', 'TASX', 'GGALT', 'ADIFR', 'QCF', 'ROLL')
+    }
     RdataFile <- sprintf ('Data/dataPQ%s.Rdata', input$ProjectPP)
     if (file.exists (RdataFile)) {
       load (RdataFile)
@@ -2733,19 +2829,41 @@ server <- function(input, output, session) {
     }
     
     cfq <- c(2.7809637e+00, 9.7968460e-01, -6.7437126e-03, 4.8584555e-06)
-    Data$QCFIT <- with(Data, cfq[1] + PS_A * (cfq[3] + cfq[4] * PS_A) + cfq[2] * QC_A)
-    bs <- with(Data, binStats(data.frame(QCXC-QCFIT, QCXC), bins=10))
-    g <- ggplot(data=bs)
-    g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma, 
-      xmax=ybar+sigma), na.rm=TRUE) 
-    xlow <- floor(min (bs$ybar-bs$sigma, na.rm=TRUE))
-    xhigh <- ceiling(max (bs$ybar+bs$sigma, na.rm=TRUE))
-    if (xhigh < 2) {xhigh <- 2}
-    if (xlow > -2) {xlow <- -2}
-    g <- g + xlim(xlow, xhigh) + theme_WAC()
-    g <- g + xlab('QCXC-QCFIT [hPa]') + ylab('QCXC [hPa]') + ylim(200, 50) 
-    g <- g + geom_point (aes (x=bs$ybar, y=bs$xc), size=3, colour='blue', na.rm=TRUE)
-    g <- g + geom_label (aes (x=1.9, y=bs$xc, label=sprintf('%d', bs$nb)))
+    cfqA <- c(-7.922e-01, -6.355e-04, 1.115e-06, 1.041e+00)
+    cfqB <- c(-1.824e+00, -2.161e-03, 1.486e-06, 1.060e+00)
+    if (grepl ('130', FI$Platform)) {
+      Data$QCFIT3 <- with(Data, cfqA[1] + PS_A * (cfqA[2] + cfqA[3] * PS_A) + cfqA[4] * QC_A)
+      Data$QCFIT4 <- with(Data, cfqB[1] + PS_A * (cfqB[2] + cfqB[3] * PS_A) + cfqB[4] * QC_A)
+      bsC <- with(Data, binStats(data.frame(QCFC-QCFIT3, QCXC), bins=20))
+      bsD <- with(Data, binStats(data.frame(QCFRC-QCFIT4, QCXC), bins=20))
+      g <- ggplot(data=bsD)
+      g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma, 
+        xmax=ybar+sigma), na.rm=TRUE) 
+      xlow <- floor(min (bsD$ybar-bsD$sigma, na.rm=TRUE))
+      xhigh <- ceiling(max (bsD$ybar+bsD$sigma, na.rm=TRUE))
+      if (xhigh < 2) {xhigh <- 2}
+      if (xlow > -2) {xlow <- -2}
+      g <- g + xlim(xlow, xhigh) + theme_WAC()
+      g <- g + xlab('QCFRC-QCFIT4 [hPa]') + ylab('QCXC [hPa]') + ylim(110, 50) 
+      g <- g + geom_point (aes (x=bsD$ybar, y=bsD$xc, colour='QCFRC'), size=3, na.rm=TRUE)
+      g <- g + geom_path (aes (x=bsC$ybar, y=bsC$xc, colour='QCFC'), size=1.5, na.rm=TRUE)
+      g <- g + geom_label (aes (x=1.9, y=bsD$xc, label=sprintf('%d', bsD$nb)))
+      g <- g + scale_colour_manual (name='', values=c("QCFRC"="forestgreen", "QCFC"="blue"))
+    } else {
+      Data$QCFIT <- with(Data, cfq[1] + PS_A * (cfq[3] + cfq[4] * PS_A) + cfq[2] * QC_A)
+      bs <- with(Data, binStats(data.frame(QCXC-QCFIT, QCXC), bins=10))
+      g <- ggplot(data=bs)
+      g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma, 
+        xmax=ybar+sigma), na.rm=TRUE) 
+      xlow <- floor(min (bs$ybar-bs$sigma, na.rm=TRUE))
+      xhigh <- ceiling(max (bs$ybar+bs$sigma, na.rm=TRUE))
+      if (xhigh < 2) {xhigh <- 2}
+      if (xlow > -2) {xlow <- -2}
+      g <- g + xlim(xlow, xhigh) + theme_WAC()
+      g <- g + xlab('QCXC-QCFIT [hPa]') + ylab('QCXC [hPa]') + ylim(200, 50) 
+      g <- g + geom_point (aes (x=bs$ybar, y=bs$xc), size=3, colour='blue', na.rm=TRUE)
+      g <- g + geom_label (aes (x=1.9, y=bs$xc, label=sprintf('%d', bs$nb)))
+    }
     print (g)
   })
   
@@ -2822,7 +2940,12 @@ server <- function(input, output, session) {
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
     fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
+    if (!file.exists (fnamePP)) {
+      fnamePP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
+    }
+    FI <- DataFileInfo (fnamePP, LLrange=FALSE)
     VL <- standardVariables (c('AT_A', 'PS_A', 'QC_A', 'TAS_A', 'GGALT', 'ROLL'))
+    VL <- c(VL, 'ATH1', 'ATH2', 'ATF1', 'ATF2', 'ATHL1', 'ATHL2', 'ATHR1', 'ATHR2', 'AT_A2')
     RdataFile <- sprintf ('Data/dataATA%s.Rdata', input$ProjectPP)
     if (file.exists (RdataFile)) {
       load (RdataFile)
@@ -2838,7 +2961,12 @@ server <- function(input, output, session) {
     }
     
     cfA <- c(0.28178716560, 1.01636832046, -0.00012560891)  ## const, AT_A, AT_A^2
-    Data$ATFIT <- with(Data, cfA[1] + AT_A * (cfA[2] + cfA[3] * AT_A))
+    cfAC130 <- c(-0.9496482, 0.9965342, 0.0003855)
+    if (grepl ('130', FI$Platform)) {
+      Data$ATFIT <- with(Data, cfAC130[1] + AT_A * (cfAC130[2] + cfAC130[3] * AT_A))
+    } else {
+      Data$ATFIT <- with(Data, cfA[1] + AT_A * (cfA[2] + cfA[3] * AT_A))
+    }
     DataPP <<- Data
     # with(Data, plotWAC(data.frame(Time, PSXC-PS_A), ylim=c(-2,2), ylab='PSXC-PS_A'))
     M <- with(Data,
@@ -2855,8 +2983,13 @@ server <- function(input, output, session) {
   output$ATSplot <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
-    fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), input$ProjectPP, input$ProjectPP, input$FlightPP)
+    fnamPP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), input$ProjectPP, input$ProjectPP, input$FlightPP)
+    if (!file.exists (fnamPP)) {
+      fnamPP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), input$ProjectPP, input$ProjectPP, input$FlightPP)
+    }
+    FI <- DataFileInfo (fnamPP)
     VL <- standardVariables (c('AT_A', 'PS_A', 'QC_A', 'TAS_A', 'GGALT', 'ROLL'))
+    VL <- c(VL, 'ATH1', 'ATH2', 'ATF1', 'ATF2', 'ATHL1', 'ATHL2', 'ATHR1', 'ATHR2', 'AT_A2')
     RdataFile <- sprintf ('Data/dataATA%s.Rdata', input$ProjectPP)
     if (file.exists (RdataFile)) {
       load (RdataFile)
@@ -2872,7 +3005,12 @@ server <- function(input, output, session) {
     }
     
     cfA <- c(0.28178716560, 1.01636832046, -0.00012560891)  ## const, AT_A, AT_A^2
-    Data$ATFIT <- with(Data, cfA[1] + AT_A * (cfA[2] + cfA[3] * AT_A))
+    cfAC130 <- c(-0.9496482, 0.9965342, 0.0003855)
+    if (grepl ('130', FI$Platform)) {
+      Data$ATFIT <- with(Data, cfAC130[1] + AT_A * (cfAC130[2] + cfAC130[3] * AT_A))
+    } else {
+      Data$ATFIT <- with(Data, cfA[1] + AT_A * (cfA[2] + cfA[3] * AT_A))
+    }
     bs <- with(Data, binStats(data.frame(ATX-ATFIT, PSXC), bins=10))
     g <- ggplot(data=bs)
     g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma, 
@@ -2882,7 +3020,11 @@ server <- function(input, output, session) {
     if (xhigh < 2) {xhigh <- 2}
     if (xlow > -2) {xlow <- -2}
     g <- g + xlim(xlow, xhigh) + theme_WAC()
-    g <- g + xlab('ATX-ATFIT [deg. C]') + ylab('PSXC [hPa]') + ylim(1050, 80) 
+    if (grepl ('130', FI$Platform)) {
+      g <- g + xlab('ATX-ATFIT [deg. C]') + ylab('PSXC [hPa]') + ylim(1050, 400) 
+    } else {
+      g <- g + xlab('ATX-ATFIT [deg. C]') + ylab('PSXC [hPa]') + ylim(1050, 80) 
+    }
     g <- g + geom_point (aes (x=bs$ybar, y=bs$xc), size=3, colour='blue', na.rm=TRUE)
     g <- g + geom_label (aes (x=1.9, y=bs$xc, label=sprintf('%d', bs$nb)))
     print (g)
@@ -2894,6 +3036,10 @@ server <- function(input, output, session) {
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
     fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjectPPDir, 
       input$ProjectPP, input$FlightPP)
+    if (!file.exists (fnamePP)) {
+      fnamePP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), ProjectPPDir, 
+        input$ProjectPP, input$FlightPP)
+    }
     # VL <- standardVariables (c('PS_A', 'QC_A', 'TAS_A',
     #                            'RTX', 'PALT', 'ROLL', 'QCF', 'QCR'))
     VL <- c('ATX', 'EWX', 'GGALT', 'LATC', 'MACHX', 'PALT', 'PSXC',
@@ -2902,7 +3048,7 @@ server <- function(input, output, session) {
     TCN <- c('ATH1', 'ATH2', 'ATH3', 'ATH4', 'ATF1', 'ATF2', 'AT_A', 'AT_A2', 
       'ATFH1', 'ATFH2', 'ATHR1', 'ATHR2')
     if (Trace) {print (sprintf ('fnamePP=%s', fnamePP))}
-    FI <- DataFileInfo (fnamePP)
+    FI <- DataFileInfo (fnamePP, LLrange=FALSE)
     
     VL <- c(VL, TCN[which(TCN %in% FI$Variables)])
     
@@ -3030,6 +3176,7 @@ server <- function(input, output, session) {
     g <- g + theme (plot.title=element_text(size=14))
     print (g)
   })
+  
   output$INSpitch <- renderPlot ({
     VL <- c('PITCH', 'PITCH_IRS2', 'ROLL', 'ROLL_IRS2', 'THDG', 'THDG_IRS2', 'TASX')
     RdataFile <- sprintf ('Data/dataINS%s.Rdata', input$ProjectPP)
@@ -3056,13 +3203,17 @@ server <- function(input, output, session) {
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
     fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjectPPDir, 
       input$ProjectPP, input$FlightPP)
+    if (!file.exists (fnamePP)) {
+      fnamePP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), ProjectPPDir, 
+        input$ProjectPP, input$FlightPP)
+    }
     # VL <- standardVariables (c('PS_A', 'QC_A', 'TAS_A',
     #                            'RTX', 'PALT', 'ROLL', 'QCF', 'QCR'))
     VL <- c('ATX', 'EWX', 'GGALT', 'LATC', 'MACHX', 'PALT', 'PSXC',
       'QCF', 'QCR', 'ROLL', 'TASX')
     ## add temperatures:
     TCN <- c('ATH1', 'ATH2', 'ATH3', 'ATH4', 'ATF1', 'ATF2', 'AT_A', 'AT_A2', 
-      'ATFH1', 'ATFH2', 'ATHR1', 'ATHR2')
+      'ATFH1', 'ATFH2', 'ATHR1', 'ATHR2', 'ATHL1', 'ATHL2')
     if (Trace) {print (sprintf ('fnamePP2=%s', fnamePP))}
     FI <- DataFileInfo (fnamePP)
     
@@ -3178,23 +3329,14 @@ server <- function(input, output, session) {
     } else {
       Data <- DataPP[DataPP$RF == input$FlightPP, ]
     }
-    Data$DTHDG <- Data$THDG - Data$THDG_IRS2Cp <- SpecificHeats (Data$EWX / Data$PSXC)[, 1]
-    Data$X <- Data$TASX^2 / (2 * Cp)
-    # Data$RTHR1 <- ShiftInTime (Data$RTHR1, .shift=-2300)
-    r <- setRange(Data, 41449, 42329)
-    cf <- coef(lm (RTHR1 ~ X, data=Data[r,]))
-    xp <- c(7,25)
-    yp <- cf[1] + cf[2] * xp
-    d <- data.frame(xp=xp, yp=yp)
-    Xlab <- expression(paste(V^2,'/(2',c[p],')', sep=''))
-    g <- ggplot (data=Data[r, ], aes(x=X, y=RTHR1)) + geom_point(colour='blue') 
-    g <- g + geom_path(data=d, aes(x=xp, y=yp), colour='darkorange', lwd=1.5, lty=2) 
-    g + ylab('Recovery Temperature [K]') + xlab(Xlab) + theme_WAC()
+    Data$DTHDG <- Data$THDG - Data$THDG_IRS2
     
     rp <- !is.na(Data$DTHDG) & Data$DTHDG > 180
     rn <- !is.na(Data$DTHDG) & Data$DTHDG < -180
     Data$DTHDG[rp] <- Data$DTHDG[rp] - 360
     Data$DTHDG[rn] <- Data$DTHDG[rn] + 360
+    ## sometimes, esp. for C130 IRS2, averaging introduces errors (values near 180 in transition)
+    Data$DTHDG[!is.na(Data$DTHDG) & abs(Data$DTHDG) > 10] <- NA
     g <- ggplot(data=Data) + geom_histogram (aes(DTHDG, ..density..), fill='blue', binwidth=0.01)
     g <- g + xlim(-1,1)
     g <- g + ggtitle(sprintf ('mean %.2f +/- %.2f', mean(Data$DTHDG, na.rm=TRUE),
@@ -3895,8 +4037,8 @@ server <- function(input, output, session) {
           DataTDP$Time[i1], DataTDP$Time[i2]))
         if (exists ('DQF')) {
           DQF <<- rbind (DQF, data.frame(Start=DataTDP$Time[i1], End=DataTDP$Time[i2], 
-          qfStart=DataTDP$Time[i1], qfEnd=DataTDP$Time[i2], 
-          Use=TRUE, Flag=-DQ/10, Type='balance'))
+            qfStart=DataTDP$Time[i1], qfEnd=DataTDP$Time[i2], 
+            Use=TRUE, Flag=-DQ/10, Type='balance'))
         } else {
           DQF <<- data.frame(Start=DataTDP$Time[i1], End=DataTDP$Time[i2], 
             qfStart=DataTDP$Time[i1], qfEnd=DataTDP$Time[i2], 
@@ -3949,7 +4091,7 @@ server <- function(input, output, session) {
       updateSliderInput (session, 'timesTDP', value=timesTDP)
     }
   } )
-
+  
   
   observeEvent (input$accAllTDP, {
     if (exists ('DQF') && nrow(DQF) > 0) {
@@ -3986,7 +4128,7 @@ server <- function(input, output, session) {
           itm <- itm + 1
         }
         updateRadioButtons (session, inputId='overshoot', selected=itm)
-
+        
       }
     }
   })  
