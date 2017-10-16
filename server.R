@@ -2643,9 +2643,11 @@ server <- function(input, output, session) {
       DataPP <- qualifyData (DataPP)
       save (DataPP, file=RdataFile)
     }
+    DataPP <<- DataPP  ## save for inspection, debugging
     if (input$AllPP) {
       Data <- DataPP
     } else {
+      if (Trace) {print (sprintf ('FPP is %d', input$FlightPP))}
       Data <- DataPP[DataPP$RF == input$FlightPP, ]
     }
     
@@ -2680,7 +2682,7 @@ server <- function(input, output, session) {
     } else {
       Data$PSFIT <- with(Data, cf[1] + PS_A * (cf[2] + cf[4] * PS_A) + cf[3] * QC_A)
     }
-    DataPP <<- Data
+    # DataPP <<- Data
     # with(Data, plotWAC(data.frame(Time, PSXC-PS_A), ylim=c(-2,2), ylab='PSXC-PS_A'))
     if (grepl ('130', FI$Platform)) {
       M <- with(Data, sprintf('mean and std dev: PSFDC %.2f +/- %.2f hPa PSFC %.2f +/- %.2f', 
@@ -2732,6 +2734,7 @@ server <- function(input, output, session) {
     } else {
       Data <- DataPP[DataPP$RF == input$FlightPP, ]
     }
+    if (Trace) {print (sprintf ('data rows = %d', nrow(Data)))}
     
     cf <- c(-2.2717351e+00, 1.0044060e+00, 1.7229198e-02, -3.1450368e-06) #CSET only
     cf <- c(-2.6239872e+00, 1.0063093e+00, 1.6020764e-02, -4.6657542e-06)  #CSET+ORCAS+DEEPWAVE

@@ -1015,7 +1015,7 @@ makeDataFile <- function(Proj, Flt, Vars) {
           next
         }
         fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(),
-          ProjDir, Proj, FltPP)
+          ProjDir, Proj, Ft)
         D <- rbind (D, getNetCDF (fname, Vars, F=Ft))
       }
     }
