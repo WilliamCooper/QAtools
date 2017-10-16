@@ -3,6 +3,9 @@ PJ <- c('ARISTO2017', 'ORCAS', 'CSET', 'HCRTEST',
         'DEEPWAVE', 'CONTRAST', 'MPEX', 'DC3', 'DC3-TEST', 'HEFT10',
         'TORERO', 'HIPPO-5', 'HIPPO-4', 'HIPPO-3', 'HIPPO-2', 'HIPPO-1',
         'IDEAS-4', 'PACDEX', 'SOCRATES-TEST', 'START08',  'PREDICT', 'TREX')
+Platform <- 'N677F'
+PJ <- c('WECAN-TEST', 'WINTER', 'NOMADSS')
+Platform <- 'N130AR'
 library(Ranadu)
 source ("./PlotFunctions/SpeedRunSearch.R")
 source ("./PlotFunctions/CircleSearch.R")
@@ -16,7 +19,7 @@ SeekManvrs <- function (Data) {
   if (!is.na(lt[1]))  {lst <- lt}
   lt <- YawSearch (Data)
   if (!is.na(lt[1])) {lst <- c(lst, lt)}
-  lt <- SpeedRunSearch (Data) 
+  lt <- SpeedRunSearch (Data, Platform) 
   if (!is.na(lt[1])) {lst <- c(lst, lt)}
   lt <- CircleSearch (Data)
   if (!is.na(lt[1])) {lst <- c(lst, lt)}
@@ -86,6 +89,7 @@ lstAll <- gsub('speed run', 'speed-run', lstAll)
 lstAll <- gsub('  *', ';', lstAll)
 lstAll <- gsub('--', ';', lstAll)
 lstAll <- gsub(',', '', lstAll)
-sink(file='ManeuversGV.csv')
-print (lstAll)
+sink(file='ManeuversC130.csv')
+# print (lstAll)
+for (l in lstAll) {print (l)}
 sink()

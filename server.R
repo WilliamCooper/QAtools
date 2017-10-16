@@ -10,7 +10,7 @@ server <- function(input, output, session) {
   ################ REACTIVES ########################
   
   reac <- reactiveValues (newdata=FALSE, newdisplay=FALSE, quick = 0,
-    plotFrozen=0, HTMLFrozen=0, newplotTDP=0, HOTplot=0, WIFplot=0)
+    plotFrozen=0, HTMLFrozen=0, newplotTDP=0, HOTplot=0, WIFplot=0, plotYM=0)
   ## RSessions stuff:
   output$S1E1Plot <- renderPlot ({
     V <- input$S1Var
@@ -292,11 +292,13 @@ server <- function(input, output, session) {
   observeEvent (input$manual, seeManual ())
   
   observe ({
+    reac$plotYM
     print (c('observe: ProjectPP is', input$ProjectPP))
     if (!exists('Maneuvers')) {
       load ('Maneuvers.Rdata')
       Maneuvers <<- Maneuvers
     }
+
     countPM <<- 0
     countYM <<- 1
     countRH <<- 1
@@ -369,6 +371,8 @@ server <- function(input, output, session) {
   }, priority=10)
   
   observe ({
+    reac$plotYM
+    if (Trace) {print (sprintf ('entered selYM observer, reac$plotYM=%d', reac$plotYM))}
     item <- input$selYM
     if (item != 'none' && !is.na(item)) {
       item <- as.integer(item)
@@ -1526,6 +1530,34 @@ server <- function(input, output, session) {
       size = 'l',
       easyClose = TRUE
     ))
+  })
+  
+  observeEvent (input$delYM, {
+    print ('entered delete YM')
+    iYM <- as.integer(input$selYM)
+    ## want match to Maneuvers for Project, Flight,
+    print (YM[iYM,])
+    idel <- which(Maneuvers$Project == YM$Project[iYM] & Maneuvers$Start == YM$Start[iYM] & Maneuvers$Type == YM$Type[iYM])
+    print (sprintf ('deleting yaw maneuver %d', idel[1]))
+    if (!is.na(idel[1])) {
+      Maneuvers <<- Maneuvers <- Maneuvers[-idel, ]
+      reac$plotYM <<- reac$plotYM + 1
+      print (sprintf ('reac$plotYM is now %s', reac$plotYM))
+    }
+    YM <<- YM <- Maneuvers [Maneuvers$Project == input$ProjectPP & Maneuvers$Type == 'yaw', ]
+    if (nrow(YM) > 0) {
+      for (i in 1:nrow(YM)) {
+        print (s <- sprintf ('%s %d-%d', YM$Flight[i], YM$Start[i], YM$End[i]))
+        chYM[i] <- sprintf ('%d', i)
+        names(chYM)[i] <- s
+      }
+      updateRadioButtons(session, inputId='selYM', choices=chYM, selected=as.character(iYM))
+      # updateSliderInput (session, inputId='sliderYM', min=YM$Start[1], max=YM$End[1])
+    } else {
+      updateRadioButtons(session, inputId='selYM', choices='none')
+    }
+    # save(Maneuvers, file='Maneuvers.Rdata')
+    # print(Maneuvers[Maneuvers$Project == ProjectPP & Maneuvers$Type == 'pitch' & Maneuvers$End == chPM[iPM,3],])
   })
   
   observeEvent (input$delCR, {
@@ -3437,7 +3469,7 @@ server <- function(input, output, session) {
         cfit <- function (D) {
           mwd <- mean (D$WD, na.rm=TRUE)
           D$xi <- (Cradeg * (D$THDG + D$SSLIP * cos (D$ROLL*Cradeg) - D$ATTACK * sin (D$ROLL*Cradeg))+2*pi) %% (2*pi)
-          Dc <- D[abs(D$ROLL) > 26, ]
+          Dc <- D[abs(D$ROLL) > 20, ]    ## 26 is better for GV?
           DR <- Dc[Dc$ROLL > 0, ]
           DL <- Dc[Dc$ROLL < 0, ]
           DL$xi <- (DL$xi - mean(DL$WD, na.rm=TRUE)*Cradeg + 2*pi) %% (2*pi)
@@ -3654,6 +3686,7 @@ server <- function(input, output, session) {
   
   
   output$plotYM <- renderPlot ({
+    reac$plotYM
     # print ('entered plotYM with selYM, Proj, setYMT, sliderYM, sliderTHDGYM=')
     # isolate (print (c(input$selYM, input$ProjectPP, input$setYMT, 
     #                   input$sliderYM[1], input$sliderYM[2], input$sliderTHDGYM)))
@@ -3686,6 +3719,11 @@ server <- function(input, output, session) {
         r1YM <<- 1; r2YM <<- nrow(DYM); r3YM <<- 1; r4YM <<- r2YM
         countYM <<- countYM + 1
       }
+      DYM$WDC <- SmoothInterp (DYM$WDC, .Length=0)
+      DYM$WSC <- SmoothInterp (DYM$WSC, .Length=0)
+      DYM$THDG <- SmoothInterp (DYM$THDG, .Length=0)
+      DYM$TASX <- SmoothInterp (DYM$TASX, .Length=0)
+      DYM$SSRD <- SmoothInterp (DYM$SSRD, .Length=0)
       if (input$setYMT == 'environment') {
         r1YM <<- which(DYM$Time >= input$sliderYM[1])[1]
         r2YM <<- which(DYM$Time >= input$sliderYM[2])[1]
@@ -3741,10 +3779,12 @@ server <- function(input, output, session) {
       DYM$SScomp <- DYM$TASX * DYM$SSRD * pi / 180
       # print (summary(r))
       # print (summary(rp))
+      if ('N130AR' == FI$Platform) {ylm <- c(-10,10)}
+      else {ylm <- c(-4,4)}
       if (length(r) > 2) {
         with(DYM[r,], plotWAC(data.frame(Time, SScomp, Lat, selected), col=c('blue', 'red', 'forestgreen'), 
           ylab='Sideslip-induced crosswind [m/s]', 
-          lwd=c(2,2,2), lty=c(1,2,1), ylim=c(-4,4)))
+          lwd=c(2,2,2), lty=c(1,2,1), ylim=ylm))
         cvf <- ccf(DYM$Lat[rp], DYM$SScomp[rp], plot=FALSE)
         Rmax <- max(abs(cvf$acf), na.rm=TRUE)
         sdSS <- sd(DYM$SScomp[rp], na.rm=TRUE)
@@ -3779,7 +3819,7 @@ server <- function(input, output, session) {
     DPM <- dataDPM(ProjDir, input$ProjectPP, PM$Flight[item], VL, START, END)
     if (countPM == 1) {
       minT <- DPM$Time[1]; maxT <- DPM$Time[nrow(DPM)]
-      updateSliderInput (session, 'sliderPM', min=minT, max=maxT)
+      updateSliderInput (session, 'sliderPM', min=minT, max=maxT, value=c(minT, maxT))
       r1PM <<- 1; r2PM <<- nrow(DPM); r3PM <<- 1; r4PM <<- r2PM
       countPM <<- countPM + 1
     }

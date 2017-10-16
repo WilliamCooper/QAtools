@@ -361,7 +361,7 @@ ui <- fluidPage (
       fluidRow (
         column (2,                                      
           selectInput (inputId='ProjectPP', label='Project',
-            choices=PJ, selected='ARISTO2017', width='100px')),
+            choices=PJ, width='100px')),
         column(2,
           numericInput (inputId='FlightPP', label='Flight', value=1,
             min=1, max=99, step=1, width='80px')),
@@ -496,7 +496,9 @@ ui <- fluidPage (
             tabPanel ('Yaw',
               sidebarLayout (
                 sidebarPanel (h4('select yaw maneuver'),
-                  radioButtons('selYM', label=NULL, choices=c('none'='0')),
+                  fluidRow (
+                    column(6, radioButtons('selYM', label=NULL, choices=c('none'='0'))),
+                    column(6, actionButton ('delYM', label='delete it'))),
                   fluidRow (
                     column(4, actionButton('infoYM', label='Info')),
                     column(6, selectInput('setYMT', label='set time for:',

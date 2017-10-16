@@ -1,16 +1,17 @@
-SpeedRunSearch <- function (data) {
+SpeedRunSearch <- function (data, platform='N677F') {
   rtn <- NA
   ## needs TASX, GGALT
   del <- 75
-  tol <- .3
+  tol <- ifelse (platform == 'N130AR', 0.2, .3)
+  fastMin <- ifelse (platform == 'N130AR', 145, 180)
   delz <- 20
   DataT <- data[!is.na(data$Time) & !is.na(data$TASX) & !is.na(data$GGALT), ]
   L <- dim(DataT)[1]
   if (L == 0) {return(rtn)}
   r <- 1:L
   for (i in (del+1):(L-del)) {
-    if ((!is.na(DataT$TASX[i]) && abs (DataT$TASX[i+del]-DataT$TASX[i]) < tol*del) ||
-          (abs(DataT$GGALT[i+del]-DataT$GGALT[i]) > delz)) {
+    if ((!is.na(DataT$TASX[i]) && (abs (DataT$TASX[i+del]-DataT$TASX[i]) < tol*del) ||
+          (abs(DataT$GGALT[i+del]-DataT$GGALT[i])) > delz)) {
       r[i] <- NA 
     }
     if ((abs (DataT$TASX[i-del]-DataT$TASX[i]) > tol*del) &&
@@ -36,7 +37,7 @@ SpeedRunSearch <- function (data) {
         ## find range in speed:
         slow <- min (DataT$TASX[s[startSpeedRun]:s[j]], na.rm=TRUE)
         fast <- max (DataT$TASX[s[startSpeedRun]:s[j]], na.rm=TRUE)
-        if ((fast-slow > 40) && (fast > 180)) {
+        if ((fast-slow > 40) && (fast > fastMin)) {
           rt <- sprintf( "%s %s speed run       %s %s %f %f", 
                           attr(data, 'project'), attr(data, 'FlightNumber'),
                           strftime(startTime, format="%H%M%S", tz='UTC'),

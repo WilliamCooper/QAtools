@@ -359,6 +359,7 @@ SeekManeuvers <- function (Data) {
 }
 
 ProjectSeekManeuvers <- function (inp) {
+  ## for this project, this replaces the data.frame Maneuvers with a new temporary one
   Project <- inp$ProjectPP
   if (grepl ('HIPPO', Project)) {
     ProjDir <- 'HIPPO'
@@ -397,6 +398,39 @@ ProjectSeekManeuvers <- function (inp) {
     print (lst)
     print (sprintf ('End of list for project %s', Project))
     save(lst, file=sprintf('maneuvers/maneuvers%s', Project))
+    ## replace Maneuvers data.frame with one created here:
+    Maneuvers.Save <- Maneuvers
+    lst <- gsub(' maneuver', '', lst)
+    lst <- gsub('speed run', 'speed-run', lst)
+    lst <- gsub('reverse heading', 'reverse-heading', lst)
+    lst <- gsub('--', ' ', lst)
+    lst <- gsub('  ', ' ', lst)
+    lst <- gsub('  ', ' ', lst)
+    lst <- gsub('  ', ' ', lst)
+    lst <- gsub('  ', ' ', lst)
+    newDF <- data.frame()
+    for (l in lst) {
+      s <- strsplit(l, ' ')
+      lp <- s[[1]][1]
+      lf <- s[[1]][2]
+      lt <- s[[1]][3]
+      ls <- as.integer(s[[1]][4])
+      le <- as.integer(s[[1]][5])
+      if (length(s[[1]]) > 5) {
+        lo1 <- as.numeric(s[[1]][6])
+      } else {
+        lo1 <- 0
+      }
+      if (length(s[[1]]) > 6) {
+        lo2 <- as.numeric(s[[1]][7])
+      } else {
+        lo2 <- 0
+      }
+      newDF <- rbind(newDF, data.frame(Project=lp, Flight=lf, Type=lt, Start=ls, End=le, Other1=lo1, Other2=lo2))
+    }
+    newDF$Type[newDF$Type == 'speed-run'] <- 'speed run'
+    newDF$Type[newDF$Type == 'reverse-heading'] <- 'reverse heading'
+    Maneuvers <<- Maneuvers <- newDF
     return (1)
   }
   
