@@ -963,7 +963,7 @@ ui <- fluidPage (
             sidebarPanel(h4('Run Arguments:'),
               fluidRow (
                 column (7, selectInput (inputId='ProjectWIF', label=NULL,
-                  choices=PJ, selected=ProjectWIF, width='100px'))
+                  choices=PJ, width='100px'))
               ),
               fluidRow (
                 column (5, numericInput (inputId='FlightWIF', label='Flight', value=Flight,

@@ -29,17 +29,21 @@ minT <- as.POSIXct(0, origin='2012-05-29', tz='UTC')
 maxT <- as.POSIXct(3600*8, origin='2012-05-29', tz='UTC')
 step <- 60
 
+PJ <- c('SOCRATES', 'WECAN-TEST', 'ECLIPSE', 'ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
+  'DEEPWAVE', 'CONTRAST', 'SPRITE-II', 'MPEX', 'DC3', 'HEFT10', 'IDEAS-4',
+  'TORERO', 'HIPPO-5', 'HIPPO-4', 'HIPPO-3', 'HIPPO-2', 'DC3-TEST',
+  'HIPPO-1','PREDICT', 'START08', 'PACDEX', 'TREX', 'WINTER', 'NOMADSS')
 Cradeg <- pi/180
-Project <- 'CSET'
-ProjectPP <- 'ARISTO2017'
-ProjectKF <- 'CSET'
+Project <- PJ[1]
+ProjectPP <- PJ[1]
+ProjectKF <- PJ[1]
 Flight <- 1
 FlightKF <- 1
-ProjectKP <- 'CSET'
+ProjectKP <- PJ[1]
 FlightKP <- 1
-ProjectHOT <- 'CSET'
+ProjectHOT <- PJ[1]
 FlightHOT <- 1
-ProjectWIF <- 'CSET'
+ProjectWIF <- PJ[1]
 FlightWIF <- 1
 
 ## Attributes of variables are lost when subsetting. 
@@ -1084,10 +1088,6 @@ testPlot <- function (k) {
 ## assemble a list of projects for which an appropriately named rf01 or tf01
 ## exists in the data directory:
 
-PJ <- c('SOCRATES', 'WECAN-TEST', 'ECLIPSE', 'ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
-  'DEEPWAVE', 'CONTRAST', 'SPRITE-II', 'MPEX', 'DC3', 'HEFT10', 'IDEAS-4',
-  'TORERO', 'HIPPO-5', 'HIPPO-4', 'HIPPO-3', 'HIPPO-2', 'DC3-TEST',
-  'HIPPO-1','PREDICT', 'START08', 'PACDEX', 'TREX', 'WINTER', 'NOMADSS')
 CHP <- c('recovery factor', 'angle of attack', 'airspeed dependence')
 DataDir <- DataDirectory ()
 for (P in PJ) {
