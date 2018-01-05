@@ -499,9 +499,13 @@ server <- function(input, output, session) {
       FLT <- ifelse (input$AllPP, 1, FlightPP)
       ProjDir <- ProjectPP
       if (grepl('HIPPO', ProjectPP)) {ProjDir <- 'HIPPO'}
-      fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjDir, ProjectPP, FLT)
+      fnamePP <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), ProjDir, ProjectPP, input$typeFlightPP, FLT)
       if (!file.exists (fnamePP)) {
+        ## try tf
         fnamePP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), ProjDir, ProjectPP, FLT)
+        if (file.exists (fnamePP)) {
+          updateRadioButtons(session, 'typeFlightPP', selected='tf')
+        }
       }
       if (Trace) {print (sprintf ('fnamePP3=%s', fnamePP))}
       FI <- DataFileInfo (fnamePP)

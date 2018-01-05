@@ -365,6 +365,8 @@ ui <- fluidPage (
         column(2,
           numericInput (inputId='FlightPP', label='Flight', value=1,
             min=1, max=99, step=1, width='80px')),
+        column (2, radioButtons ('typeFlightPP', label=NULL, choices=c('rf', 'tf', 'ff'),
+          width='70px', inline=TRUE)),
         column (3,
           checkboxInput('AllPP', label='ALL? [takes a minute]', value=FALSE))),
       tabsetPanel (id='whichPP', type='pills',
