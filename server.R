@@ -74,7 +74,7 @@ server <- function(input, output, session) {
   
   output$txtCalc1 <- renderUI({
     y <- NA
-    {options(digits=5)
+    {options("digits"=5)
       e <- paste ('y <- round(', input$cformula, ', 6)', sep='')
       try(eval (parse (text=e)), silent=TRUE)
       if (!is.na(y[1])) {
@@ -4308,7 +4308,7 @@ server <- function(input, output, session) {
   output$dewpointPlot <- renderPlot({
     reac$newplotTDP
     if (!exists('DataTDP') || input$ProjectKP != ProjectKP || input$FlightKP != FlightKP) {
-      getDataTDP(input$ProjectKP, input$FlightKP)
+      getDataTDP(input$ProjectKP, input$FlightKP, input$typeFlightKP)
       times <- c(DataTDP$Time[1], DataTDP$Time[nrow(DataTDP)])
       updateSliderInput (session, 'timesTDP', min=times[1], max=times[2], value=times)
       updateSliderInput (session, 'dqftimes', min=times[1], max=times[2], value=times)
@@ -4628,11 +4628,16 @@ server <- function(input, output, session) {
   })
   
   output$cavPlot <- renderPlot({
-    if (input$KPtf) {
-      fname <<- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), input$ProjectKP, input$ProjectKP, input$FlightKP)
-    } else {
-      fname <<- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), input$ProjectKP, input$ProjectKP, input$FlightKP)
-    }
+    fname <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), input$ProjectKP, input$ProjectKP,
+      input$typeFlightKP, input$FlightKP)
+    if (!file.exists (fname)) {
+      fn2 <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), input$ProjectKP, input$ProjectKP,
+        input$FlightKP)
+      if (file.exists (fn2)) {
+        updateRadioButtons(session, 'typeFlightKP', selected='tf')
+        fname <- fn2
+      }
+    }  ## otherwise will fail here:
     D <- getNetCDF (fname, standardVariables (c('CAVP_DPL', 'CAVP_DPR', 'AKRD')))
     if ('CAVP_DPL' %in% names(D)) {
       D <- D[!is.na(D$TASX) & D$TASX > 90, ]

@@ -459,7 +459,7 @@ ui <- fluidPage (
                   ),
                   sliderInput('sliderSR', label='set delay [ms]', min=-5000, max=5000, step=50, value=0),
                   selectInput('varSR', label='other variable (type-3 plot)', 
-                    choices=sort((DataFileInfo(sprintf ('%s%s/%srf01.nc', DataDirectory(), ProjectPP, ProjectPP)))$Variables), selected='RTX')
+                    choices=sort(VLALL), selected='RTX')
                 ),
                 mainPanel(
                   plotOutput (outputId='plotSR')
@@ -742,7 +742,9 @@ ui <- fluidPage (
         column(2,
           numericInput (inputId='FlightKP', label='Flight', value=3,
             min=1, max=99, step=1, width='80px')),
-        column(2, checkboxInput('KPtf', 'test flight', value=FALSE))
+        column (2, radioButtons ('typeFlightKP', label=NULL, choices=c('rf', 'tf', 'ff'),
+          width='70px', inline=TRUE))
+        # column(2, checkboxInput('KPtf', 'test flight', value=FALSE))
       ),                         
       tabsetPanel (id='whichKnown', type='pills',
         tabPanel ('DP overshoot/SS',

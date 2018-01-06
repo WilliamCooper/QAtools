@@ -110,7 +110,14 @@ load('frozen/frozenRange.Rdata')  # loads frozenRange data.frame
 ND <- frozenRange$Var
 ND <- ND[-which(ND == 'RF')]
 fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjectKP, ProjectKP, FlightKP)
-Data <- getNetCDF(fname, ND)
+if (file.exists(fname)) {
+  Data <- getNetCDF(fname, ND)
+} else {
+  fname <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), ProjectKP, ProjectKP, FlightKP)
+  if (file.exists(fname)) {
+    Data <- getNetCDF(fname, ND)
+  }
+}
 
 setNA <- function (.x, .v) {
   X <- zoo::na.approx (as.vector (.x), maxgap=1000, na.rm=FALSE)
@@ -1751,10 +1758,11 @@ constructDQF <- function (project, flight) {
   DQFsave <<- DQF
 }
 
-getDataTDP <- function (project, flight) {
+getDataTDP <- function (project, flight, typeFlight) {
   projectDir <- project
   if (grepl ('HIPPO', project)) {projectDir <- 'HIPPO'}
-  DataTDP <- getNetCDF (sprintf ('%s%s/%srf%02d.nc', DataDirectory(), projectDir, project, flight), VarListTDP)
+  DataTDP <- getNetCDF (sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), projectDir, project, 
+    typeFlight, flight), VarListTDP)
   DataTDP$MIRRTMP_DPL <- setNA (DataTDP$MIRRTMP_DPL, 0)
   DataTDP$DERIV2 <- -signal::filter(signal::sgolay(3,17,2),DataTDP$MIRRTMP_DPL)
   DataTDP$DPERR <- DataTDP$DERIV2 / (asimTDP * f2simTDP)
