@@ -694,7 +694,7 @@ ShowProgressWIF <- function(progress, Flight) {
     }
     progress$set(message = '  -- DONE -- ',
       detail = sprintf('flight %d', Fl), value=100)
-      ## read again (time to write all-done message)
+    ## read again (time to write all-done message)
     M <- system('tail -n 5 newAKRD/AKRDlog', intern=TRUE)
     if (any (grepl ('All Done', M))) {
       AllDone <- TRUE
@@ -1003,54 +1003,79 @@ makeDataFile <- function(Proj, Flt, Vars) {
   
   if (Flt == 'ALL') {
     ## loop through all the flights in this project:
-    Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjDir),
+    Flrf <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjDir),
       sprintf ("%srf...nc$", Proj)))
+    Fltf <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjDir),
+      sprintf ("%stf...nc$", Proj)))
     D <- data.frame()
-    if (!is.na (Fl[1])) {
+    if (!is.na (Fltf[1])) {
       ## eliminate any variables that are not present for all flights:
-      FltPP <- sub('.*rf', '', sub ('.nc$', '', Fl))
-      FltPP <- as.integer (FltPP)
-      for (Ft in FltPP) {
-        if (checkBad (Ftemp <- sprintf ('%srf%02d', Proj, Ft))) {
+      FltPP1 <- as.integer (sub('.*tf', '', sub ('.nc$', '', Fltf)))
+      for (Ft in FltPP1) {
+        if (checkBad (Ftemp <- sprintf ('%stf%02d', Proj, Ft))) {
         } else {
-            FII <- DataFileInfo (sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjDir, 
-              Proj, Ft), LLrange=FALSE)
-            im <- match (Vars, FII$Variables)
-            if (any(is.na(im))) {
-              Vars <- Vars[-which(is.na(im))]
-            }
+          FII <- DataFileInfo (sprintf ('%s%s/%stf%02d.nc', DataDirectory(), ProjDir, 
+            Proj, Ft), LLrange=FALSE)
+          im <- match (Vars, FII$Variables)
+          if (any(is.na(im))) {
+            Vars <- Vars[-which(is.na(im))]
           }
         }
       }
-      for (Ft in FltPP) {
-        if (Trace) {print (sprintf ('ProjDir %s Proj %s Ft %d', ProjDir, Proj, Ft))
-        if (checkBad(Ftemp <- sprintf ('%srf%02d', Proj, Ft))) {
-          print (sprintf('bad flight %s -- skipping', Ftemp))
-          next
+    }
+    if (!is.na (Flrf[1])) {
+      ## eliminate any variables that are not present for all flights:
+      FltPP2 <- as.integer (sub('.*rf', '', sub ('.nc$', '', Flrf)))
+      for (Ft in FltPP2) {
+        if (checkBad (Ftemp <- sprintf ('%srf%02d', Proj, Ft))) {
+        } else {
+          FII <- DataFileInfo (sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjDir, 
+            Proj, Ft), LLrange=FALSE)
+          im <- match (Vars, FII$Variables)
+          if (any(is.na(im))) {
+            Vars <- Vars[-which(is.na(im))]
+          }
         }
-        fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(),
-          ProjDir, Proj, Ft)
-        D <- rbind (D, getNetCDF (fname, Vars, F=Ft))
       }
     }
-    Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjDir),
-      sprintf ("%stf...nc$", Proj)))
-    if (!is.na(Fl[1])) {
-      for (Ft in Fl) {
-        FltPP <- sub('.*tf', '', sub ('.nc$', '', Ft))
-        FltPP <- as.integer (FltPP)
-        if (checkBad(Ftemp <- sprintf ('%stf%02d', Proj, FltPP))) {
-          print (sprintf('bad flight %s -- skipping', Ftemp))
-          next
-        }
-        fname <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(),
-          ProjDir, Proj, FltPP)
-        D <- rbind (D, getNetCDF (fname, Vars, F=FltPP+50))
+    for (Ft in FltPP1) {
+      if (Trace) {print (sprintf ('ProjDir %s Proj %s Ft %d', ProjDir, Proj, Ft))}
+      if (checkBad(Ftemp <- sprintf ('%stf%02d', Proj, Ft))) {
+        print (sprintf('bad flight %s -- skipping', Ftemp))
+        next
       }
+      fname <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(),
+        ProjDir, Proj, Ft)
+      D <- rbind (D, getNetCDF (fname, Vars, F=Ft+50))
     }
-  } else {
-    D <- getNetCDF(fname, Vars, F=Ft)
+    for (Ft in FltPP2) {
+      if (Trace) {print (sprintf ('ProjDir %s Proj %s Ft %d', ProjDir, Proj, Ft))}
+      if (checkBad(Ftemp <- sprintf ('%srf%02d', Proj, Ft))) {
+        print (sprintf('bad flight %s -- skipping', Ftemp))
+        next
+      }
+      fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(),
+        ProjDir, Proj, Ft)
+      D <- rbind (D, getNetCDF (fname, Vars, F=Ft))
+    }
   }
+  # Fltf <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjDir),
+  #   sprintf ("%stf...nc$", Proj)))
+  # if (!is.na(Fltf[1])) {
+  #   for (Ft in Fltf) {
+  #     FltPP <- sub('.*tf', '', sub ('.nc$', '', Ft))
+  #     FltPP <- as.integer (FltPP)
+  #     if (checkBad(Ftemp <- sprintf ('%stf%02d', Proj, FltPP))) {
+  #       print (sprintf('bad flight %s -- skipping', Ftemp))
+  #       next
+  #     }
+  #     fname <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(),
+  #       ProjDir, Proj, FltPP)
+  #     D <- rbind (D, getNetCDF (fname, Vars, F=FltPP+50))
+  #   }
+  # } else {
+  #   D <- getNetCDF(fname, Vars, F=Ft)
+  # }
   ## rename if necessary
   N <- names (D)
   if (!(ALTGGVSPD[1] %in% N) && match (ALTGGVSPD, N, nomatch=0)) {
