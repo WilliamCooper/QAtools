@@ -2651,8 +2651,12 @@ server <- function(input, output, session) {
     if (input$AllPP) {
       Data <- DataPP
     } else {
-      if (Trace) {print (sprintf ('FPP is %d', input$FlightPP))}
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      FPP <- input$FlightPP
+      if (input$typeFlightPP == 'tf') {
+        FPP <- FPP + 50
+      }
+      if (Trace) {print (sprintf ('FPP is %d', FPP))}
+      Data <- DataPP[DataPP$RF == FPP, ]
     }
     
     # if (input$AllPP) {
@@ -2703,6 +2707,11 @@ server <- function(input, output, session) {
       M <- with(Data, sprintf('mean and std dev: %.2f +/- %.2f hPa', 
         mean(PSXC-PSFIT, na.rm=TRUE), sd(PSXC-PSFIT, na.rm=TRUE)))
       b <- ceiling(with(Data, (max(PSXC-PSFIT, na.rm=TRUE)-min(PSXC-PSFIT, na.rm=TRUE))*20))
+      print(sprintf('nrows = %d', nrow(Data)))
+      print ('breaks = ')
+      print (b)
+      print(summary(Data$PSXC))
+      print(summary(Data$PSFIT))
       with(Data, hist (PSXC-PSFIT, breaks=b, xlim=c(-2,2), xlab='PSXC-PSFIT [hPa]',
         freq=FALSE, main=M))
       # abline(h=0, lty=2)
@@ -2736,7 +2745,11 @@ server <- function(input, output, session) {
     if (input$AllPP) {
       Data <- DataPP
     } else {
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      FPP <- input$FlightPP
+      if (input$typeFlightPP == 'tf') {
+        FPP <- FPP + 50
+      }
+      Data <- DataPP[DataPP$RF == FPP, ]
     }
     if (Trace) {print (sprintf ('data rows = %d', nrow(Data)))}
     
