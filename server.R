@@ -280,8 +280,14 @@ server <- function(input, output, session) {
   })
   
   observeEvent (input$reconfigure, saveConfig ())
-  observeEvent (input$savePDF,
-    savePDF (Data=data(), inp=input))
+  observeEvent (input$savePDF, {
+    savePDF (Data=data(), inp=input)
+  })
+  
+  output$pdfviewer <- renderText({
+      return('<iframe style="height:600px; width:100%; scrolling=yes;", src=plotfile></iframe>')
+  })
+  
   observeEvent (input$savePNG,
     savePNG (Data=data(), inp=input))
   observeEvent (input$saveRdata,
@@ -2079,8 +2085,6 @@ server <- function(input, output, session) {
     }
     isolate (reac$updatefit <- reac$updatefit + 1)
   })
-  
-  observeEvent (input$manual, seeManual ())
   
   output$hrplot <- renderPlot ({
     fm8 <- with(CalData, lm (x ~ MP + I(MP^2) + I(MP^3) + I(MP^4)))

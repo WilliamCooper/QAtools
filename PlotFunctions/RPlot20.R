@@ -9,13 +9,15 @@ RPlot20 <- function (data, Seq=NA) {
   # tic('RPlot20')
   print (sprintf('entry to RPlot20, Seq=%d: names in data are', Seq))
   print (sort(names(data)))
+  print (str(data))
   kount = 0
   nms <- names(data)
   nm1 <- nm2 <- character(0)
   if (length (grep ("CCDP_", VRPlot[[20]])) > 0) {
     nm1 <- nms[grep ('CCDP_', nms)]
     CellLimitsD <- attr(data[,nm1[1]], 'CellSizes')
-    print (c('CellLimitsD', CellLimitsD))
+    print (sprintf ('CCDP sizes in %s', nm1[1]))
+    print (CellLimitsD)
   }
   if (length (grep ("CS100_", VRPlot[[20]])) > 0) {
     nm2 <- nms[grep ('CS100_', nms)]

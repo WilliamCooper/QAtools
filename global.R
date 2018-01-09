@@ -1226,7 +1226,7 @@ saveConfig <- function() {
 
 savePDF <- function(Data, inp) {
   print ('entered savePDF')
-  plotfile = sprintf("%s%s%02dPlots.pdf", inp$Project, inp$typeFlight, inp$Flight)
+  plotfile <<- sprintf("%s%s%02dPlots.pdf", inp$Project, inp$typeFlight, inp$Flight)
   unlink (plotfile)
   cairo_pdf (filename = plotfile, onefile=TRUE)
   ## enable something like the next to get individual png files instead of one large pdf
@@ -1248,6 +1248,8 @@ savePDF <- function(Data, inp) {
   if (('DP_DPL' %in% ndv) && all(is.na(DataV$DP_DPL))) {
     DataV$DP_DPL <- rep(0, nrow(DataV))
   }
+  ## transfer the attributes to DataV (for now, main use is CDP sizes)
+  DataV <- transferAttributes (DataV, Data)  
   for (np in 1:30) {
     if (file.exists (sprintf ("./PlotFunctions/RPlot%d.R", np))) {
       if (testPlot(np) && (length(VRPlot[[np]]) > 0)) {
@@ -1262,6 +1264,7 @@ savePDF <- function(Data, inp) {
     }
   }
   dev.off()
+  system(sprintf ('mv %s www/latestPlots.pdf', plotfile))
   #   suppressWarnings(if (length (system ('which evince', intern=TRUE)) > 0) {
   #     system (sprintf ('evince %s', plotfile))
   #   })
@@ -1284,6 +1287,8 @@ savePNG <- function(Data, inp) {
   t <- as.POSIXlt (t1)
   StartTime <<- as.integer (10000*t$hour+100*t$min+t$sec)
   DataV <- DataV[(DataV$Time > times[1]) & (DataV$Time < times[2]), ]
+  ## transfer the attributes to DataV (for now, main use is CDP sizes)
+  DataV <- transferAttributes (DataV, Data)  
   for (np in 1:30) {
     if (file.exists (sprintf ("./PlotFunctions/RPlot%d.R", np))) {
       if (testPlot(np) && (length(VRPlot[[np]]) > 0)) {
