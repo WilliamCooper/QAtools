@@ -1353,12 +1353,16 @@ server <- function(input, output, session) {
     minT <- minT - as.integer (minT) %% step
     maxT <- Data$Time[nrow(Data)]
     maxT <- maxT - as.integer (maxT) %% step + step
-    if (Trace) {print (sprintf ('slider values %s %s', formatTime (minT),
-      formatTime (maxT)))}
+    lowT <- minT
+    itx <- which (Data$TASX > 50)
+    lowT <- Data$Time[itx[1]]
+    highT <- Data$Time[itx[length(itx)]]
+    if (Trace) {print (sprintf ('slider values %s %s', formatTime (lowT),
+      formatTime (highT)))}
     updateSliderInput(session, inputId='times', label=NULL,
-      value=c(minT, maxT),
+      value=c(lowT, highT),
       min=minT, max=maxT)
-    times <<- c(minT, maxT)
+    times <<- c(lowT, highT)
   }, priority=0)
   
   observeEvent (input$plot_brush, {
