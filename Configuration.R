@@ -36,7 +36,7 @@ if (Project == "SOCRATES") {
   VRPlot$PV11 <- c("AKRD", "PITCH", "GGVSPD", "TASX", "SSRD", "WDC", "WSC", "GGVEW", "GGVNS")
   VRPlot$PV12 <- c("PITCH", "PITCH_IRS2", "ROLL", "ROLL_IRS2", "THDG", "THDG_IRS2")
   VRPlot$PV13 <- c("ACINS", "ACINS_IRS2", "VSPD", "VSPD_A", "ALT_A", "GGALT")
-  VRPlot$PV14 <- "RSTB"
+  VRPlot$PV14 <- c("RSTB", "VISB", "IRTC", "IRBC")
   VRPlot$PV15 <- c("CONC1DC_", "CONCD_", "CONCN", "CONCU100_", "CONCU500_", "CONCU_", "USHFLW_", "USMPFLW_", "UREF_", "USCAT_")
   VRPlot$PV16 <- c("DBAR1DC_", "DBARD_", "DBARU_", "PLWC", "PLWC1DC_", "PLWCC", "PLWCD_", "RICE", "TCNTD_", "REJDOF_", "AVGTRNS_", "CDPLSRP_")
   VRPlot$PV17 <- c("PSXC", "ATX", "DPXC")

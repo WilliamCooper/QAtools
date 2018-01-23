@@ -1476,7 +1476,7 @@ loadVRPlot <- function (Project, Production, Flight, psq) {
   THDG <- FI$Variables[grepl ('THDG', FI$Variables)]
   ACINS <- FI$Variables[grepl ('ACINS', FI$Variables)]
   VSPD <- FI$Variables[grepl ('VSPD', FI$Variables)]
-  RAD <- FI$Variables[grepl ('^RS', FI$Variables) 
+  RAD <- FI$Variables[grepl ('^RS', FI$Variables) | grepl ('VISB', FI$Variables)
     | (grepl ('^IR', FI$Variables) & !grepl ('IRIG', FI$Variables))]
   CONC <- FI$Variables[grepl ('^CONC', FI$Variables)]
   DBAR <- FI$Variables[grepl ('DBAR', FI$Variables)]
