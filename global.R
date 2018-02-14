@@ -619,7 +619,7 @@ ShowProgressWIF <- function(progress, Flight) {
       Sys.sleep (1)
       PLOOP <- PLOOP + 1
       if (PLOOP > TimeEstimate) {break}
-      M <- system('tail -n 3 newAKRD/AKRDlog', intern=TRUE)
+      M <- system('tail -n 3 newWind/newWindlog', intern=TRUE)
       print (M)
       if (length (M) < 1) {next}
       if (any (grepl ('No more', M)) || any(grepl ('All Done', M))) {
@@ -635,8 +635,8 @@ ShowProgressWIF <- function(progress, Flight) {
       }
       if (any (grepl ('calculate new', M))) {
         PLOOP <- FALSE
-        P <- 40
-        progress$set(message = 'calculating WIF etc',
+        P <- 30
+        progress$set(message = 'calculate new variables',
           detail = sprintf('flight %d', Fl), value=P)
       } 
     }
@@ -645,35 +645,31 @@ ShowProgressWIF <- function(progress, Flight) {
       Sys.sleep (1)
       PLOOP <- PLOOP + 1
       if (PLOOP > TimeEstimate) {break}
-      M <- system('tail -n 3 newAKRD/AKRDlog', intern=TRUE)
+      M <- system('tail -n 3 newWind/newWindlog', intern=TRUE)
       print (M)
-      if (any (grepl ('netCDF file', M))) {
+      if (any (grepl ('netCDF', M))) {
         PLOOP <- FALSE
         P <- 60
-        progress$set(message = 'add variables to file',
+        progress$set(message = 'set up netCDF variables',
           detail = sprintf('flight %d', Fl), value=P)
       } else {
-        P <- P + 4
-        progress$set(message = 'calculating WIF etc',
+        P <- P + 2
+        progress$set(message = 'calculate new variables',
           detail = sprintf('flight %d', Fl), value=P)
       }
     }
     PLOOP <- 1
     while (PLOOP) {
-      Sys.sleep (1)
+      Sys.sleep(1)
       PLOOP <- PLOOP + 1
       if (PLOOP > TimeEstimate) {break}
-      M <- system('tail -n 3 newAKRD/AKRDlog', intern=TRUE)
+      M <- system('tail -n 3 newWind/newWindlog', intern=TRUE)
       print (M)
-      if (any (grepl ('attributes', M))) {
+      if (any (grepl ('new-netCDF', M))) {
         PLOOP <- FALSE
-        P <- 80
-        progress$set(message = 'add attributes',
-          detail = sprintf('flight %d', Fl), value=P)
-      } else {
-        P <- P + 2
-        progress$set(message = 'add variables to file',
-          detail = sprintf('flight %d', Fl), value=P)
+        P <- 65
+        progress$set (message = 'write new netCDF file',
+          detail = sprintf ('flight %d', Fl), value=P)
       }
     }
     PLOOP <- 1
@@ -681,25 +677,32 @@ ShowProgressWIF <- function(progress, Flight) {
       Sys.sleep (1)
       PLOOP <- PLOOP + 1
       if (PLOOP > TimeEstimate) {break}
-      M <- system('tail -n 3 newAKRD/AKRDlog', intern=TRUE)
-      if (any (grepl ('DONE', M))) {
+      M <- system('tail -n 3 newWind/newWindlog', intern=TRUE)
+      print (M)
+      if (any (grepl ('DONE', M)) || any (grepl ('Done', M))) {
         PLOOP <- FALSE
-        progress$set(message = 'DONE',
-          detail = sprintf('flight %d', Fl), value=100)
+        P <- 99
+        progress$set(message = 'Finished',
+          detail = sprintf('flight %d', Fl), value=P)
       } else {
         P <- P + 2
-        progress$set(message = 'add attributes',
+        P <- sub ('.*netCDF ', '', M[3])
+        P <- sub ('%.*', '', P)
+        P <- as.integer(P)
+        P <- 65 + 35 * P/100
+        progress$set(message = 'write new netCDF file',
           detail = sprintf('flight %d', Fl), value=P)
       }
     }
+
     progress$set(message = '  -- DONE -- ',
       detail = sprintf('flight %d', Fl), value=100)
     ## read again (time to write all-done message)
-    M <- system('tail -n 5 newAKRD/AKRDlog', intern=TRUE)
-    if (any (grepl ('All Done', M))) {
+    M <- system('tail -n 5 newWind/newWindlog', intern=TRUE)
+    if (any (grepl ('Done', M))) {
       AllDone <- TRUE
-      progress$set(message = 'AKRD script has finished',
-        detail = sprintf ('flight %s', Flight))
+      progress$set(message = 'newWind script has finished',
+        detail = sprintf ('flight %s', Fl))
     }
     if (AllDone) {break}
   }
@@ -762,9 +765,9 @@ ShowProgressHOT <- function(progress, Flight) {
     detail = sprintf('flight %d', Flight), value=100)
 }
 
-runScriptWIF <- function (ssn) {
+runScriptWIF <- function (ssn, ipADDW) {
   print (sprintf ('entered runScriptWIF, %srf%02d', ProjectWIF, FlightWIF))
-  system ('rm newAKRD/AKRDlog')
+  system ('rm newWind/newWindlog')
   
   ProjectDir <- ProjectWIF
   if ('HIPPO' %in% ProjectDir) {ProjectDir <- 'HIPPO'}
@@ -773,22 +776,23 @@ runScriptWIF <- function (ssn) {
     progress$set(message = 'read data, initialize',
       detail = sprintf('flight %s', Flight),
       value=0)
-    cmd <- sprintf ('cd newAKRD;Rscript AKRD.R %s %s | tee -a AKRDlog',
+    cmd <- sprintf ('cd newWind;Rscript newWind.R %s %s | tee -a newWindlog',
       ProjectWIF, Flight)
   } else if (NEXTWIF) {
     Flight <- 'NEXT'
     progress$set(message = 'read data, initialize',
       detail = sprintf('flight %s', Flight),
       value=0)
-    cmd <- sprintf ('cd newAKRD;Rscript AKRD.R %s %s | tee -a AKRDlog',
+    cmd <- sprintf ('cd newWind;Rscript newWind.R %s %s | tee -a newWindlog',
       ProjectWIF, Flight)
   } else {
     Flight <- FlightWIF
     progress$set(message = 'read data, initialize',
       detail = sprintf('flight %d', Flight),
       value=0)
-    cmd <- sprintf ('cd newAKRD;Rscript AKRD.R %s %d | tee -a AKRDlog',
-      ProjectWIF, Flight)
+    cmd <- sprintf ('cd newWind;Rscript newWind.R %s %d %s %s %s %s| tee -a newWindlog',
+      ProjectWIF, Flight, ipADDW[1], ipADDW[2], ipADDW[3], ipADDW[4])
+    print (ipADDW)
   }
   system (cmd, wait=FALSE)
   ShowProgressWIF (progress, Flight)

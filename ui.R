@@ -957,11 +957,11 @@ ui <- fluidPage (
             )
           )
         ),
-        tabPanel ('Options for Vertical Wind',
+        tabPanel ('Options for Adding Wind Variables',
           tags$head(tags$script(HTML('Shiny.addCustomMessageHandler("jsCode",function(message) {eval(message.value);});'))),
           fluidRow (
             column (6, actionButton ('RunWIF', 
-              h3("Click Here to Run the WI Options Processor"),
+              h3("Click Here to Run the Wind-Options Processor"),
               style="color: #fff; background-color: #337ab7; border-color: #2e6da4"))
           ),
           sidebarLayout(
@@ -979,8 +979,15 @@ ui <- fluidPage (
                   value=FALSE))
               ),
               fluidRow (
+                checkboxGroupInput ('choiceADDW',
+                  label='processing to add',
+                  choices=c('AKY/WIY', 'GustPod', 'pitot-static', 'ROC'), 
+                  selected=c('AKY/WIY', 'GustPod', 'pitot-static', 'ROC'), inline=TRUE)
+              ),
+              fluidRow (
                 column (8, checkboxGroupInput ('choicesWIF', 
-                  label='variables to plot', choices=c('WIY', 'WIF', 'WIC', 'WIS', 'AKRD', 'AKY'),
+                  label='variables to plot', 
+                  choices=c('WIY', 'WIF', 'WIC', 'WIG', 'AKRD', 'AKY', 'WDC', 'WDG', 'WDTC', 'WSC', 'WSG', 'WSTC', 'ROC', 'GGVSPD'),
                   inline=TRUE)),
                 column (4, selectInput ('viewPlotWIF', label='select plot',
                   choices=c('time series', 'histogram')))
@@ -996,7 +1003,6 @@ ui <- fluidPage (
           
         ),
         ##########
-        tabPanel ('Comp-filter AKRD'),
         tabPanel ('Add height-above-terrain',
           ##########
           tags$head(tags$script(HTML('Shiny.addCustomMessageHandler("jsCode",function(message) {eval(message.value);});'))),
