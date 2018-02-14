@@ -776,15 +776,15 @@ runScriptWIF <- function (ssn, ipADDW) {
     progress$set(message = 'read data, initialize',
       detail = sprintf('flight %s', Flight),
       value=0)
-    cmd <- sprintf ('cd newWind;Rscript newWind.R %s %s | tee -a newWindlog',
-      ProjectWIF, Flight)
+    cmd <- sprintf ('cd newWind;Rscript newWind.R %s %s %s %s %s %s| tee -a newWindlog',
+      ProjectWIF, Flight, ipADDW[1], ipADDW[2], ipADDW[3], ipADDW[4])
   } else if (NEXTWIF) {
     Flight <- 'NEXT'
     progress$set(message = 'read data, initialize',
       detail = sprintf('flight %s', Flight),
       value=0)
-    cmd <- sprintf ('cd newWind;Rscript newWind.R %s %s | tee -a newWindlog',
-      ProjectWIF, Flight)
+    cmd <- sprintf ('cd newWind;Rscript newWind.R %s %s %s %s %s %s| tee -a newWindlog',
+      ProjectWIF, Flight, ipADDW[1], ipADDW[2], ipADDW[3], ipADDW[4])
   } else {
     Flight <- FlightWIF
     progress$set(message = 'read data, initialize',
