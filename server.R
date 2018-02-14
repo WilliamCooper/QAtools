@@ -2304,7 +2304,8 @@ server <- function(input, output, session) {
   obsProjectHOT <- observe (exprProjectHOT, quoted=TRUE)
   
   observeEvent (input$RunWIF, {
-    runScriptWIF(session)
+    runScriptWIF(session, input$choiceADDW)
+    progress$set(message = 'processing is complete', detail=sprintf ('Flight %d', FlightWIF), value=100)
     reac$WIFplot <- reac$WIFplot + 1
   })
   
@@ -2407,6 +2408,22 @@ server <- function(input, output, session) {
     messg <- NULL
   })
   
+  output$runParWIF <- renderText({
+    if (!progressExists) {
+      progress <- Progress$new(session, min=0, max=100)
+    }
+    # on.exit(progress$close())
+    
+    progress$set(message = 'ready to run')
+    progress$set (value=1)
+    progress <<- progress
+    progressExists <<- TRUE
+    messg <<- sprintf ("%srf%02d.nc",
+      input$ProjectWIF, input$FlightWIF)
+    messg <- NULL
+  })
+  
+  
   output$resultPlotWIF <- renderPlot ({
     reac$WIFplot
     Project <- input$ProjectWIF
@@ -2418,26 +2435,28 @@ server <- function(input, output, session) {
     fname <- sprintf ('%s%s/%srf%02dY.nc', DataDirectory (), ProjectDir,
       Project, input$FlightWIF)
     if (file.exists (fname)) {
-      D <- getNetCDF (fname, standardVariables (c('WIY', 'WIF', 'WIS', 'AKRD', 'AKY')))
+      VRWIF <- c('WIY', 'WIF', 'WIC', 'WIG', 'AKRD', 'AKY', 'WDC', 'WDG', 'WDTC', 'WSC', 'WSG', 'WSTC', 'ROC', 'GGVSPD')
+      ## eliminate any not in file
+      FI <- DataFileInfo(fname, LLrange=FALSE)
+      iw <- which (VRWIF %in% FI$Variables)
+      VRWIF <- VRWIF[iw]
+      print (VRWIF)
+      D <- getNetCDF (fname, standardVariables (VRWIF))
+      iw <- which(D$TASX > 70)
+      D <- D[iw[1]:iw[length(iw)], ]
       PV <- sort (input$choicesWIF)
       if (length (PV) > 0) {
-        ch <- c('WIY', 'WIC', 'WIF', 'WIS', 'AKRD', 'AKY')
         clr <- c('blue', 'forestgreen', 'red', 'magenta', 'black', 'darkorange', 'cyan')
         if (grepl ('time ',input$viewPlotWIF)) {
-          cls <- vector()
-          for (i in 1:length(PV)) {
-            cls <- c(cls, clr[which (PV[i] == ch)])
-          }
-          plotWAC(data.frame (D$Time, D[, PV]), col=cls)
+          plotWAC(data.frame (D$Time, D[, PV]))
         } else {
           i <- 1
           cls <- vector ()
           g <- ggplot(data=D)
-          cls <- vector ()
-          i <- 1
           while (i <= length(PV)) {
             g <- g + geom_freqpoly (aes_(as.name(PV[i]), as.name('..density..'), color=PV[i]), binwidth=0.1, show.legend=TRUE, na.rm=TRUE)
-            cls <- c (cls, clr[which(PV[i] == ch)])
+            cls <- c (cls, clr[i])
+            names(cls[i]) <- PV[i]
             i <- i + 1
           }
           g <- g + scale_colour_manual ('', labels=PV, breaks=PV, values=cls)+theme_WAC()+theme(legend.position=c(0.7,0.95))
