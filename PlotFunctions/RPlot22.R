@@ -12,7 +12,7 @@ RPlot22 <- function (data, Seq=NA) {
   if (length (grep ("C1DC_", VRPlot[[22]])) > 0) {
     nm1 <- nms[grep ('^C1DC_', nms)]
     CellLimits <- attr(data[,nm1[1]], 'CellSizes')
-    print (c('CellLimits', CellLimits))
+#   print (c('CellLimits', CellLimits))
   }
   
   layout(matrix(1:6, ncol = 2), widths = c(5,5), heights = c(5,5,6))

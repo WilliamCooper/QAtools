@@ -1268,13 +1268,13 @@ savePDF <- function(Data, inp) {
     }
   }
   dev.off()
-  system(sprintf ('mv %s www/latestPlots.pdf', plotfile))
+  system(sprintf ('cp %s www/latestPlots.pdf', plotfile))
   #   suppressWarnings(if (length (system ('which evince', intern=TRUE)) > 0) {
   #     system (sprintf ('evince %s', plotfile))
   #   })
-  if (suppressWarnings(library(rstudio, logical.return=TRUE))) {
-    rstudio::viewer (plotfile, height='maximize')
-  }
+  # if (suppressWarnings(library(rstudio, logical.return=TRUE))) {
+  #   rstudio::viewer ("latestPlots.pdf", height='maximize')
+  # }
   print ('finished savePDF')
 }
 savePNG <- function(Data, inp) {

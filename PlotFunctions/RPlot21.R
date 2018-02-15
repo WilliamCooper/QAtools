@@ -13,7 +13,7 @@ RPlot21 <- function (data, Seq=NA) {
   if (length (grep ("CUHSAS_", VRPlot[[21]])) > 0) {
     nm1 <- nms[grep ('CUHSAS_', nms)]
     CellLimitsU <- attr(data[,nm1[1]], 'CellSizes')
-    print (c('CellLimitsU', CellLimitsU))
+#    print (c('CellLimitsU', CellLimitsU))
   }
   if (length (grep ("CS200_", VRPlot[[21]])) > 0) {
     nm2 <- nms[grep ('CS200_', nms)]

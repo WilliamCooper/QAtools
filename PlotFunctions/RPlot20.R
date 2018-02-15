@@ -7,17 +7,17 @@ RPlot20 <- function (data, Seq=NA) {
   ## needs CCDP_xxx and SP100_xxx; references fname from calling environment
   # ptm <- proc.time()
   # tic('RPlot20')
-  print (sprintf('entry to RPlot20, Seq=%d: names in data are', Seq))
-  print (sort(names(data)))
-  print (str(data))
+#  print (sprintf('entry to RPlot20, Seq=%d: names in data are', Seq))
+  #print (sort(names(data)))
+  #print (str(data))
   kount = 0
   nms <- names(data)
   nm1 <- nm2 <- character(0)
   if (length (grep ("CCDP_", VRPlot[[20]])) > 0) {
     nm1 <- nms[grep ('CCDP_', nms)]
     CellLimitsD <- attr(data[,nm1[1]], 'CellSizes')
-    print (sprintf ('CCDP sizes in %s', nm1[1]))
-    print (CellLimitsD)
+    #print (sprintf ('CCDP sizes in %s', nm1[1]))
+    #print (CellLimitsD)
   }
   if (length (grep ("CS100_", VRPlot[[20]])) > 0) {
     nm2 <- nms[grep ('CS100_', nms)]
@@ -34,8 +34,8 @@ RPlot20 <- function (data, Seq=NA) {
   if (idx1 < 1) {idx1 <- 1}
   ## reference to calling environment for StartTime
   jstart <- ifelse (StartTime > 0, idx1, 1)
-  print (sprintf ("start time in RPlot20 is %d and jstart is %d",
-    StartTime, jstart))
+  #print (sprintf ("start time in RPlot20 is %d and jstart is %d",
+    #StartTime, jstart))
   op <- par (mar=c(2,2,1,1)+0.1,oma=c(1.1,0,0,0))
   CV <- nms[grep ('CONCD_', nms)][1]
   iw <- which(data[, CV] > 1)  ## get list of indices where CONCD > 1
