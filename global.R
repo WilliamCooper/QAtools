@@ -1230,6 +1230,7 @@ saveConfig <- function() {
 
 savePDF <- function(Data, inp) {
   print ('entered savePDF')
+  FlightPDF <<- sprintf ('%s%02d', inp$typeFlight, inp$Flight)
   plotfile <<- sprintf("%s%s%02dPlots.pdf", inp$Project, inp$typeFlight, inp$Flight)
   unlink (plotfile)
   cairo_pdf (filename = plotfile, onefile=TRUE)

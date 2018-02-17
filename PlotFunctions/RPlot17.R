@@ -1,6 +1,7 @@
 ### Plot 17: all-flight Skew-T
 RPlot17 <- function (data, Flight=NA, ...) {
   ## needs PSXC, ATX, DPXC
+  if (is.na(Flight) && exists('FlightPDF')) {Flight <- FlightPDF}
   op <- par (mfrow=c(1,1), mar=c(5,5,2,2)+0.1,oma=c(1.1,0,0,0))
   DF <- data[, c("PSXC", "ATX", "DPXC")]
   colnames(DF) <- c("Pressure", "Temperature", "DewPoint")
