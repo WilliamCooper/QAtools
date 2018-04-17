@@ -361,12 +361,12 @@ ui <- fluidPage (
       fluidRow (
         column (2,                                      
           selectInput (inputId='ProjectPP', label='Project',
-            choices=PJ, width='100px')),
+            choices=PJ, width='140px')),
         column(2,
           numericInput (inputId='FlightPP', label='Flight', value=1,
             min=1, max=99, step=1, width='80px')),
         column (2, radioButtons ('typeFlightPP', label=NULL, choices=c('rf', 'tf', 'ff'),
-          width='70px', inline=TRUE)),
+          width='70px', inline=FALSE)),
         column (3,
           checkboxInput('AllPP', label='ALL? [takes a minute]', value=FALSE))),
       tabsetPanel (id='whichPP', type='pills',
@@ -664,7 +664,7 @@ ui <- fluidPage (
       navlistPanel (tabPanel ('project, flight, and plot', fluidRow (
         column (3, wellPanel (
           selectInput (inputId='Project', label=NULL,
-            choices=PJ, width='100px'),
+            choices=PJ, width='140px'),
           actionButton ('reconfigure', 'save config'))
         ),
         column (5, wellPanel (
@@ -672,7 +672,7 @@ ui <- fluidPage (
             column (3, numericInput (inputId='Flight', label='Flight', value=1,
               min=1, max=99, step=1, width='80px')),
             column (2, radioButtons ('typeFlight', label=NULL, choices=c('rf', 'tf', 'ff'),
-              width='70px', inline=TRUE)),
+              width='70px', inline=FALSE)),
             # column (2, checkboxInput ('Production', label='PR')),
             column (3, numericInput (inputId='plot', label='plot', value=1,
               min=1, max=49, step=1, width='80px')),
@@ -741,12 +741,12 @@ ui <- fluidPage (
       fluidRow (
         column (2,                                      
           selectInput (inputId='ProjectKP', label='Project',
-            choices=PJ, selected='ORCAS', width='100px')),
+            choices=PJ, selected='ORCAS', width='140px')),
         column(2,
           numericInput (inputId='FlightKP', label='Flight', value=3,
             min=1, max=99, step=1, width='80px')),
         column (2, radioButtons ('typeFlightKP', label=NULL, choices=c('rf', 'tf', 'ff'),
-          width='70px', inline=TRUE))
+          width='70px', inline=FALSE))
         # column(2, checkboxInput('KPtf', 'test flight', value=FALSE))
       ),                         
       tabsetPanel (id='whichKnown', type='pills',
