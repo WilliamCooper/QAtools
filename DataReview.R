@@ -20,8 +20,10 @@ if (!interactive()) {  ## can run interactively or via Rscript with or without a
       ALL <- FlightX == 'ALL'
       if (length (run_args) > 3) {
         StartX <- as.integer(run_args[3])
+        if (StartX == 0) {StartX <- NA}
         if (length (run_args) > 3) {
           EndX <- as.integer(run_args[4])
+          if (EndX == 400000) {EndX <- NA}
           if (length (run_args) > 4) {
             PlotX <- as.integer (run_args[5])
           }
@@ -45,10 +47,7 @@ if (!interactive()) {  ## can run interactively or via Rscript with or without a
   if (nchar(x) > 1) {
     StartX <- as.integer(sub('([0-9]*)[ ,-]*.*', '\\1', x))
     EndX <-   as.integer(sub('[0-9]*[ ,-]*([0-9]*).*', '\\1', x))
-  } else {
-    StartX <- 0
-    EndX <- 400000
-  }
+  } 
   x <- readline (sprintf('Plot numbers desired (cr for standard): '))
   if (nchar(x) > 1) {
     Plotx <- as.integer(x)
@@ -85,7 +84,7 @@ if (is.na (FlightX)) {
   Flight <- getNext (Project)
   ALL <- FALSE
 } else {
-  ALL <- Flight == 'ALL'
+  ALL <- FlightX == 'ALL'
   if (!ALL) {Flight <- sprintf('%s%s.nc', Project, FlightX)}
 }
 
@@ -98,60 +97,64 @@ if (ALL) {
   Flt <- Flight
 }
 
+source('transferAttributes.R')
+source('loadVRPlot.R')
+source('DRfunctions.R')
+## for the cavity-pressure-check section
+load('CAVPcoefficients.Rdata')  ## loads cavcfL and cavcfR for fits
+## ----dataReview, include=TRUE, echo=TRUE---------------------------------
+## set up plot definitions as in QAtools:
+nplots <- c(1, 3:17, 19:23)    # default
+psq <- c(1,1, 1,2, 3,1, 4,1, 5,1, 5,2, 5,3, 5,4, 6,1, 7,1, 7,2,  #11
+  8,1, 9,1, 9,2, 10,1, 10,2, 11,1, 12,1, 13,1, 14,1, 15,1, 15,2, #22
+  16,1, 16,2, 16,3, 17,1, 19,1, 19,2, #28
+  20,1, 20,2, 20,3, 20,4, 21,1, 21,2, 21,3, 21,4, #36
+  22,1, 22,2, 22,3, 22,4, 23,1, 23,2, #42
+  24,1, 25,1, 26,1, 27,1, 28,1, 29,1, 30,1) #49
+L <- length (psq)/2
+dim(psq) <- c(2,L)
+testPlot <- function (k) {
+  return(k %in% nplots || nplots == 0)
+}
+
+## make plot functions available
+for (np in 1:2) {
+  if (testPlot(np)) {
+    eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))
+  }
+}
+for (np in 3:30) {
+  if (file.exists (sprintf ("./PlotFunctions/RPlot%d.R", np))) {
+    eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))
+  }
+}
+
+## Have Project and psq definition
+
 for (Flight in Flt) {
   fname = sprintf("%s%s/%s", DataDir, ProjectDir, Flight)
+  print (sprintf ('processing file %s', Flight))
   ## quit/exit if selected file does not exist:
   if (!file.exists (fname)) {
     print (sprintf ('selected file %s does not exist, so skipping', fname))
   } else {
     ## also skip if output file already exists, unless specific flight is specified
-    if ((ALL || is.na(FlightX)) && file.exists (spf <- sprintf("%sPlots.pdf", sub('.nc', '', Flight)))) {
+    spf <- sprintf("%sPlots.pdf", sub('.nc', '', Flight))
+    if ((ALL || is.na(FlightX)) && file.exists (spf)) {
       print (sprintf ('output file for flight %s already exists; skipping (purge to replace it)', spf))
     } else {
       
-      source('transferAttributes.R')
-      source('loadVRPlot.R')
-      
-      ## ----dataReview, include=TRUE, echo=TRUE---------------------------------
-      ## set up plot definitions as in QAtools:
-      nplots <- c(1, 3:17, 19:23)    # default
-      psq <- c(1,1, 1,2, 3,1, 4,1, 5,1, 5,2, 5,3, 5,4, 6,1, 7,1, 7,2,  #11
-        8,1, 9,1, 9,2, 10,1, 10,2, 11,1, 12,1, 13,1, 14,1, 15,1, 15,2, #22
-        16,1, 16,2, 16,3, 17,1, 19,1, 19,2, #28
-        20,1, 20,2, 20,3, 20,4, 21,1, 21,2, 21,3, 21,4, #36
-        22,1, 22,2, 22,3, 22,4, 23,1, 23,2, #42
-        24,1, 25,1, 26,1, 27,1, 28,1, 29,1, 30,1) #49
-      L <- length (psq)/2
-      dim(psq) <- c(2,L)
+
       netCDFfile <- NULL
       CCDP <- NULL
       CFSSP <- NULL
       CUHSAS <- NULL
       C1DC <- NULL
       
-      testPlot <- function (k) {
-        return(k %in% nplots || nplots == 0)
-      }
-      
-      ## make plot functions available
-      for (np in 1:2) {
-        if (testPlot(np)) {
-          eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))
-        }
-      }
-      for (np in 3:30) {
-        if (file.exists (sprintf ("./PlotFunctions/RPlot%d.R", np))) {
-          eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))
-        }
-      }
-      source('DRfunctions.R')
-      ## for the cavity-pressure-check section
-      load('CAVPcoefficients.Rdata')  ## loads cavcfL and cavcfR for fits
-      
-      ## Have Project and psq definition
       fnumber <- as.numeric (sub('[a-zA-Z]*([0-9]*).nc', '\\1', Flight))
       ftype <- sub('[A-Z]*(.f)[0-9]*.nc', '\\1', Flight)
-      VRPlot <<- loadVRPlot (Project, FALSE, fnumber, psq)  ## get VRPlot list for this project
+      ## next statement needs to be inside "ALL" loop, in case available variables change
+      VRPlot <- loadVRPlot (Project, FALSE, fnumber, psq)  ## get VRPlot list for this project
       Cradeg <- pi/180
       ## next load the data.frame
       VarList <- vector()
@@ -170,11 +173,13 @@ for (Flight in Flt) {
         it1 <- itx[1]
       } else {
         it1 <- getIndex (Data, StartX)
+        if (it1 < 1) {it1 <- 1}
       }
       if (is.na (EndX)) {
         it2 <- itx[length(itx)]
       } else {
         it2 <- getIndex (Data, EndX)
+        if (it2 < 0 || it2 > nrow(Data)) {it2 <- nrow(Data)}
       }
       DataL <- Data[it1:it2, ]
       Data <- transferAttributes(DataL, Data)  ## retain attributes
