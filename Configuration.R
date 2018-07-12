@@ -67,7 +67,7 @@ if (Project == "WECAN") {
   ## compare IRU measurements of acceleration, vertical speed, altitude
   VRPlot$PV13 <- c("ACINS", "ACINS_IRS2", "VSPD", "VSPD_A", "GGALT", "ALT_A")
   ## at present there is no RPlot14; UHSAS is handled later
-  VRPlot$PV14 <- c("RSTB", 'RSTB1')
+  VRPlot$PV14 <- c("RSTB", 'RSTB1','RSTT')
   ## plot concentrations:
   VRPlot$PV15 <- NA
   ## list mean diameters, liquid water, RICE
@@ -82,11 +82,11 @@ if (Project == "WECAN") {
   ## plot sample of CDP size distributions
   VRPlot$PV20 <- NA
   ## plot sample of UHSAS size distributions; include PCASP if present (not HIPPO-2)
-  VRPlot$PV21 <- NA
+  VRPlot$PV21 <- NA#c('CUHSAS_LWII') #c('CONCU','CONCU100','CONCP') # 'UREF','USCAT','PREF'
   ## plot sample of 2DC size distributions
   VRPlot$PV22 <- NA
-  VRPlot$PV23 <- c("CORAW_AL", "CO2_PIC2311", "CO2C_PIC2311")
-}
+  VRPlot$PV23 <- c("CORAW_AL", "INLETP_AL", "CO2_PIC2311", 'FO3_ACD', 'FO3C_ACD',"CH4C_PIC2311","CH4_PIC2311")
+} #"CO2C_PIC2311", 
 
 if (Project == "SOCRATES") {
   pitch_offset = 0.18
