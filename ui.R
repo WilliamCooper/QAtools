@@ -715,6 +715,7 @@ ui <- fluidPage (
           choices=c('flight track','temperature','humidity',
             'static pressure',
             'dynamic pressure',
+            'airspeed',
             'wind',
             'radiation',
             'particles',
