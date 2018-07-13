@@ -1,31 +1,80 @@
-### plot 5: humidity
+### plot 5: Dewpoint and Humidity plots
 RPlot5 <- function (data, Seq=NA) { 
-  if (is.na(Seq) || Seq == 1) {
-    op <- par (mfrow=c(1,1), mar=c(5,5,2,2)+0.1,oma=c(1.1,0,0,0))
+
+  layout(matrix(1:3, ncol = 1), widths = 1)
+  op <- par (mar=c(5,5,5,1),oma=c(2,2,2,1))
+  par(cex.lab=2, cex.main=2)
+  
+    if (is.na(Seq) || Seq == 1) {
+     
+    ylb <- expression (paste ("DPy  [", degree, "C]"))
+
     DP <- c(VRPlot[[5]][grepl ('^DP', VRPlot[[5]])], 'ATX')
-    plotWAC (data[, c("Time", DP)], 
-                      ylab=expression (paste ("dew point  DPy  [", degree, "C]")), 
-                      lty=c(1,1,2,1), lwd=c(2,1.5,1,3), legend.position='bottom', 
-                      col=c('blue', 'red', 'darkgreen', 'black'), ylim=c(-90,30))
+    plotWAC (data[, c("Time", DP)], ylab=ylb)#
+    
+    #                  lty=c(1,1,2,1), lwd=c(2,1.5,1,3), legend.position='bottom', 
+    #                  col=c('blue', 'red', 'darkgreen', 'black'), ylim=c(-90,30))
     # pulling legend out of plotWAC to increase font size
     # legend('bottomright',c("DP_DPL", "DP_DPR", "DP_VXL", "ATX"),
     #        col=c("blue","red","darkgreen","black"),
     #        text.col=c("blue","red","darkgreen","black"),
     #        lty=c(1,1,2,1),lwd=c(2,1.5,1,3))
-    labl <- DP
-    labl <- sub("DP_", "", labl)
-    titl <- "Mean diff "
-    ## assume DPXC is always present:
-    for (dp in DP) {
-      if (dp == 'ATX') {next}
-      dpl <- sub("DP_", "", dp)
-      titl <- sprintf("%s%s-%s: %.2f; ", titl, dpl, 'DPXC',
-                      mean(data[, dp] - data$DPXC, na.rm=TRUE))
+    
+    # Report DPT differences in plot subtitle
+    labl <- DP[grepl ('^DP', DP)]
+    ir <- which ('DPXC' == labl)
+    if (length (ir) != 1) {ir <- 1}
+    titl <- "Mean differences: "
+    for (i in 1:length(labl)) {
+      if (i == ir) {next}
+      titl <- sprintf("%s%s-%s: %.2f; ", titl, labl[i], labl[ir],
+                      mean(data[, labl[i]] -
+                             data[, labl[ir]], na.rm=TRUE))
     }
-    title(titl, cex.main=0.8)
+    title(main = paste("Dew Point Temperatures",'\n',titl))
+    
+    #   
+    # Plot differences
+    if (length(labl)>1){
+
+      nonref <- labl[-ir]
+      nonrefID <- match(nonref,labl)
+      
+      # Create a dummy data frame for DPT differences
+      tmp<-data[,c("Time",labl[-ir])]
+      for (nn in 2:(dim(tmp)[2])){
+        tmp[,nn]<-tmp[,nn]-data[,labl[ir]]
+        names(tmp)[nn]<-sprintf("%s-%s", names(tmp[nn]), labl[ir]) 
+      }
+      
+      ylb <- expression (paste ("Differences  [", degree, "C]"))
+      plotWAC (tmp, ylab=ylb, ylim=c(-4,4))
+      
+      # These next lines set grid to yrange spanning -4 to 4.
+      for (ny in seq(-4,4,by=1)){
+        abline(h=ny, lwd=1, lty=3, col='gray')
+      }
+    }
+    
+    
+    # labl <- DP
+    # labl <- sub("DP_", "", labl)
+    # titl <- "Mean diff "
+    # ## assume DPXC is always present:
+    # for (dp in DP) {
+    #   if (dp == 'ATX') {next}
+    #   dpl <- sub("DP_", "", dp)
+    #   titl <- sprintf("%s%s-%s: %.2f; ", titl, dpl, 'DPXC',
+    #                   mean(data[, dp] - data$DPXC, na.rm=TRUE))
+    # }
+    # title(titl, cex.main=0.8)
+    # 
+    
     AddFooter ()
     if (!is.na(Seq) && (Seq == 1)) {return()}
   }
+  
+  # END OF FIRST PLOT PAGE
   
   if (is.na(Seq) || Seq == 2) {
     DP <- VRPlot[[5]][which (grepl ('^DP', VRPlot[[5]]))]
@@ -98,8 +147,8 @@ RPlot5 <- function (data, Seq=NA) {
       data$CAVPF_DPR <- with(data, cavcfR[1] + cavcfR[2] * PSXC + cavcfR[3] * QCXC + cavcfR[4] * MACHX + cavcfR[5] * AKRD)
     }
     # DP cavity pressures and VCSEL laser intensity:
-    layout(matrix(1:2, ncol = 1), widths = 1, heights = c(5,5))
-    op <- par (mar=c(2,4,1,2.5)+0.1)
+   # layout(matrix(1:2, ncol = 1), widths = 1, heights = c(5,5))
+   #  op <- par (mar=c(2,4,1,2.5)+0.1)
     if (("CAVPE_DPL" %in% names(data))) {
       plotWAC (data[, c("Time", "CAVP_DPR", "CAVP_DPL", "CAVPE_DPR", "CAVPE_DPL", "PSXC")], 
                lwd=c(1,1,2,2,1), lty=c(1,1,2,2,1), ylab='CAVP [hPa]',legend.position='topleft')
@@ -115,7 +164,7 @@ RPlot5 <- function (data, Seq=NA) {
     title (sprintf ("mean above PSXC: %.1f (DPL) and %.1f (DPR)", 
                     mean (data$CAVP_DPL - data$PSXC, na.rm=TRUE),
                     mean (data$CAVP_DPR - data$PSXC, na.rm=TRUE)), cex.main=0.75)
-    op <- par (mar=c(5,4,1,2.5)+0.1)
+    #op <- par (mar=c(5,4,1,2.5)+0.1)
     if ("LSRINT_VXL" %in% names(data)) {
       plotWAC (data[, c("Time", "LSRINT_VXL")], ylim=c(0,4000),ylab="LSRINT_VXL")
       abline (h=1000, col='red', lty=2); abline (h=2700, col='red', lty=2)
@@ -133,8 +182,8 @@ RPlot5 <- function (data, Seq=NA) {
     data$EW_VXL[data$EW_VXL > 20] <- NA
   }
   # vapor pressure and mixing ratio
-  op <- par (mar=c(2,5,1,1)+0.1)
-  layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,6))
+  #op <- par (mar=c(2,5,1,1)+0.1)
+  #layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,6))
   ## get EW variables
   VEW <- VRPlot[[5]]
   VEW <- VEW[which ("EW" == substr(VEW, 1, 2))]
@@ -158,7 +207,7 @@ RPlot5 <- function (data, Seq=NA) {
     plotWAC (data[, c("Time", MRVAR)], ylab="mixing ratio [g/kg]",
              logxy='y', ylim=c(0.01, 100),cex.lab=1.5,cex.axis=1.5)
   }
-  op <- par (mar=c(5,5,1,1)+0.1)
+  #op <- par (mar=c(5,5,1,1)+0.1)
   RHVAR <- sub("EW", "RH", VEW)
   for (i in 1:length (RHVAR)) {
     data[, RHVAR[i]] <- 100 * data[, VEW[i]] / MurphyKoop (data$ATX, data$PSXC)
