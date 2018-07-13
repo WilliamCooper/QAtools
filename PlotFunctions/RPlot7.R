@@ -98,5 +98,6 @@ RPlot7 <- function (data, Seq=NA) {
   plotWAC (data[, c("Time", MACH)], 
            col=c('blue', 'darkorange', 'darkgreen'), ylab='MACHy', 
            legend.position='bottom')
+  title('MACH number')
   AddFooter ()
 }
