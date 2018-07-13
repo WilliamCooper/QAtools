@@ -75,7 +75,7 @@ if (Project == "WECAN") {
   
   # RPlot11.R: PITCH, AKRD, SIDESLIP 
   #Note: Need aircraft vertical speed, preferably GGVSPD
-  VRPlot$PV11 <- c("AKRD", "PITCH", "VSPD_A", "TASX", "SSRD", "WDC", "WSC", "GGVEW", "GGVNS", "ADIFR", "BDIFR")
+  VRPlot$PV11 <- c("AKRD", "PITCH", "GGVSPD", "TASX", "SSRD", "WDC", "WSC", "GGVEW", "GGVNS", "ADIFR", "BDIFR")
   
   ## compare IRU attitude angles, IRS1 and IRS2
   VRPlot$PV12 <- c("PITCH", "PITCH_IRS2", "ROLL", "ROLL_IRS2",  "THDG", "THDG_IRS2")
