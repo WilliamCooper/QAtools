@@ -708,7 +708,7 @@ ui <- fluidPage (
       
       
       
-      sidebarLayout (sidebarPanel(width=3,
+      sidebarLayout ( sidebarPanel(width=3,
         textOutput ('M1'),
         selectInput ('Rplot', label='plot class',
           selectize=FALSE, size=14,
@@ -730,8 +730,8 @@ ui <- fluidPage (
         actionButton ('Xanadu', 'see in Xanadu'),
         actionButton ('maneuvers', 'see maneuvers'),
         actionButton ('manual', 'see manual')),
-        mainPanel( tabsetPanel (tabPanel ('plot', plotOutput (outputId='display',
-          brush=brushOpts(id='plot_brush', delay=3000, delayType='debounce', resetOnNew=TRUE))),
+        mainPanel( tabsetPanel (tabPanel ('plot', plotOutput (outputId='display', 
+          dblclick = "plot_dblclick", brush=brushOpts(id='plot_brush', resetOnNew=TRUE))),# delay=3000, delayType='debounce', resetOnNew=TRUE))),
           tabPanel ('stats', dataTableOutput ('stats')),
           tabPanel ('histograms', plotOutput (outputId='hist')),
           tabPanel ('soundings', plotOutput (outputId='barWvsZ')),
