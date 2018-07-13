@@ -717,6 +717,7 @@ ui <- fluidPage (
             'dynamic pressure',
             'airspeed',
             'wind',
+            'angles, ADIFR, BDIFR',
             'radiation',
             'particles',
             'trace gases',

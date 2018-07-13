@@ -250,6 +250,7 @@ server <- function(input, output, session) {
       'dynamic pressure' = 10,
       'airspeed' = 11,
       'wind' = 13,
+      'angles, ADIFR, BDIFR' = 17,
       'radiation' = 20,
       'particles' = 21, # maybe 33?
       'trace gases' = 41,
