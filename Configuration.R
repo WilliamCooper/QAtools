@@ -72,9 +72,11 @@ if (Project == "WECAN") {
   VRPlot$PV10 <- c("GGVEW", "VEW", "GGVNS", "VNS", "GGQUAL")
   ## for plotting effect of complementary filter
   VRPlot$PV10 <- c(VRPlot$PV10, "VEWC", "VNSC")
-  ## compare calculated AOA/SS vs measured to check sensitivity coefficients
-  ## 3rd variable is aircraft vertical speed, preferable is GGVSPD, not in HIPPO-2
-  VRPlot$PV11 <- c("AKRD", "PITCH", "VSPD_A", "TASX", "SSRD", "WDC", "WSC", "GGVEW", "GGVNS")
+  
+  # RPlot11.R: PITCH, AKRD, SIDESLIP 
+  #Note: Need aircraft vertical speed, preferably GGVSPD
+  VRPlot$PV11 <- c("AKRD", "PITCH", "VSPD_A", "TASX", "SSRD", "WDC", "WSC", "GGVEW", "GGVNS", "ADIFR", "BDIFR")
+  
   ## compare IRU attitude angles, IRS1 and IRS2
   VRPlot$PV12 <- c("PITCH", "PITCH_IRS2", "ROLL", "ROLL_IRS2",  "THDG", "THDG_IRS2")
   ## compare IRU measurements of acceleration, vertical speed, altitude
@@ -105,7 +107,7 @@ if (Project == "WECAN") {
   VRPlot$PV22 <- NA
   
   # RPlot23.R: TRACE GASES + INLET PRESSURE
-  VRPlot$PV23 <- c("CORAW_AL", "INLETP_AL", "CO2_PIC2311", 'FO3_ACD', 'FO3C_ACD',"CH4C_PIC2311","CH4_PIC2311")
+  VRPlot$PV23 <- c("INLETP_AL", "CO2_PIC2401", "CH4_PIC2401","CO_PIC2401", "CO_ARI")
 # ============================================================================
 } 
 # End Project WECAN
