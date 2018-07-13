@@ -14,13 +14,20 @@ RPlot7 <- function (data, Seq=NA) {
     labl <- QC
     #labl <- sub("QC", "", labl)
     titl <- "Mean differences: "
-    for (i in 2:length(labl)) {
-      titl <- sprintf("%s%s-%s: %.2f; ", titl, labl[i],labl[1],
-                      mean(data[, QC[i]] -
-                             data[, QC[1]], na.rm=TRUE))
+   
+    ir <- which ('QCF' == labl)
+    if (length (ir) != 1) {
+      ir <- which ('QCR' %in% labl)
+    }
+    if (length (ir) != 1) {ir <- 1}
+    for (i in 1:length(labl)) {
+      if (i == ir) {next}
+      titl <- sprintf("%s%s-%s: %.2f; ", titl, labl[i],labl[ir],
+                      mean(data[, QC[i]] - data[, QC[ir]], na.rm=TRUE))
     }
     title(main = paste("Dynamic Pressures",'\n',titl))
 
+    
     # Corrected QCs for the second panel
     QC <- VRPlot[[7]][grepl ('^QC', VRPlot[[7]])]
     QC <- QC[grepl ('QC_A', QC) | grepl ('C$', QC)]
@@ -40,6 +47,7 @@ RPlot7 <- function (data, Seq=NA) {
                       mean(data[, QC[i]] - data[, QC[ir]], na.rm=TRUE))
     }
     title(titl)
+    
     
     # Difference plot
     if ('QC_A' %in% QC) {
@@ -64,7 +72,7 @@ RPlot7 <- function (data, Seq=NA) {
   }
   
   
-# Add TAS plots
+# Add TAS plot
   TAS <- VRPlot[[7]]
   TAS <- TAS[which("TAS" == substr(TAS, 1, 3))]
   plotWAC (data[, c("Time", TAS)], 
@@ -81,6 +89,7 @@ RPlot7 <- function (data, Seq=NA) {
   title(main = paste("Airspeed",'\n',titl))
   
   # Difference plot
+  TAS <- VRPlot[[7]]
   if ('TASFR' %in% TAS && 'TAS_A' %in% TAS) {
     plotWAC(data$Time, (data$TASFR-data[, "TAS_A"]), ylab='Difference [m/s]',            
             ylim=c(-4,4))
