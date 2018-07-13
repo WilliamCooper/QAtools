@@ -243,10 +243,11 @@ server <- function(input, output, session) {
   
   observe({                             ## Rplot
     vp <- switch (input$Rplot,
-      'track' = 1,
+      'flight track' = 1,
       'temperature' = 3,
       'humidity' = 5,
-      'pressure' = 9,
+      'static pressure' = 9,
+      'dynamic pressure' = 10,
       'wind' = 13,
       'radiation' = 20,
       'particles' = 21,
@@ -255,7 +256,7 @@ server <- function(input, output, session) {
       'CDP' = 29,
       'UHSAS/PCASP' = 33,
       '2DC' = 37,
-      'air chemistry' = 41,
+      'trace gases' = 41,
       'extras' = 43
     )
     updateNumericInput (session, 'plot', value=vp)
@@ -1971,7 +1972,8 @@ server <- function(input, output, session) {
       #       updateSelectInput (session, 'Rplot', selected=st[si])
       if (Trace) {print ('finished display')}
     }
-  }, width=920, height=680)
+  }, width=920, height = 1200
+  ) #height=680)
   
   output$stats <- renderDataTable ({
     if (Trace) {print ('entered stats')}
