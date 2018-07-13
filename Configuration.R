@@ -44,7 +44,7 @@ if (Project == "WECAN") {
   # Uses both DPXC and ATX for reference
   # Cavity and other pressures also provided if desired for additional plots
   # Vapor pressure and mixing ratio can also be plotted in additional plots
-    VRPlot$PV5 <- c("DP_DPB", "DP_DPT", "ATX", "DPXC")
+    VRPlot$PV5 <- c("DP_DPB", "DP_DPT", "ATX", "DPXC", "DP_UVH")
     VRPlot$PV5 <- c(VRPlot$PV5, "CAVP_DPB", "CAVP_DPT", "PSXC", "QCXC")
     VRPlot$PV5 <- c(VRPlot$PV5, "EW_DPB", "EW_DPT", "MR")  
   # Should the next line be included here or elsehwere?
@@ -60,10 +60,14 @@ if (Project == "WECAN") {
     VRPlot$PV7 <- c(VRPlot$PV7, "TASF", "TASFR", "TASR", "TAS_A")    
     VRPlot$PV7 <- c(VRPlot$PV7, "MACHF", "MACHFR", "MACHR", "MACH_A") 
   
-  # plot 8 is total pressure, sum of 1+2 and 3+4; expect agreement
+  # RPlot8.R: TOTAL PRESSURE
+  # Note: we expect agreement for the sums of 1+2 and 3+4
   VRPlot$PV8 <- c("PSFD", "QCF", "PSFRD", "QCFR", "PS_A", "QC_A")
-  ## wind direction, speed, vertical wind: keep these unchanged
+  
+  ## RPlot9.R: WIND DIRECTION, SPEED, VERTICAL WIND 
+  # Note: keep these variables unchanged
   VRPlot$PV9 <- c("WDC", "IWD", "WSC", "IWS", "WIC", "ADIFR")  # need ADIFR for WIX
+  
   ## IRU velocity errors from differences (Schuler oscillation); don't change
   VRPlot$PV10 <- c("GGVEW", "VEW", "GGVNS", "VNS", "GGQUAL")
   ## for plotting effect of complementary filter
