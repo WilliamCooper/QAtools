@@ -17,41 +17,48 @@ thdg_offset = -0.35
 # nc_close(NCF)
 # TTvar <- c (N[c(which(grepl("^ATH", N)), which(grepl("^ATF", N)))], "AT_A")
 
+
 if (Project == "WECAN") {
   pitch_offset = 0.0
   roll_offset = -0.0
   thdg_offset = -0.0
-  ## track plot: don't change any exc. GGALT
-  ## (PALT and PSXC are included to check the pressure altitude calculation)
-  VRPlot <- list(PV1=c("LATC", "LONC", "WDC", "WSC", "GGALT", "PALT", "PSXC"))
-  ## RPlot2: uses same variables as RPlot1
-  VRPlot[[2]] <- VRPlot[[1]]
-  ## RPlot3: T vs time, specify any number of temperatures
-  VRPlot$PV3 <- c("ATH1", "ATH2", "ATF1", "AT_A")
-  ## RPlot4: compare temperatures in pairs; specify up to five.
-  ## first is reference for comparisons
-  VRPlot$PV4 <- VRPlot$PV3
-  ## the next line should end with ATX and list dewpoints
-  VRPlot$PV5 <- c("DP_DPB", "DP_DPT", "ATX")
-  ## don't use if CAVP not available:
-  VRPlot$PV5 <- c(VRPlot$PV5, "CAVP_DPB", "CAVP_DPT", "PSXC")
-  ## use only if CAVP not available: will plot surrogate CAVP
-  VRPlot$PV5 <- c(VRPlot$PV5, "PSXC", "QCXC")
-  ## list of vapor pressures to plot (there is no EW_VXL in WECAN-TEST)
-  ## then list "MR" (will calculate mixing ratios corresponding to EW)
-  VRPlot$PV5 <- c(VRPlot$PV5, "EW_DPB", "EW_DPT", "MR")  # H2OMR_GMD not in HIPPO-3 files?
-  VRPlot$PV5 <- c(VRPlot$PV5, "AKRD", "MACHX")
-  ## pressure measurements, first is reference
-  VRPlot$PV6 <- c("PSXC", "PS_A", "PSFC", "PSFDC")
-  ## dynamic pressure measurements, uncorrected, first is reference
-  VRPlot$PV7 <- c("QCF", "QCFR", "QCR")                       #plot 7a-top
-  ## dynamic pressure measurements, corrected, first is reference
-  VRPlot$PV7 <- c(VRPlot$PV7, "QCFRC", "QCFC", "QCRC", "QC_A") #plot 7a-bottom
-  ## list TAS measurements to plot vs time
-  VRPlot$PV7 <- c(VRPlot$PV7, "TASF", "TASFR", "TASR", "TAS_A")    #plot 7b-top
-  ## and Mach numbers
-  VRPlot$PV7 <- c(VRPlot$PV7, "MACHF", "MACHFR", "MACHR", "MACH_A") #plot 7b-bottom
-  ## plot 8 is total pressure, sum of 1+2 and 3+4; expect agreement
+  # What follows are the campaign-specific variables to plot, grouped by plot...
+  # ============================================================================
+  # RPlot1.R: FLIGHT TRACK PLOT
+  # Note: PALT and PSXC are included to check the pressure altitude calculation)
+  # Do not change below; these variables are always the same regardless of campaign 
+  # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    VRPlot <- list(PV1=c("LATC", "LONC", "WDC", "WSC", "GGALT", "PALT", "PSXC"))
+  # RPlot2 uses same variables as RPlot1
+    VRPlot[[2]] <- VRPlot[[1]]
+  # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  
+  # RPlot3: T vs time, specify any number of temperatures
+    VRPlot$PV3 <- c("ATH1", "ATH2", "ATF1", "AT_A", "ATX")
+  # RPlot4: compare temperatures in pairs; specify up to five.
+  # first is reference for comparisons
+    VRPlot$PV4 <- VRPlot$PV3
+  # the next line should end with ATX and list dewpoints
+    VRPlot$PV5 <- c("DP_DPB", "DP_DPT", "ATX")
+  # don't use if CAVP not available:
+    VRPlot$PV5 <- c(VRPlot$PV5, "CAVP_DPB", "CAVP_DPT", "PSXC")
+  # use only if CAVP not available: will plot surrogate CAVP
+    VRPlot$PV5 <- c(VRPlot$PV5, "PSXC", "QCXC")
+  # list of vapor pressures to plot (there is no EW_VXL in WECAN-TEST)
+  # then list "MR" (will calculate mixing ratios corresponding to EW)
+    VRPlot$PV5 <- c(VRPlot$PV5, "EW_DPB", "EW_DPT", "MR")  # H2OMR_GMD not in HIPPO-3 files?
+    VRPlot$PV5 <- c(VRPlot$PV5, "AKRD", "MACHX")
+  
+  # RPlot6.R: STATIC PRESSURE
+  # Note: first pressure variable should be the reference pressure ("PSXC")
+    VRPlot$PV6 <- c("PSXC", "PS_A", "PSFC", "PSFDC")
+  # RPlot7.R: DYNAMIC PRESSURE (both uncorrected and corrected) + AIRSPEED ("TAS") + MACH
+    VRPlot$PV7 <- c("QCF", "QCFR", "QCR")                        # uncorrected
+    VRPlot$PV7 <- c(VRPlot$PV7, "QCFRC", "QCFC", "QCRC", "QC_A") # corrected
+    VRPlot$PV7 <- c(VRPlot$PV7, "TASF", "TASFR", "TASR", "TAS_A")    #plot 7b-top
+    VRPlot$PV7 <- c(VRPlot$PV7, "MACHF", "MACHFR", "MACHR", "MACH_A") #plot 7b-bottom
+  
+  # plot 8 is total pressure, sum of 1+2 and 3+4; expect agreement
   VRPlot$PV8 <- c("PSFD", "QCF", "PSFRD", "QCFR", "PS_A", "QC_A")
   ## wind direction, speed, vertical wind: keep these unchanged
   VRPlot$PV9 <- c("WDC", "IWD", "WSC", "IWS", "WIC", "ADIFR")  # need ADIFR for WIX
@@ -86,7 +93,11 @@ if (Project == "WECAN") {
   ## plot sample of 2DC size distributions
   VRPlot$PV22 <- NA
   VRPlot$PV23 <- c("CORAW_AL", "INLETP_AL", "CO2_PIC2311", 'FO3_ACD', 'FO3C_ACD',"CH4C_PIC2311","CH4_PIC2311")
-} #"CO2C_PIC2311", 
+# ============================================================================
+} 
+# End Project WECAN
+
+
 
 if (Project == "SOCRATES") {
   pitch_offset = 0.18

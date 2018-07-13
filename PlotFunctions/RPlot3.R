@@ -11,20 +11,26 @@ RPlot3 <- function (data, ...) {
 # Report T differences in plot subtitle
   labl <- VRPlot[[3]]
   #labl <- sub("AT", "", labl)
+  ir <- which ('ATX' == labl)
+  if (length (ir) != 1) {
+    ir <- which ('ATH1' %in% labl)
+  }
+  if (length (ir) != 1) {ir <- 1}
   titl <- "Mean differences: "
-  for (i in 2:length(labl)) {
-    titl <- sprintf("%s%s-%s: %.2f; ", titl, labl[i],labl[1],
+  for (i in 1:length(labl)) {
+    if (i == ir) {next}
+    titl <- sprintf("%s%s-%s: %.2f; ", titl, labl[i], labl[ir],
                     mean(data[, VRPlot[[3]][i]] -
-                         data[, VRPlot[[3]][1]], na.rm=TRUE))
+                           data[, VRPlot[[3]][ir]], na.rm=TRUE))
   }
   title(main = paste("Temperatures",'\n',titl))
   
 #   
 # Plot differences
 if (length(labl)>1){
-  ir <- which ('ATH1' == labl)
+  ir <- which ('ATX' == labl)
   if (length (ir) != 1) {
-    ir <- which ('ATH2' %in% labl)
+    ir <- which ('ATH1' %in% labl)
   }
   if (length (ir) != 1) {ir <- 1}
  
@@ -46,14 +52,14 @@ if (length(labl)>1){
     abline(h=ny, lwd=1, lty=3, col='gray')
   }
   
-  titl <- "Mean differences: "
-  for (i in 1:length(labl)) {
-    if (i == ir) {next}
-    titl <- sprintf("%s%s-%s: %.2f; ", titl, labl[i], labl[ir],
-                    mean(data[, VRPlot[[3]][i]] -
-                           data[, VRPlot[[3]][ir]], na.rm=TRUE))
-  }
-  title(titl)
+  # titl <- "Mean differences: "
+  # for (i in 1:length(labl)) {
+  #   if (i == ir) {next}
+  #   titl <- sprintf("%s%s-%s: %.2f; ", titl, labl[i], labl[ir],
+  #                   mean(data[, VRPlot[[3]][i]] -
+  #                          data[, VRPlot[[3]][ir]], na.rm=TRUE))
+  # }
+  # title(titl)
 }
    
     
