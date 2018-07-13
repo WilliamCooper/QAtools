@@ -1,75 +1,98 @@
 
-### plot 7: dynamic pressure; also TAS and MACH
+### plot 7: Dynamic pressure; also TAS and MACH
 RPlot7 <- function (data, Seq=NA) { 
-  op <- par (mar=c(2,4,1,2)+0.1, oma=c(1.1,0,0,0))
-  layout(matrix(1:2, ncol = 1), widths = 1, heights = c(5,6))
+  layout(matrix(1:4, ncol = 1), widths = 1)
+  op <- par (mar=c(5,5,5,1),oma=c(2,2,2,1))
+  par(cex.lab=2, cex.main=2)
+
   if (is.na (Seq) || Seq == 1) {
+    # Use uncorrected QCs for the first panel:
     QC <- VRPlot[[7]][grepl ('^QC', VRPlot[[7]])]
-    ## use uncorrected QCs only:
     QC <- QC[!grepl ('QC_A',QC) & !grepl ('C$', QC)]
     plotWAC (data[, c("Time", QC)], ylab='QCy [hPa]', 
-             legend.position='top', ylim=c(0,200))
+             legend.position='topleft', ylim=c(0,200))
     labl <- QC
-    labl <- sub("QC", "", labl)
-    titl <- "Mean diff: "
+    #labl <- sub("QC", "", labl)
+    titl <- "Mean differences: "
     for (i in 2:length(labl)) {
       titl <- sprintf("%s%s-%s: %.2f; ", titl, labl[i],labl[1],
                       mean(data[, QC[i]] -
                              data[, QC[1]], na.rm=TRUE))
     }
-    title(titl, cex.main=0.8)
-    op <- par (mar=c(5,4,1,2)+0.1)
+    title(main = paste("Dynamic Pressures",'\n',titl))
+
+    # Corrected QCs for the second panel
     QC <- VRPlot[[7]][grepl ('^QC', VRPlot[[7]])]
-    ## corrected QCs only
     QC <- QC[grepl ('QC_A', QC) | grepl ('C$', QC)]
     ir <- which ('QCXC' == QC)
     if (length (ir) != 1) {
       ir <- which ('QCFC' == QC)
     }
     if (length(ir) != 1) {ir <- 1}
-    plotWAC (data[, c("Time", QC)], ylab=' corrected QCyC [hPa]',
-             legend.position='top', ylim=c(0,200))
-    if ('QC_A' %in% QC) {
-      points (data$Time, (data$QC_A-data[, QC[ir]])*10+120, type='l', col='brown')
-    }
-    axis (4, at=c(100,120,140), labels=c("-2", "0", "2"), col='brown', col.axis='brown', cex.axis=0.7)
-    abline (h=100, col='brown', lty=2); abline (h=140, col='brown', lty=2)
-    ltext <- sprintf("brown: (%s-%s)*10+120", 'QC_A', QC[ir])
-    legend("topleft", legend=c(ltext, 
-                                  "dashed brown: +/- 2 hPa [diff]"), cex=0.75)
+    plotWAC (data[, c("Time", QC)], ylab='QCyC [hPa]',
+             legend.position='topleft', ylim=c(0,200))
     labl <- QC
-    labl <- sub("QC", "", labl)
-    titl <- "Mean diff: "
+    #labl <- sub("QC", "", labl)
+    titl <- "Mean differences: "
     for (i in 1:length(labl)) {
       if (i == ir) {next}
       titl <- sprintf("%s%s-%s: %.2f; ", titl, labl[i],labl[ir],
                       mean(data[, QC[i]] - data[, QC[ir]], na.rm=TRUE))
     }
-    title(titl, cex.main=0.8)
+    title(titl)
+    
+    # Difference plot
+    if ('QC_A' %in% QC) {
+      plotWAC(data$Time, (data$QC_A-data[, QC[ir]]), ylab='Difference [hPa]',            
+              ylim=c(-4,4))
+      # These next lines set grid to yrange spanning -4 to 4.
+      for (ny in seq(-4,4,by=1)){
+        abline(h=ny, lwd=1, lty=3, col='gray')
+      }
+      abline (h=-2, lwd=1.5, lty=2); abline (h=2, lwd=1.5, lty=2)
+      title('QC_A minus QCFC')
+    }
+    
+    # axis (4, at=c(100,120,140), labels=c("-2", "0", "2"), col='brown', col.axis='brown', cex.axis=0.7)
+    # abline (h=100, col='brown', lty=2); abline (h=140, col='brown', lty=2)
+    # ltext <- sprintf("brown: (%s-%s)*10+120", 'QC_A', QC[ir])
+    # legend("topleft", legend=c(ltext, 
+    #                               "dashed brown: +/- 2 hPa [diff]"), cex=0.75)
+
     AddFooter ()
     if (!is.na(Seq) && (Seq == 1)) {return()}
   }
-  # add TAS and MACH plots:
-  op <- par (mar=c(2,4,1,1)+0.1)
+  
+  
+# Add TAS plots
   TAS <- VRPlot[[7]]
   TAS <- TAS[which("TAS" == substr(TAS, 1, 3))]
   plotWAC (data[, c("Time", TAS)], 
            col=c('blue', 'darkorange', 'darkgreen', 'cyan'), ylab='TASy [m/s]', 
            legend.position='bottom')
-  points(data$Time, (data[, TAS[length(TAS)-1]] - data[, TAS[1]]) *20+200, type='l',
-         col='red')  
-  ltext <- sprintf("red: (%s-%s)*20+200", TAS[length(TAS)-1], TAS[1])
-  legend("bottomleft", c(ltext, "dashed red: +/- 1 m/s [diff]"), cex=0.75)
-  hline(220, 'red'); hline(180, 'red')
+
   labl <- TAS
-  labl <- sub("TAS", "", labl)
-  titl <- "Mean diff: "
+  #labl <- sub("TAS", "", labl)
+  titl <- "Mean differences: "
   for (i in 2:length(labl)) {
     titl <- sprintf("%s%s-%s: %.2f; ", titl, labl[i],labl[1],
                     mean(data[, TAS[i]] - data[, TAS[1]], na.rm=TRUE))
   }
-  title(titl, cex.main=0.8)
-  op <- par (mar=c(5,4,1,1)+0.1)
+  title(main = paste("Airspeed",'\n',titl))
+  
+  # Difference plot
+  if ('TASFR' %in% TAS && 'TAS_A' %in% TAS) {
+    plotWAC(data$Time, (data$TASFR-data[, "TAS_A"]), ylab='Difference [m/s]',            
+            ylim=c(-4,4))
+    # These next lines set grid to yrange spanning -4 to 4.
+    for (ny in seq(-4,4,by=1)){
+      abline(h=ny, lwd=1, lty=3, col='gray')
+    }
+    abline (h=-1, lwd=1.5, lty=2); abline (h=1, lwd=1.5, lty=2)
+    title('TASFR minus TAS-A')
+  }
+  
+# Add MACH plot
   MACH <- VRPlot[[7]]
   MACH <- MACH[which("MACH" == substr(MACH, 1, 4))]
   plotWAC (data[, c("Time", MACH)], 
