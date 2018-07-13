@@ -251,13 +251,12 @@ server <- function(input, output, session) {
       'airspeed' = 11,
       'wind' = 13,
       'radiation' = 20,
-      'particles' = 21,
+      'particles' = 21, # maybe 33?
+      'trace gases' = 41,
       'skew-T' = 26,
       'potential T' = 27,
       'CDP' = 29,
-      'UHSAS/PCASP' = 33,
       '2DC' = 37,
-      'trace gases' = 41,
       'extras' = 43
     )
     updateNumericInput (session, 'plot', value=vp)
