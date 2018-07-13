@@ -2,7 +2,7 @@
 
 ## clear global environment that might be left from the last run
 rm(list=ls( ))
-setwd('~/RStudio/QAtools')
+#setwd('~/RStudio/QAtools')
 suppressMessages (
   library(shiny, quietly=TRUE, warn.conflicts=FALSE)
 )
