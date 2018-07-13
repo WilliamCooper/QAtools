@@ -2,7 +2,10 @@
 RPlot1 <- function (data, Flight=NA, Seq=NA) { 
   if (is.na(Seq) || Seq == 1) {
   ## needs LATC, LONC, WDC, WSC, GGALT
-  op <- par (mfrow=c(1,1), mar=c(5,5,2,2)+0.1,oma=c(1.1,0,0,0))
+  # op <- par (mfrow=c(1,1), mar=c(5,5,2,2)+0.1,oma=c(1.1,0,0,0))
+    layout(matrix(1:2, ncol = 1), widths = 1)
+    op <- par (mar=c(5,5,1,1),oma=c(1,5,1,1))
+    par(cex.lab=2, cex.axis=2)
   dt <- data
   dt$LATC <- data[ ,eval (parse (text=sprintf('VRPlot[[1]][%d]', 
                                               which (grepl ('LAT', VRPlot[[1]])))))]
