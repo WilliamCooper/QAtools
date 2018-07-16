@@ -7,9 +7,9 @@ RPlot9 <- function (data, Seq=NA) {
   par(cex.lab=2, cex.main=2)
    
   # set high transparency (30) to avoid obscuring first trace
-  tgreen <- rgb(0,200,0,120,maxColorValue=255)
-  cs <- c('blue', tgreen, 'red', 'cyan', 'darkorange', 'violet')
-  line.widths <- c(1,1,2)
+  red <- rgb(0,200,0,120,maxColorValue=255)
+  cs <- c('blue',  'red', 'cyan', 'darkorange', 'violet')
+  line.widths <- c(2,2,2)
   line.types <- c(1,3,2)
   
   if (is.na (Seq) || (Seq == 1)) {
@@ -60,13 +60,13 @@ RPlot9 <- function (data, Seq=NA) {
   data$UIC <- data$WSC * sin (data$WDC*pi/180)
   plotWAC (data[, c("Time", "UIC", "IUX")], col=cs, lwd=line.widths, lty=line.types, 
            ylab="easterly wind [m/s]",legend.position=NA)
-  legend('bottom',c("UIC", "IUX"),col=c("blue",tgreen),text.col=c("blue",tgreen),lty=c(1,3),lwd=c(1,1),cex=0.75)
+  legend('bottom',c("UIC", "IUX"),col=c("blue",red),text.col=c("blue",red),lty=c(1,3),lwd=c(1,1),cex=0.75)
   op <- par (mar=c(5,4,1,1)+0.1)
   data$IVY <- -data$IWS * cos (data$IWD*pi/180)
   data$VIC <- -data$WSC * cos (data$WDC*pi/180)
   plotWAC (data[, c("Time", "VIC", "IVY")], col=cs, lwd=line.widths, lty=line.types, 
            ylab="southerly wind [m/s]",legend.position=NA)
-  legend('bottom',c("VIC", "IVY"),col=c("blue",tgreen),text.col=c("blue",tgreen),lty=c(1,3),lwd=c(1,1),cex=0.75)
+  legend('bottom',c("VIC", "IVY"),col=c("blue",red),text.col=c("blue",red),lty=c(1,3),lwd=c(1,1),cex=0.75)
   AddFooter ()
 }
 
