@@ -45,8 +45,8 @@ if (Project == "WECAN") {
   # Cavity and other pressures also provided if desired for additional plots
   # Vapor pressure and mixing ratio can also be plotted in additional plots
     VRPlot$PV5 <- c("DP_DPB", "DP_DPT", "ATX", "DPXC", "DP_UVH")
-    VRPlot$PV5 <- c(VRPlot$PV5, "CAVP_DPB", "CAVP_DPT", "PSXC", "QCXC")
-    VRPlot$PV5 <- c(VRPlot$PV5, "EW_DPB", "EW_DPT", "MR")  
+  #  VRPlot$PV5 <- c(VRPlot$PV5, "CAVP_DPB", "CAVP_DPT", "PSXC", "QCXC")
+  #  VRPlot$PV5 <- c(VRPlot$PV5, "EW_DPB", "EW_DPT", "MR")  
   # Should the next line be included here or elsehwere?
     # VRPlot$PV5 <- c(VRPlot$PV5, "AKRD", "MACHX")
   
@@ -129,7 +129,7 @@ if (Project == "SOCRATES") {
   VRPlot$PV8 <- c("PSF", "PS_A", "QCF", "QC_A")
   VRPlot$PV9 <- c("IWD", "WDC", "IWS", "WSC", "WIC")
   VRPlot$PV10 <- c("GGVEW", "VEW", "VEWC", "GGVNS", "VNS", "VNSC", "GGQUAL")
-  VRPlot$PV11 <- c("AKRD", "PITCH", "GGVSPD", "TASX", "SSRD", "WDC", "WSC", "GGVEW", "GGVNS")
+  VRPlot$PV11 <- c("AKRD", "PITCH", "GGVSPD", "TASX", "SSRD", "WDC", "WSC", "GGVEW", "GGVNS", "ADIFR","BDIFR")
   VRPlot$PV12 <- c("PITCH", "PITCH_IRS2", "ROLL", "ROLL_IRS2", "THDG", "THDG_IRS2")
   VRPlot$PV13 <- c("ACINS", "ACINS_IRS2", "VSPD", "VSPD_A", "ALT_A", "GGALT")
   VRPlot$PV14 <- c("RSTB", "VISB", "IRTC", "IRBC")
