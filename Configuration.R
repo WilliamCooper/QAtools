@@ -62,52 +62,52 @@ if (Project == "WECAN") {
   
   # RPlot8.R: TOTAL PRESSURE
   # Note: we expect agreement for the sums of 1+2 and 3+4
-  VRPlot$PV8 <- c("PSFD", "QCF", "PSFRD", "QCFR", "PS_A", "QC_A")
+    VRPlot$PV8 <- c("PSFD", "QCF", "PSFRD", "QCFR", "PS_A", "QC_A")
   
   ## RPlot9.R: WIND DIRECTION, SPEED, VERTICAL WIND 
   # Note: keep these variables unchanged
-  VRPlot$PV9 <- c("WDC", "IWD", "WSC", "IWS", "WIC", "ADIFR")  # need ADIFR for WIX
+    VRPlot$PV9 <- c("WDC", "IWD", "WSC", "IWS", "WIC", "ADIFR")  # need ADIFR for WIX
   
   ## IRU velocity errors from differences (Schuler oscillation); don't change
-  VRPlot$PV10 <- c("GGVEW", "VEW", "GGVNS", "VNS", "GGQUAL")
+    VRPlot$PV10 <- c("GGVEW", "VEW", "GGVNS", "VNS", "GGQUAL")
   ## for plotting effect of complementary filter
-  VRPlot$PV10 <- c(VRPlot$PV10, "VEWC", "VNSC")
+    VRPlot$PV10 <- c(VRPlot$PV10, "VEWC", "VNSC")
   
   # RPlot11.R: PITCH, AKRD, SIDESLIP 
   #Note: Need aircraft vertical speed, preferably GGVSPD
-  VRPlot$PV11 <- c("AKRD", "PITCH", "GGVSPD", "TASX", "SSRD", "WDC", "WSC", "GGVEW", "GGVNS", "ADIFR", "BDIFR")
+    VRPlot$PV11 <- c("AKRD", "PITCH", "GGVSPD", "TASX", "SSRD", "WDC", "WSC", "GGVEW", "GGVNS", "ADIFR", "BDIFR")
   
   ## compare IRU attitude angles, IRS1 and IRS2
-  VRPlot$PV12 <- c("PITCH", "PITCH_IRS2", "ROLL", "ROLL_IRS2",  "THDG", "THDG_IRS2")
+    VRPlot$PV12 <- c("PITCH", "PITCH_IRS2", "ROLL", "ROLL_IRS2",  "THDG", "THDG_IRS2")
   ## compare IRU measurements of acceleration, vertical speed, altitude
-  VRPlot$PV13 <- c("ACINS", "ACINS_IRS2", "VSPD", "VSPD_A", "GGALT", "ALT_A")
+    VRPlot$PV13 <- c("ACINS", "ACINS_IRS2", "VSPD", "VSPD_A", "GGALT", "ALT_A")
   
   # RPlot14.R: RADIATION MEASUREMENTS
-  VRPlot$PV14 <- c("RSTB", 'RSTB1','RSTT')
+    VRPlot$PV14 <- c("RSTB", 'RSTB1','RSTT')
   
   ## plot concentrations:
-  VRPlot$PV15 <- NA
+    VRPlot$PV15 <- c('CONCP_RPO','CONCU_RWO', 'CONCU100_RWO','CCDP_RPC', "UREF_RWO", "PREF_RPO")
   ## list mean diameters, liquid water, RICE
-  VRPlot$PV16 <- NA
+    VRPlot$PV16 <- NA
   ## plot variable for skew-T sounding (don't normally change)
-  VRPlot$PV17 <- c("PSXC", "ATX", "DPXC")
-  VRPlot$PV18 <- c("PSXC", "ATX", "DPXC", "GGALT")
+    VRPlot$PV17 <- c("PSXC", "ATX", "DPXC")
+    VRPlot$PV18 <- c("PSXC", "ATX", "DPXC", "GGALT")
   ## time history and vertical profile of potential temperatures:
  
   # RPlot19.R: POTENTIAL TEMPERATURES
   # Other variables included for checking potential temperature estimates.
-   VRPlot$PV19 <- c("THETA", "THETAV", "THETAE", "THETAP", "THETAQ")
-   VRPlot$PV19 <- c(VRPlot$PV19, "ATX", "PSXC", "EWX")
+    VRPlot$PV19 <- c("THETA", "THETAV", "THETAE", "THETAP", "THETAQ")
+    VRPlot$PV19 <- c(VRPlot$PV19, "ATX", "PSXC", "EWX")
   
    ## plot sample of CDP size distributions
-  VRPlot$PV20 <- NA
+    VRPlot$PV20 <- NA
   ## plot sample of UHSAS size distributions; include PCASP if present (not HIPPO-2)
-  VRPlot$PV21 <- NA#c('CUHSAS_LWII') #c('CONCU','CONCU100','CONCP') # 'UREF','USCAT','PREF'
+    VRPlot$PV21 <- NA#c('CUHSAS_LWII') #c('CONCU','CONCU100','CONCP') # 'UREF','USCAT','PREF'
   ## plot sample of 2DC size distributions
-  VRPlot$PV22 <- NA
+    VRPlot$PV22 <- NA
   
   # RPlot23.R: TRACE GASES + INLET PRESSURE
-  VRPlot$PV23 <- c("INLETP_AL", "CO2_PIC2401", "CH4_PIC2401","CO_PIC2401", "CO_ARI")
+    VRPlot$PV23 <- c("INLETP_AL", "CO2_PIC2401", "CH4_PIC2401","CO_PIC2401", "CO_ARI")
 # ============================================================================
 } 
 # End Project WECAN
