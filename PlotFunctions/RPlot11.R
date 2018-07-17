@@ -14,7 +14,7 @@ RPlot11 <- function (data, ...) {
   titl <-(sprintf ("Mean Difference: AKRD-AOAREF = %.02f", 
                   mean (DF$AKRD-DF$AOAREF, na.rm=TRUE)))
   title(main = paste("Pitch, Angle of Attack",'\n',titl))
-  hline (2); hline (4)
+  hline (-2); hline (2)
  
   # Plot ADIFR
   if ("ADIFR" %in% VRPlot[[11]]){
