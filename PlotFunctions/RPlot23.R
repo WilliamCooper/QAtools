@@ -23,54 +23,61 @@ RPlot23 <- function (data, Seq=NA) {
   layout(matrix(1:4, ncol = 1), widths = 1)#, heights = c(5,5,5,5))
   op <- par (mar=c(5,5,5,1),oma=c(2,2,2,1))
   par(cex.lab=2, cex.main=2)
-  
-  # plot CO2
-  if ("CO2_PIC2311" %in% names(data)) {
-    if ("CO2C_PIC2311" %in% names(data)) {
-      plotWAC (data[, c("Time", "CO2_PIC2311", "CO2C_PIC2311")], 
-               ylab="ppmv",
-               lty=c(1,1), lwd=c(2), legend.position='bottomright')
-         } else {
-      plotWAC (data[, c("Time", "CO2_PIC2311")], ylab="ppmv",
-               lty=c(1,1), lwd=c(2), legend.position='bottomright')
-    }
-  }
-  
-  # plot CH4
-  
-  if ("CH4_PIC2311" %in% names(data)) {
-    if ("CH4C_PIC2311" %in% names(data)) {
-      plotWAC (data[, c("Time", "CH4_PIC2311", "CH4C_PIC2311")], 
-               ylab="ppmv",
-               lty=c(1,1), lwd=c(2), legend.position='bottomright')
-    } else {
-      plotWAC (data[, c("Time", "CH4_PIC2311")], ylab="ppmv",
-               lty=c(1,1), lwd=c(2), legend.position='bottomright')
-    }
-  }
-  
-  # plot OZONE with Methane, if available
-  if ("FO3C_ACD" %in% names(data)) {
-    if ("CORAW" %in% names(data)) {
-      plotWAC (data[, c("Time", "FO3C_ACD", "CORAW")], 
-               ylab="ppmv",
-               lty=c(1,1), lwd=c(2), legend.position='bottomright')
-    } else {
-      plotWAC (data[, c("Time", "FO3C_ACD")], ylab="ppmv",
-               lty=c(1,1), lwd=c(2), legend.position='bottomright')
-    }
-  }
-  # AddFooter ()
-  # if (!is.na(Seq) && (Seq == 1)) {return()}
-  # # 
-  # plot COFLOW and INLETP
-  # if (("COFLOW_AL" %in% names (data)) && any(!is.na(data$COFLOW_AL))) {
-  #   plotWAC(data[, c("Time", "COFLOW_AL")])
-  # }
-  if ("INLETP_AL" %in% names (data)) {
-    plotWAC(data[, c("Time","INLETP_AL")])
-  }
-  #legend('bottomright', legend=c("COFLOW", "INLETP"), pch=20, col=c('red', 'blue'))
-  AddFooter ()
-}
 
+  if (is.na(Seq) || Seq == 1) {
+    
+    # plot CO2
+    if ("CO2_PIC2401" %in% names(data)) {
+      if ("CO2C_PIC2401" %in% names(data)) {
+        plotWAC (data[, c("Time", "CO2_PIC2401", "CO2C_PIC2401")], 
+                 ylab="ppmv",
+                 lty=c(1,1), lwd=c(2), legend.position='bottomright')
+           } else {
+        plotWAC (data[, c("Time", "CO2_PIC2401")], ylab="ppmv",
+                 lty=c(1,1), lwd=c(2), legend.position='bottomright')
+      }
+    }
+    
+    # plot CH4
+    
+    if ("CH4_PIC2401" %in% names(data)) {
+      if ("CH4C_PIC2401" %in% names(data)) {
+        plotWAC (data[, c("Time", "CH4_PIC2401", "CH4C_PIC2401")], 
+                 ylab="ppmv",
+                 lty=c(1,1), lwd=c(2), legend.position='bottomright')
+      } else {
+        plotWAC (data[, c("Time", "CH4_PIC2401")], ylab="ppmv",
+                 lty=c(1,1), lwd=c(2), legend.position='bottomright')
+      }
+    }
+    
+    # plot OZONE with Methane, if available
+    idx<-match(c("CO_PIC2401", "FO3C_ACD", "CO_ARI"), names(data))
+    idx<-idx[is.finite(idx)==TRUE]
+    print(names(data[idx]))
+    print(dim(data[, c("Time",names(data)[idx])]))
+    if (length(idx)>0) {
+        plotWAC (data[, c("Time",names(data)[idx])], 
+                 ylab="ppmv",
+                 lty=c(1,1), lwd=c(2), legend.position='bottomright')
+    }
+    # AddFooter ()
+    # if (!is.na(Seq) && (Seq == 1)) {return()}
+    # # 
+    # plot COFLOW and INLETP
+    # if (("COFLOW_AL" %in% names (data)) && any(!is.na(data$COFLOW_AL))) {
+    #   plotWAC(data[, c("Time", "COFLOW_AL")])
+    # }
+    if ("INLETP_AL" %in% names (data)) {
+      plotWAC(data[, c("Time","INLETP_AL")])
+    }
+    #legend('bottomright', legend=c("COFLOW", "INLETP"), pch=20, col=c('red', 'blue'))
+    AddFooter ()
+    if (!is.na(Seq) && (Seq == 1)) {return()}
+  }
+
+# END OF FIRST PLOT PAGE
+# 
+ if (is.na(Seq) || Seq == 2) {
+ }
+}
