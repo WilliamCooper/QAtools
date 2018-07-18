@@ -55,7 +55,7 @@ RPlot9 <- function (data, Seq=NA) {
 # End First page of wind plots
   
   op <- par (mar=c(5,5,5,1),oma=c(0,3,0,3))
-  layout(matrix(1:2, ncol = 1), widths = 1, heights = c(5,6))
+  layout(matrix(1:4, ncol = 1))
   data$IUX <- data$IWS * sin (data$IWD*pi/180)
   data$UIC <- data$WSC * sin (data$WDC*pi/180)
   plotWAC (data[, c("Time", "UIC", "IUX")], col=cs, lwd=line.widths, lty=line.types, 

@@ -2,7 +2,7 @@
 RPlot11 <- function (data, ...) {
   ## needs AKRD, PITCH, SSRD, WSC, WDC, GGVEW, GGVNS, VSPD, TASX, THDG, 
   layout(matrix(1:4, ncol = 1), widths = 1)
-  op <- par (mar=c(5,5,5,1),oma=c(2,2,2,1))
+  op <- par (mar=c(5,5,5,1),oma=c(0,3,0,3))
   par(cex.lab=2, cex.main=2)
 
   # Plot Pitch and Angle of Attack

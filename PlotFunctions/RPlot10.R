@@ -2,7 +2,7 @@
 RPlot10 <- function (data, Flight=NA, Seq=NA) {
   ## needs GGVEW, GGVNS, VEW, VNS, GGQUAL
   layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,3))
-  op <- par (mar=c(2,4,1,2)+0.1,oma=c(1.1,0,0,0))
+  op <- par (mar=c(5,5,5,1),oma=c(0,3,0,3))
   DF <- data[, c("Time", "GGVEW", "VEW")]
   DF$DifferenceX50 <- (data$GGVEW-data$VEW)*50
   line.colors=c('blue', 'darkorange', 'red', 'skyblue')
@@ -27,8 +27,9 @@ RPlot10 <- function (data, Flight=NA, Seq=NA) {
   plotWAC(DF, ylim=c(0,10))
   AddFooter ()
   if (!is.na(Seq) && (Seq == 1)) {return()}
-  layout(matrix(1:2, ncol = 1), widths = 1, heights = c(5,6))
-  op <- par (mar=c(2,4,1,2)+0.1,oma=c(1.1,0,0,0))
+  layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,3))
+  op <- par (mar=c(5,5,5,1),oma=c(0,3,0,3))
+  
   DF <- data.frame(Time=data$Time)
   DF$DVEW <- data$VEWC - data$VEW
   DF$DVNS <- data$VNSC - data$VNS
