@@ -20,8 +20,8 @@ RPlot23 <- function (data, Seq=NA) {
   # title("CORAW", cex.main=0.8)
   # 
   
-  layout(matrix(1:4, ncol = 1), widths = 1)#, heights = c(5,5,5,5))
-  op <- par (mar=c(5,5,5,1),oma=c(2,2,2,1))
+  layout(matrix(1:4, ncol = 1), widths = 1)
+  op <- par (mar=c(5,5,5,1),oma=c(0,3,0,3))
   par(cex.lab=2, cex.main=2)
 
   if (is.na(Seq) || Seq == 1) {
@@ -58,7 +58,7 @@ RPlot23 <- function (data, Seq=NA) {
     print(dim(data[, c("Time",names(data)[idx])]))
     if (length(idx)>0) {
         plotWAC (data[, c("Time",names(data)[idx])], 
-                 ylab="ppmv",
+                 ylab="ppmv", ylim=c(0,min(c(max(data[,names(data[idx])], na.rm=TRUE),500))),
                  lty=c(1,1), lwd=c(2), legend.position='bottomright')
     }
     # AddFooter ()
