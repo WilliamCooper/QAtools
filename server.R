@@ -238,7 +238,7 @@ server <- function(input, output, session) {
       print (PVar)
     }
     # reac$newdisplay <- TRUE
-    VRPlot[[jp]] <<- PVar
+    #VRPlot[[jp]] <<- PVar
   }, priority=-5)
   
   observe({                             ## Rplot
