@@ -1,6 +1,6 @@
 ### plot 4: plot differences, individual pairs of temperatures
 RPlot4 <- function (data, ...) { 
-  op <- par (mar=c(5,5,2,4)+0.1,oma=c(1.1,0,0,0))
+  op <- par (mar=c(5,5,5,1),oma=c(0,3,0,3))
   labelled=F
   layout(matrix(1:4, nrow=2, ncol = 2), widths = c(5,5), heights = c(6,6))
   ## use ATX as abscissa if present, otherwise ATH1 if present,

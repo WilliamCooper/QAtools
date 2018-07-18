@@ -1,7 +1,7 @@
 ### plot 3: plot all temperatures, one plot; plot differences
 RPlot3 <- function (data, ...) { 
   layout(matrix(1:3, ncol = 1), widths = 1)
-  op <- par (mar=c(5,5,5,1),oma=c(2,2,2,1))
+  op <- par (mar=c(5,5,5,1),oma=c(0,3,0,3))
   par(cex.lab=2, cex.main=2)
 
   ylb <- expression (paste ("ATy  [", degree, "C]"))
