@@ -58,7 +58,7 @@ RPlot9 <- function (data, Seq=NA) {
   layout(matrix(1:4, ncol = 1))
   data$IUX <- data$IWS * sin (data$IWD*pi/180)
   data$UIC <- data$WSC * sin (data$WDC*pi/180)
-  plotWAC (data[, c("Time", "UIC", "IUX")], col=cs, lwd=line.widths, lty=line.types, 
+  plotWAC (data[, c("Time", "UIC", "IUX")], #col=cs, lwd=line.widths, lty=line.types, 
            ylab="easterly wind [m/s]",legend.position=NA)
   legend('bottom',c("UIC", "IUX"),col=c("blue",red),text.col=c("blue",red),lty=c(1,3),lwd=c(1,1),cex=0.75)
   op <- par (mar=c(5,4,1,1)+0.1)
