@@ -1,8 +1,8 @@
 ### plot 5: Dewpoint and Humidity plots
 RPlot5 <- function (data, Seq=NA) { 
 
-  layout(matrix(1:3, ncol = 1), widths = 1)
-  op <- par (mar=c(5,5,5,1),oma=c(2,2,2,1))
+  layout(matrix(1:4, ncol = 1), widths = 1)
+  op <- par (mar=c(5,5,5,1),oma=c(0,3,0,3))
   par(cex.lab=2, cex.main=2)
   
     if (is.na(Seq) || Seq == 1) {
@@ -10,6 +10,7 @@ RPlot5 <- function (data, Seq=NA) {
     ylb <- expression (paste ("DPy  [", degree, "C]"))
 
     DP <- c(VRPlot[[5]][grepl ('^DP', VRPlot[[5]])], 'ATX')
+  
     plotWAC (data[, c("Time", DP)], ylab=ylb)#
     
     #                  lty=c(1,1,2,1), lwd=c(2,1.5,1,3), legend.position='bottom', 
@@ -32,6 +33,16 @@ RPlot5 <- function (data, Seq=NA) {
                              data[, labl[ir]], na.rm=TRUE))
     }
     title(main = paste("Dew Point Temperatures",'\n',titl))
+    
+    # Add Signal from UVH (XSIG)
+    # since DP_UVH is not functioning for WECAN
+    # Must take -1* log (XSIG)
+    dummyDF<-as.data.frame(data[,"Time"])
+    if ('XSIGV_UVH' %in% VRPlot[[5]]){
+      dummyDF$XSIGV_UVH<- (-1)*log10(data[,'XSIGV_UVH'])
+    } 
+    plotWAC(dummyDF, ylab=expression('-log'[10]*'(XSIGV_UVH)'))
+    
     
     #   
     # Plot differences

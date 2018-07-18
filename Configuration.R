@@ -44,7 +44,7 @@ if (Project == "WECAN") {
   # Uses both DPXC and ATX for reference
   # Cavity and other pressures also provided if desired for additional plots
   # Vapor pressure and mixing ratio can also be plotted in additional plots
-    VRPlot$PV5 <- c("DP_DPB", "DP_DPT", "ATX", "DPXC", "DP_UVH")
+    VRPlot$PV5 <- c("DP_DPB", "DP_DPT", "ATX", "DPXC", 'XSIGV_UVH')
   #  VRPlot$PV5 <- c(VRPlot$PV5, "CAVP_DPB", "CAVP_DPT", "PSXC", "QCXC")
   #  VRPlot$PV5 <- c(VRPlot$PV5, "EW_DPB", "EW_DPT", "MR")  
   # Should the next line be included here or elsehwere?
