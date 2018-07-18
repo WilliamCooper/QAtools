@@ -3,7 +3,7 @@
 
 RPlot9 <- function (data, Seq=NA) {
   layout(matrix(1:4, ncol = 1), widths = 1)
-  op <- par (mar=c(5,5,5,1),oma=c(2,2,2,1))
+  op <- par (mar=c(5,5,5,1),oma=c(0,3,0,3))
   par(cex.lab=2, cex.main=2)
    
   # set high transparency (30) to avoid obscuring first trace
@@ -20,7 +20,7 @@ RPlot9 <- function (data, Seq=NA) {
     if ('IWS' %in% VRPlot[[9]]) {WS <- c(WS, 'IWS')}
     WI <- VRPlot[[9]][grepl ('^WI', VRPlot[[9]])]
     plotWAC (data[, c("Time", WD)], 
-             col=cs, lwd=line.widths, lty=line.types, 
+             #col=cs, lwd=line.widths, lty=line.types, 
              ylab=expression (paste ("WDC [",degree,"]")))
     title('Wind Direction')
     # legend('bottomright',WD,col=cs,
@@ -29,7 +29,7 @@ RPlot9 <- function (data, Seq=NA) {
 
 # Plot Wind SPEED    
     plotWAC (data[, c("Time", WS)], 
-             col=cs, lwd=line.widths, lty=line.types, 
+             #col=cs, lwd=line.widths, lty=line.types, 
               ylab="WSC [m/s]")
     title('Wind Speed')
     # legend('bottomright',WS,col=cs,text.col=cs,lty=c(1,3),lwd=c(1,1))
@@ -54,7 +54,7 @@ RPlot9 <- function (data, Seq=NA) {
   
 # End First page of wind plots
   
-  op <- par (mar=c(2,4,1,1)+0.1)
+  op <- par (mar=c(5,5,5,1),oma=c(0,3,0,3))
   layout(matrix(1:2, ncol = 1), widths = 1, heights = c(5,6))
   data$IUX <- data$IWS * sin (data$IWD*pi/180)
   data$UIC <- data$WSC * sin (data$WDC*pi/180)
