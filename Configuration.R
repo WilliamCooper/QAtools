@@ -83,10 +83,11 @@ if (Project == "WECAN") {
     VRPlot$PV13 <- c("ACINS", "ACINS_IRS2", "VSPD", "VSPD_A", "GGALT", "ALT_A")
   
   # RPlot14.R: RADIATION MEASUREMENTS
-    VRPlot$PV14 <- c("RSTB", 'RSTB1','RSTT')
+    VRPlot$PV14 <- c("RSTB", 'RSTB1','RSTT','TRSTB','GGALT')
   
   ## plot concentrations:
     VRPlot$PV15 <- c('CONCP_RPO','CONCU_RWO', 'CONCU100_RWO','CCDP_RPC', "UREF_RWO", "PREF_RPO")
+    VRPlot$PV15 <- c(VRPlot$PV15, 'CONC1DC_LPC','CONC1DC_LPO','CONC1DC100_LPC','CONC1DC100_LPO')
   ## list mean diameters, liquid water, RICE
     VRPlot$PV16 <- NA
   ## plot variable for skew-T sounding (don't normally change)
