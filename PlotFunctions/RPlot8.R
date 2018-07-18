@@ -1,7 +1,7 @@
 ### plot 8: total pressure (static + dynamic)
 RPlot8 <- function (data, ...) { 
   layout(matrix(1:3, ncol = 1), widths = 1)
-  op <- par (mar=c(5,5,5,1),oma=c(2,2,2,1))
+  op <- par (mar=c(5,5,5,1),oma=c(0,3,0,3))
   par(cex.lab=2, cex.main=2)
 
     DFP <- data.frame(Time=data$Time)
