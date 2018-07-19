@@ -91,7 +91,7 @@ if (Project == "WECAN") {
                      'F2DIO1_LPO', 'F2DIO32_LPO','F2DIO64_LPO')
   
  ## RPlot16.R: LIQUID WATER
-    VRPlot$PV16 <- NA
+    VRPlot$PV16 <- c("PLWC","PLWC1DC_LPC","PLWC1DC_LPO","PLWCC","PLWCD_RPC" )
     
   ## plot variable for skew-T sounding (don't normally change)
     VRPlot$PV17 <- c("PSXC", "ATX", "DPXC")
