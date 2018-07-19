@@ -18,7 +18,7 @@ RPlot14 <- function(data, ...) {
     } else {
       plotWAC (data[, c("Time", "RSTB")], ylab=ylb)
     }
-    # title()
+     title('Radiometric Temperature')
   }
   
 # Panel 2: RSTT
@@ -40,6 +40,7 @@ print(VRPlot[[14]])
 # Panel 4: TRSTB
   if ("TRSTB" %in% VRPlot[[14]]) {
     plotWAC (data[, c("Time", "TRSTB")], ylab=ylb)
+    title('RSTB Sensor Heating')
     # par(new=T)
     # plotWAC(data[,c("Time","GGALT")], axes=FALSE, xlab=NA, ylab=NA, col='black', lwd=1)
     # axis(side=4)
