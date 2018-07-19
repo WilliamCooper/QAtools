@@ -85,15 +85,17 @@ if (Project == "WECAN") {
   # RPlot14.R: RADIATION MEASUREMENTS
     VRPlot$PV14 <- c("RSTB", 'RSTB1','RSTT','TRSTB','GGALT')
   
-  ## plot concentrations:
-    VRPlot$PV15 <- c('CONCP_RPO','CONCU_RWO', 'CONCU100_RWO','CCDP_RPC', "UREF_RWO", "PREF_RPO")
-    VRPlot$PV15 <- c(VRPlot$PV15, 'CONC1DC_LPC','CONC1DC_LPO','CONC1DC100_LPC','CONC1DC100_LPO')
-  ## list mean diameters, liquid water, RICE
+  ## RPlot15.R: AEROSOL and CLOUD PARTICLE concentrations:
+    VRPlot$PV15 <- c('CONCP_RPO','CONCU_RWO', 'CONCU100_RWO','CCDP_RPC', "UREF_RWO", "PREF_RPO",'INFLOW')
+    VRPlot$PV15 <- c(VRPlot$PV15, 'CONC1DC_LPC','CONC1DC_LPO','CONC1DC100_LPC','CONC1DC100_LPO','CONCD_RPC',
+                     'F2DIO1_LPO', 'F2DIO32_LPO','F2DIO64_LPO')
+  
+ ## RPlot16.R: LIQUID WATER
     VRPlot$PV16 <- NA
+    
   ## plot variable for skew-T sounding (don't normally change)
     VRPlot$PV17 <- c("PSXC", "ATX", "DPXC")
     VRPlot$PV18 <- c("PSXC", "ATX", "DPXC", "GGALT")
-  ## time history and vertical profile of potential temperatures:
  
   # RPlot19.R: POTENTIAL TEMPERATURES
   # Other variables included for checking potential temperature estimates.
