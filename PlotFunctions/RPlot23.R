@@ -35,7 +35,8 @@ RPlot23 <- function (data, Seq=NA) {
            } else {
         plotWAC (data[, c("Time", "CO2_PIC2401")], ylab="ppmv",
                  lty=c(1,1), lwd=c(2), legend.position='bottomright')
-      }
+           }
+      title('Carbon Dioxide')
     }
     
     # plot CH4
@@ -49,6 +50,7 @@ RPlot23 <- function (data, Seq=NA) {
         plotWAC (data[, c("Time", "CH4_PIC2401")], ylab="ppmv",
                  lty=c(1,1), lwd=c(2), legend.position='bottomright')
       }
+      title('Methane')
     }
     
     # plot OZONE with Methane, if available
@@ -60,6 +62,7 @@ RPlot23 <- function (data, Seq=NA) {
         plotWAC (data[, c("Time",names(data)[idx])], 
                  ylab="ppmv", ylim=c(0,min(c(max(data[,names(data[idx])], na.rm=TRUE),500))),
                  lty=c(1,1), lwd=c(2), legend.position='bottomright')
+      title('Carbon Monoxide and Fast Ozone (if available)')
     }
     # AddFooter ()
     # if (!is.na(Seq) && (Seq == 1)) {return()}
@@ -70,6 +73,7 @@ RPlot23 <- function (data, Seq=NA) {
     # }
     if ("INLETP_AL" %in% names (data)) {
       plotWAC(data[, c("Time","INLETP_AL")])
+      title('Inlet Pressure')
     }
     #legend('bottomright', legend=c("COFLOW", "INLETP"), pch=20, col=c('red', 'blue'))
     AddFooter ()
