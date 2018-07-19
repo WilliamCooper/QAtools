@@ -2,7 +2,7 @@
 ## needs THETA, THETAV, THETAE, THETAP, THETAQ, PSXC
 RPlot19 <- function (data, Seq=NA) {
   layout(matrix(1:3, ncol = 1), widths = 1)
-  op <- par (mar=c(5,5,5,1),oma=c(2,2,2,1))
+  op <- par (mar=c(5,5,5,1),oma=c(0,3,0,3))
   par(cex.lab=2, cex.main=2)
   
   ylb <- expression (paste (theta[y]," [", degree, "C]"))
@@ -20,7 +20,7 @@ RPlot19 <- function (data, Seq=NA) {
   data$TP2 <- EquivalentPotentialTemperature (data$PSXC, data$ATX, data$EWX)
   }
 
-  ylm<-c(min(data$THETA,na.rm=TRUE), max(data$THETA,na.rm=TRUE)+5)
+  ylm<-c(min(data[,"THETA"], na.rm=T),min(c(500,max(data[,vp],na.rm=TRUE))))
    if ("THETAQ" %in% vp) {
     if (!("PLWCC" %in% names(data))) {data$PLWCC <- rep (0, nrow(data))}
     data$TQ2 <- WetEquivalentPotentialTemperature (data$PSXC, data$ATX, data$EWX, data$PLWCC)
