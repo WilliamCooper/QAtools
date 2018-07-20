@@ -102,8 +102,9 @@ if (Project == "WECAN") {
     VRPlot$PV19 <- c("THETA", "THETAV", "THETAE", "THETAP", "THETAQ")
     VRPlot$PV19 <- c(VRPlot$PV19, "ATX", "PSXC", "EWX")
   
-   ## plot sample of CDP size distributions
-    VRPlot$PV20 <- NA
+   # RPlot20.R: SIZE DISTRIBUTIONS for AEROSOLS/PARTICLES
+    VRPlot$PV20 <- c('CUHSAS_RWO','CS200_RPO','CCDP_RPC','C1DC_LPO','C1DC_LPC','CONCP_RPO','CONCU_RWO', 'TASX')
+    
   ## plot sample of UHSAS size distributions; include PCASP if present (not HIPPO-2)
     VRPlot$PV21 <- NA#c('CUHSAS_LWII') #c('CONCU','CONCU100','CONCP') # 'UREF','USCAT','PREF'
   ## plot sample of 2DC size distributions
