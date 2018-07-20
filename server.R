@@ -244,6 +244,7 @@ server <- function(input, output, session) {
   observe({                             ## Rplot
     vp <- switch (input$Rplot,
       'flight track' = 1,
+      'altitude, heading'= 2,
       'temperature' = 3,
       'humidity' = 5,
       'static pressure' = 9,
@@ -252,12 +253,12 @@ server <- function(input, output, session) {
       'wind' = 13,
       'angles, ADIFR, BDIFR' = 17,
       'radiation' = 20,
-      'particles' = 21, # maybe 33?
+      'aerosols' = 21, 
+      'cloud probes' = 22,
+      'liquid water' = 23,
       'trace gases' = 41,
       'skew-T' = 26,
       'potential T' = 27,
-      'CDP' = 29,
-      '2DC' = 37,
       'extras' = 43
     )
     updateNumericInput (session, 'plot', value=vp)
