@@ -111,7 +111,7 @@ if (Project == "WECAN") {
     VRPlot$PV22 <- NA
   
   # RPlot23.R: TRACE GASES + INLET PRESSURE
-    VRPlot$PV23 <- c("INLETP_AL", "CO2_PIC2401", "CH4_PIC2401","CO_PIC2401", "CO_ARI")
+    VRPlot$PV23 <- c("INLETP_AL", "CO2_PIC2401", "CH4_PIC2401","CO_PIC2401", "CO_ARI")#, "FO3_AD")
 # ============================================================================
 } 
 # End Project WECAN

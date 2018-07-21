@@ -54,12 +54,17 @@ RPlot23 <- function (data, Seq=NA) {
     }
     
     # plot OZONE with Methane, if available
-    idx<-match(c("CO_PIC2401", "FO3C_ACD", "CO_ARI"), names(data))
+    idx<-match(c("CO_PIC2401", "FO3_ACD", "CO_ARI"), names(data))
     idx<-idx[is.finite(idx)==TRUE]
     if (length(idx)>0) {
-        dummyDF<-as.data.frame(cbind(data[,"Time"], data[,names(data[idx])]*1000.))
+        dummyDF<-as.data.frame(cbind(data[,"Time"], data[,names(data[idx])]))
+        if ('CO_PIC2401' %in% names(dummyDF)){
+          dummyDF$CO_PIC2401<-dummyDF$CO_PIC2401*1000.
+        }
         plotWAC (dummyDF, 
-                 ylab="ppb", ylim=c(0,min(c(max(data[,names(data[idx])]*1000, na.rm=TRUE),500))),
+                 ylab="ppb", 
+                 ylim=c(max(c(0,min(dummyDF[,which(!grepl('Time',names(dummyDF)))], na.rm=TRUE))),
+                    min(c(max(dummyDF[,which(!grepl('Time',names(dummyDF)))], na.rm=TRUE),500))),
                  lty=c(1,1), lwd=c(2), legend.position='bottomright')
       title('Carbon Monoxide and Fast Ozone (if available)')
     }
