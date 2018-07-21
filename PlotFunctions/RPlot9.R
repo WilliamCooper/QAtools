@@ -21,7 +21,9 @@ RPlot9 <- function (data, Seq=NA) {
     WI <- VRPlot[[9]][grepl ('^WI', VRPlot[[9]])]
     plotWAC (data[, c("Time", WD)], 
              #col=cs, lwd=line.widths, lty=line.types, 
-             ylab=expression (paste ("WDC [",degree,"]")))
+             ylab=expression (paste ("WDC [",degree,"]")), ylim=c(0,360))
+    grid(ny=NA)
+    
     title('Wind Direction')
     # legend('bottomright',WD,col=cs,
     #        text.col=cs,lty=c(1,3),lwd=c(1,1))
@@ -59,14 +61,14 @@ RPlot9 <- function (data, Seq=NA) {
   data$IUX <- data$IWS * sin (data$IWD*pi/180)
   data$UIC <- data$WSC * sin (data$WDC*pi/180)
   plotWAC (data[, c("Time", "UIC", "IUX")], #col=cs, lwd=line.widths, lty=line.types, 
-           ylab="easterly wind [m/s]",legend.position=NA)
-  legend('bottom',c("UIC", "IUX"),col=c("blue",red),text.col=c("blue",red),lty=c(1,3),lwd=c(1,1),cex=0.75)
+           ylab="easterly wind [m/s]")
+  #legend('bottom',c("UIC", "IUX"),col=c("blue",red),text.col=c("blue",red),lty=c(1,3),lwd=c(1,1),cex=0.75)
   op <- par (mar=c(5,4,1,1)+0.1)
   data$IVY <- -data$IWS * cos (data$IWD*pi/180)
   data$VIC <- -data$WSC * cos (data$WDC*pi/180)
   plotWAC (data[, c("Time", "VIC", "IVY")], col=cs, lwd=line.widths, lty=line.types, 
-           ylab="southerly wind [m/s]",legend.position=NA)
-  legend('bottom',c("VIC", "IVY"),col=c("blue",red),text.col=c("blue",red),lty=c(1,3),lwd=c(1,1),cex=0.75)
+           ylab="noutherly wind [m/s]")
+  #legend('bottom',c("VIC", "IVY"),col=c("blue",red),text.col=c("blue",red),lty=c(1,3),lwd=c(1,1),cex=0.75)
   AddFooter ()
 }
 
