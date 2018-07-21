@@ -53,15 +53,12 @@ RPlot7 <- function (data, Seq=NA) {
     
     
     # Difference plot
-    if ('QC_A' %in% QC) {
-      plotWAC(data$Time, (data$QC_A-data[, QC[ir]]), ylab='Difference [hPa]',            
-              ylim=c(-4,4))
+    if ('QCRC' %in% QC && 'QCFC' %in% QC) {
+      plotWAC(data$Time, (data$QCRC-data$QCFC), ylab='Difference [hPa]',            
+              ylim=c(-2,2))
       # These next lines set grid to yrange spanning -4 to 4.
-      for (ny in seq(-4,4,by=1)){
-        abline(h=ny, lwd=1, lty=3, col='gray')
-      }
-      abline (h=-2, lwd=1.5, lty=2); abline (h=2, lwd=1.5, lty=2)
-      title('QC_A minus QCFC')
+      abline (h=-1, lwd=1.5, lty=2); abline (h=1, lwd=1.5, lty=2)
+      title('QCRC minus QCFC')
     }
     
     # axis (4, at=c(100,120,140), labels=c("-2", "0", "2"), col='brown', col.axis='brown', cex.axis=0.7)
