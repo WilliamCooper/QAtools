@@ -40,8 +40,7 @@ RPlot8 <- function (data, ...) {
    # colnames(DF) <- c("Time", "PtotF", "PtotAvionics", "Diff*20+500", 'PCOR chk')
   
   
-  plotWAC (DFP[,colnames[!grepl('Diff',colnames)]], ylab='Total Pressures [hPa]',
-           legend.position='topright')
+  plotWAC (DFP[,colnames[!grepl('Diff',colnames)]], ylab='Total Pressures [hPa]')
   title('Total Pressures')
   
   #

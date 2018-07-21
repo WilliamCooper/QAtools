@@ -718,6 +718,7 @@ ui <- fluidPage (
             'humidity',
             'static pressure',
             'dynamic pressure',
+            'total pressure',
             'airspeed',
             'wind',
             'angles, ADIFR, BDIFR',

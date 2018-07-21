@@ -249,6 +249,7 @@ server <- function(input, output, session) {
       'humidity' = 5,
       'static pressure' = 9,
       'dynamic pressure' = 10,
+      'total pressure' = 12,
       'airspeed' = 11,
       'wind' = 13,
       'angles, ADIFR, BDIFR' = 17,
