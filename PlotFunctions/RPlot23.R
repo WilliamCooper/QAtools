@@ -24,6 +24,7 @@ RPlot23 <- function (data, Seq=NA) {
   op <- par (mar=c(5,5,5,1),oma=c(0,3,0,3))
   par(cex.lab=2, cex.main=2)
 
+
   if (is.na(Seq) || Seq == 1) {
     
     # plot CO2
