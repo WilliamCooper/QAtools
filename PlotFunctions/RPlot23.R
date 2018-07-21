@@ -32,10 +32,10 @@ RPlot23 <- function (data, Seq=NA) {
       if ("CO2C_PIC2401" %in% names(data)) {
         plotWAC (data[, c("Time", "CO2_PIC2401", "CO2C_PIC2401")], 
                  ylab="ppmv",
-                 lty=c(1,1), lwd=c(2), legend.position='bottomright')
+                 lty=c(1,1), lwd=c(2))
            } else {
         plotWAC (data[, c("Time", "CO2_PIC2401")], ylab="ppmv",
-                 lty=c(1,1), lwd=c(2), legend.position='bottomright')
+                 lty=c(1,1), lwd=c(2))
            }
       title('Carbon Dioxide')
     }
@@ -46,10 +46,10 @@ RPlot23 <- function (data, Seq=NA) {
       if ("CH4C_PIC2401" %in% names(data)) {
         plotWAC (data[, c("Time", "CH4_PIC2401", "CH4C_PIC2401")], 
                  ylab="ppmv",
-                 lty=c(1,1), lwd=c(2), legend.position='bottomright')
+                 lty=c(1,1), lwd=c(2))
       } else {
         plotWAC (data[, c("Time", "CH4_PIC2401")], ylab="ppmv",
-                 lty=c(1,1), lwd=c(2), legend.position='bottomright')
+                 lty=c(1,1), lwd=c(2))
       }
       title('Methane')
     }
@@ -66,7 +66,7 @@ RPlot23 <- function (data, Seq=NA) {
                  ylab="ppb", 
                  ylim=c(max(c(0,min(dummyDF[,which(!grepl('Time',names(dummyDF)))], na.rm=TRUE))),
                     min(c(max(dummyDF[,which(!grepl('Time',names(dummyDF)))], na.rm=TRUE),500))),
-                 lty=c(1,1), lwd=c(2), legend.position='bottomright')
+                 lty=c(1,1), lwd=c(2))
       title('Carbon Monoxide and Fast Ozone (if available)')
     }
     # AddFooter ()
