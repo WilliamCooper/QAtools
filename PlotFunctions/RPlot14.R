@@ -11,14 +11,21 @@ RPlot14 <- function(data, ...) {
   par(cex.lab=2, cex.main=2)
   
 # Panel 1: RSTB
-  ylb <- expression (paste ("Temperature  [", degree, "C]")) 
+  ylb <- expression (paste ("[", degree, "C]")) 
   if ("RSTB" %in% VRPlot[[14]]) {
     if ("RSTB1" %in% VRPlot[[14]]) {
       plotWAC (data[, c("Time", "RSTB", "RSTB1")], ylab=ylb)
+      title('Radiometric Temperature')
+      dummyDF<-as.data.frame(data[, c("Time")])
+      dummyDF$Diff<-data[, "RSTB"]- data[, "RSTB1"]
+      plotWAC (dummyDF, ylab=ylb, ylim=c(-2,2))
+      abline(h=-0.3, lty=2); abline(h=0.3, lty=2)
+      title('RSTB minus RSTB1')
     } else {
       plotWAC (data[, c("Time", "RSTB")], ylab=ylb)
+      title('Radiometric Temperature')
     }
-     title('Radiometric Temperature')
+     
   }
   
 # Panel 2: RSTT
