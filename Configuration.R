@@ -28,7 +28,7 @@ if (Project == "WECAN") {
   # Note: PALT and PSXC are included to check the pressure altitude calculation)
   # Most of these variables are always the same regardless of campaign 
   # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    VRPlot <- list(PV1=c("LATC", "LONC", "WDC", "WSC", "GGALT", "PALT", "PSXC", "THDG"))
+    VRPlot <- list(PV1=c("LATC", "LONC", "WDC", "WSC", "GGALT", "PALT", "PSXC", "THDG", "GGQUAL"))
   # RPlot2 uses same variables as RPlot1
     VRPlot[[2]] <- VRPlot[[1]]
   # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

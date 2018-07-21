@@ -50,8 +50,8 @@ RPlot1 <- function (data, Flight=NA, Seq=NA) {
     title('Heading')
   }
   
-  if ('GSQUAL' %in% VRPlot[[1]]){
-    plotWAC(data[,c("Time", "GSQUAL")], ylab='Integer')
+  if ('GGQUAL' %in% VRPlot[[1]]){
+    plotWAC(data[,c("Time", "GGQUAL")], ylab='Integer')
     title('GPS Precision , 5 = Terra Star Corrected, 2 = Receiving, 1 = Standard GPS, 0 = No FIX')
   }
   

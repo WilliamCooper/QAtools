@@ -22,10 +22,10 @@ RPlot10 <- function (data, Flight=NA, Seq=NA) {
   hline (50, 'red'); hline (-50, 'red')
   legend ("bottomleft", legend="dashed-red: +/- 1 m/s, Difference", 
           box.col='red', text.col='red', cex=0.5)
-  op <- par (mar=c(5,4,1,2)+0.1)
-  DF <- data[, c("Time", "GGQUAL")]
-  plotWAC(DF, ylim=c(0,10))
-  AddFooter ()
+  # op <- par (mar=c(5,4,1,2)+0.1)
+  # DF <- data[, c("Time", "GGQUAL")]
+  # plotWAC(DF, ylim=c(0,10))
+  # AddFooter ()
   if (!is.na(Seq) && (Seq == 1)) {return()}
   layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,3))
   op <- par (mar=c(5,5,5,1),oma=c(0,3,0,3))
