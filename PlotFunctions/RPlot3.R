@@ -47,10 +47,10 @@ if (length(labl)>1){
   ylb <- expression (paste ("Differences  [", degree, "C]"))
   plotWAC (tmp, ylab=ylb, ylim=c(-4,4))
  
-   # These next lines set grid to yrange spanning -4 to 4.
-  for (ny in seq(-4,4,by=1)){
-    abline(h=ny, lwd=1, lty=3, col='gray')
-  }
+   # These next lines set a sort or threshold around 0.3
+    abline(h=-.3, lwd=1, lty=2, col='black')
+    abline(h=.3, lwd=1, lty=2, col='black')
+    
   
   # titl <- "Mean differences: "
   # for (i in 1:length(labl)) {
