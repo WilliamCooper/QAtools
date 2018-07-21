@@ -40,8 +40,13 @@ RPlot5 <- function (data, Seq=NA) {
     dummyDF<-as.data.frame(data[,"Time"])
     if ('XSIGV_UVH' %in% VRPlot[[5]]){
       dummyDF$XSIGV_UVH<- (-1)*log10(data[,'XSIGV_UVH'])
-    } 
-    plotWAC(dummyDF, ylab=expression('-log'[10]*'(XSIGV_UVH)'))
+     
+      plotWAC(dummyDF, ylab=expression('-log'[10]*'(XSIGV_UVH)'))
+      title(paste('Minimum XSIGV: ',toString(round(min(data[,'XSIGV_UVH'],na.rm=TRUE),3)) ,sep=''))
+      if (min(data[,'XSIGV_UVH'],na.rm=TRUE)<0.3){
+        abline(h=(-1)*log10(0.3),lty=2, lwd=1)
+      } 
+   }
     
     
     #   
