@@ -10,7 +10,8 @@ RPlot7 <- function (data, Seq=NA) {
     QC <- VRPlot[[7]][grepl ('^QC', VRPlot[[7]])]
     QC <- QC[!grepl ('QC_A',QC) & !grepl ('C$', QC)]
     plotWAC (data[, c("Time", QC)], ylab='QCy [hPa]', 
-             legend.position='topleft', ylim=c(0,200))
+             ylim=c(max(c(0,min(data[,QC], na.rm=TRUE))),
+                    min(c(max(data[,QC], na.rm=TRUE),200))))
     labl <- QC
     #labl <- sub("QC", "", labl)
     titl <- "Mean differences: "
@@ -37,7 +38,9 @@ RPlot7 <- function (data, Seq=NA) {
     }
     if (length(ir) != 1) {ir <- 1}
     plotWAC (data[, c("Time", QC)], ylab='QCyC [hPa]',
-             legend.position='topleft', ylim=c(0,200))
+             ylim=c(max(c(0,min(data[,QC], na.rm=TRUE))),
+                    min(c(max(data[,QC], na.rm=TRUE),200))))
+  
     labl <- QC
     #labl <- sub("QC", "", labl)
     titl <- "Mean differences: "
