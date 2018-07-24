@@ -1,10 +1,10 @@
 ### plot 20: UHSAS/PCASP CDP/CS100/CS200 2DC-10/2DC-25 size distributions
 RPlot20 <- function (data, Seq=NA) {
-  layout(matrix(1:3, ncol = 1), widths = 1)
+  layout(matrix(c(1,1,0,2,2,0,3,3,0), ncol = 3, byrow=TRUE))
   op <- par (mar=c(5,5,5,1),oma=c(0,3,0,3))
   par(cex.lab=2, cex.main=2)
   
-   if (is.na (VRPlot$PV20) || (length(VRPlot$PV20) > 1)) {
+   if (is.na (VRPlot$PV20) || (length(VRPlot$PV20) < 1)) {
     plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
     text (0.5, 0.8, 'Size Distributions Not Ready')
     return ()}
@@ -24,33 +24,191 @@ RPlot20 <- function (data, Seq=NA) {
   if (length (grep ("CUHSAS_", VRPlot[[20]])) > 0) {
     nm1 <- nms[grep ('CUHSAS_', nms)]
     CellLimitsU <- attr(data[,nm1[1]], 'CellSizes')
-    #    print (c('CellLimitsU', CellLimitsU))
+   print(nm1)
   }
   if (length (grep ("CS100_|CS200_", VRPlot[[20]])) > 0) {
     nm2 <- nms[grep ('CS100_|CS200_', nms)]
     CellLimitsP <- attr(data[,nm2[1]], 'CellSizes')
+    print(nm2)
   }
   
+
+  idx1 <- getIndex (data$Time, StartTime)
+  if (idx1 < 1) {idx1 <- 1}
+  ## reference to calling environment for StartTime
+  jstart <- ifelse (StartTime > 0, idx1, 1)
+  
+  # print(StartTime)
   
   if (length(nm1) > 0) {
-    nm <- nm1[1]
-    data[, nm] <- data[, nm] / diff(CellLimitsU)
-    data[, nm][data[, nm] <= 0] <- 1e-4
+    data[, nm1[1]] <- data[, nm1[1]] / diff(log10(CellLimitsU))
+    data[, nm1[1]][data[, nm1[1]] <= 0] <-  1e-4 # Can these not be set to NA???
+ 
+    # Plot UHSAS here
+    Y1 <- apply(data[seq(idx1,idx1+59,by=1),nm1[[1]]],2,mean,na.rm=TRUE )
+    plot ((CellLimitsU*1000), c(1.e-4, Y1), type='S',ylim=c(1,1.e5), yaxt='n',
+          ylab=expression('dN/dlog'[10]*'D'),cex.axis=2,
+          xlab=expression('Diameter [nm]'), log="xy", col='blue', lwd=2, xlim=c(50,3000))
+    tckmarks<-c(1,10,100,1000,10000,100000)
+    axis(2,at = tckmarks,#, 1000000), 
+         labels=c(expression(10^0),expression(10^1), expression(10^2),
+                  expression(10^3), expression(10^4),expression(10^5)), 
+                  #expression(10^6)), 
+                  cex.axis=2)
+     for (tt in 1:length(tckmarks)){
+      abline(h=tckmarks[tt], lty=2)
+    }
   }
+ 
+  
   if (length(nm2) > 0) {
-    CPCASP <- sum(data[j, nm2[1]], na.rm=TRUE)
-    data[j, nm2[1]] <- data[j, nm2[1]] / diff(CellLimitsP)
-    data[j, nm2[1]][data[j, nm2[1]] <= 0] <- 1e-4
+    #CPCASP <- sum(data[j, nm2[1]], na.rm=TRUE)
+    data[, nm2[1]] <- data[, nm2[1]] / diff(log10(CellLimitsP))
+    data[, nm2[1]][data[, nm2[1]] <= 0] <- 1e-4 # Can these not be set to NA???
+    # Plot PCASP here
+    Y1 <- apply(data[seq(idx1,idx1+59,by=1),nm2[[1]]],2,mean,na.rm=TRUE )
+   if (length(nm1)>0){
+     lines ((CellLimitsP*1000), c(1.e-4, Y1), type='S', col='orangered', lwd=2)
+    # tckmarks<-c(1,10,100,1000,10000,100000)
+    # axis(2,at = tckmarks,#, 1000000), 
+    #      labels=c(expression(10^0),expression(10^1), expression(10^2),
+    #               expression(10^3), expression(10^4),expression(10^5)), 
+    #      #expression(10^6)), 
+    #      cex.axis=2)
+    title(paste(nm1,',',nm2,'Number Size Distributions'))
+    text(2000, 10^4+3000,'PCASP*', col='red', cex=2)
+    mtext('Use time range slider to adjust one-minute averaging window', side=3)
+    
+   } else{
+     title(paste(nm1,'Number Size Distributions'))
+     mtext('Use time range slider to adjust one-minute averaging window', side=3)
+     plot ((CellLimitsP*1000), c(1.e-4, Y1), type='S',ylim=c(1,1.e5), yaxt='n',
+           ylab=expression('dN/dlog'[10]*'D'),cex.axis=2,
+           xlab=expression('Diameter [nm]'), log="xy", col='blue', lwd=2)
+     tckmarks<-c(1,10,100,1000,10000,100000)
+     axis(2,at = tckmarks,#, 1000000), 
+          labels=c(expression(10^0),expression(10^1), expression(10^2),
+                   expression(10^3), expression(10^4),expression(10^5)), 
+          #expression(10^6)), 
+          cex.axis=2)
+     title(paste(nm1,',',nm2,'Number Size Distributions'))
+     mtext('Use time range slider to adjust one-minute averaging window', side=3)
+    
+   }
+    #mtext('Use time range slider to adjust one-minute averaging window', side=3)
+    for (tt in 1:length(tckmarks)){
+      abline(h=tckmarks[tt], lty=2)
+    }
   }
     
+ 
+# End UHSAS/PCASP size distribution
+# Begin CDP/2DC :: 'CCDP_RPC','C1DC_LPO','C1DC_LPC
+    nm1 <- nm2 <- character(0)
+    if (length (grep ("CCDP_", VRPlot[[20]])) > 0) {
+      nm1 <- nms[grep ('CCDP_', nms)]
+      CellLimitsC <- attr(data[,nm1[1]], 'CellSizes')
+      print(nm1)
+    }
+    if (length (grep ("C1DC_", VRPlot[[20]])) > 0) {
+      nm2 <- nms[grep ('C1DC_', nms)]
+      print(nm2)
+    }
+    
+    if (length(nm1) > 0) {
+      data[, nm1[1]] <- data[, nm1[1]] / diff(log10(CellLimitsC))
+      data[, nm1[1]][data[, nm1[1]] <= 0] <-  1e-4 # Can these not be set to NA???
+      
+      # Plot CDP here
+      Y1 <- apply(data[seq(idx1,idx1+59,by=1),nm1[[1]]],2,mean,na.rm=TRUE )
+      plot ((CellLimitsC*1000), c(1.e-4, Y1), type='S',ylim=c(1,1.e5), yaxt='n',
+            ylab=expression('dN/dlog'[10]*'D'),cex.axis=2,
+            xlab=expression('Diameter [nm]'), log="xy", col='blue', lwd=2)#, xlim=c(50,3000))
+      tckmarks<-c(1,10,100,1000,10000,100000)
+      axis(2,at = tckmarks,#, 1000000), 
+           labels=c(expression(10^0),expression(10^1), expression(10^2),
+                    expression(10^3), expression(10^4),expression(10^5)), 
+           #expression(10^6)), 
+           cex.axis=2)
+      for (tt in 1:length(tckmarks)){
+        abline(h=tckmarks[tt], lty=2)
+      }
+    }
+    
+    return()
+    
+    if (length(nm2) > 0 & length(nm1)>0) {
+      for (j in 1:length(nm2)){
+        CellLimitsD <- attr(data[,nm2[j]], 'CellSizes')
+        print(CellLimitsD)
+        print(diff(log10(CellLimitsD)))
+        data[, nm2[j]] <- data[, nm2[j]] / diff(log10(CellLimitsD))
+        data[, nm2[j]][data[, nm2[j]] <= 0] <- 1e-4 # Can these not be set to NA???
+      # Plot PCASP here
+      Y1 <- apply(data[seq(idx1,idx1+59,by=1),nm2[[j]]],2,mean,na.rm=TRUE )
+    
+        lines ((CellLimitsD*1000), c(1.e-4, Y1), type='S', col='orangered', lwd=2)
+        # tckmarks<-c(1,10,100,1000,10000,100000)
+        # axis(2,at = tckmarks,#, 1000000), 
+        #      labels=c(expression(10^0),expression(10^1), expression(10^2),
+        #               expression(10^3), expression(10^4),expression(10^5)), 
+        #      #expression(10^6)), 
+        #      cex.axis=2)
+      }
+        title(paste(nm1,',',nm2,'Number Size Distributions'))
+        text(2000, 10^4+3000,'1DC', col='red', cex=2)
+        mtext('Use time range slider to adjust one-minute averaging window', side=3)
+        
+      } 
+    if (length(nm2) > 0 & length(nm1)<1) {
+        title(paste(nm1,'Number Size Distributions'))
+        mtext('Use time range slider to adjust one-minute averaging window', side=3)
+        for (j in 1:length(nm2)){
+          CellLimitD <- attr(data[,nm2[j]], 'CellSizes')
+          data[, nm2[j]] <- data[, nm2[j]] / diff(log10(CellLimitsD))
+          data[, nm2[j]][data[, nm2[j]] <= 0] <- 1e-4 # Can these not be set to NA???
+          # Plot PCASP here
+          Y1 <- apply(data[seq(idx1,idx1+59,by=1),nm2[[j]]],2,mean,na.rm=TRUE )
+          
+          if (j == 1){
+            plot ((CellLimitsD*1000), c(1.e-4, Y1), type='S',ylim=c(1,1.e5), yaxt='n',
+                  ylab=expression('dN/dlog'[10]*'D'),cex.axis=2,
+                  xlab=expression('Diameter [nm]'), log="xy", col='blue', lwd=2)
+            tckmarks<-c(1,10,100,1000,10000,100000)
+            axis(2,at = tckmarks,#, 1000000), 
+                 labels=c(expression(10^0),expression(10^1), expression(10^2),
+                          expression(10^3), expression(10^4),expression(10^5)), 
+                 #expression(10^6)), 
+                 cex.axis=2)
+            title(paste(nm1,',',nm2,'Number Size Distributions'))
+            mtext('Use time range slider to adjust one-minute averaging window', side=3) 
+          } else { 
+          lines ((CellLimitsD*1000), c(1.e-4, Y1), type='S', col='orangered', lwd=2)
+          # tckmarks<-c(1,10,100,1000,10000,100000)
+          # axis(2,at = tckmarks,#, 1000000), 
+          #      labels=c(expression(10^0),expression(10^1), expression(10^2),
+          #               expression(10^3), expression(10^4),expression(10^5)), 
+          #      #expression(10^6)), 
+          #      cex.axis=2)
+          }
+        }
+        
+      
+      #mtext('Use time range slider to adjust one-minute averaging window', side=3)
+      for (tt in 1:length(tckmarks)){
+        abline(h=tckmarks[tt], lty=2)
+      }
+    }
   
-  idx1 <- getIndex (data$Time, StartTime)
-  print(StartTime)
+  
+  
+  return() 
   if (idx1 < 1) {idx1 <- 1}
   ## reference to calling environment for StartTime
   jstart <- ifelse (StartTime > 0, idx1, 1)
   # print (sprintf ("start time in RPlot21 is %d and jstart is %d\n",
   #                 StartTime, jstart))
+  # I don't think we want these next two lines anymore
   CV <- nms[grep ('CONCU_', nms)][1]
   iw <- which(data[, CV] > plotTest)  ## get list of indices where CONCU > PlotTest
   if (length(nm1) > 0) {

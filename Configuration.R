@@ -86,7 +86,7 @@ if (Project == "WECAN") {
     VRPlot$PV14 <- c("RSTB", 'RSTB1','RSTT','TRSTB','GGALT')
   
   ## RPlot15.R: AEROSOL and CLOUD PARTICLE concentrations:
-    VRPlot$PV15 <- c('CONCP_RPO','CONCU_RWO', 'CONCU100_RWO','CCDP_RPC', "UREF_RWO", "PREF_RPO",'INFLOW')
+    VRPlot$PV15 <- c('CONCU_RPO', 'CONCU100_RPO','CCDP_RPC', "UREF_RPO", 'INFLOW','CONCP_RPI')
     VRPlot$PV15 <- c(VRPlot$PV15, 'CONC1DC_LPC','CONC1DC_LPO','CONC1DC100_LPC','CONC1DC100_LPO','CONCD_RPC',
                      'F2DIO1_LPO', 'F2DIO32_LPO','F2DIO64_LPO')
   
@@ -103,7 +103,7 @@ if (Project == "WECAN") {
     VRPlot$PV19 <- c(VRPlot$PV19, "ATX", "PSXC", "EWX")
   
    # RPlot20.R: SIZE DISTRIBUTIONS for AEROSOLS/PARTICLES
-    VRPlot$PV20 <- c('CUHSAS_RWO','CS200_RPO','CCDP_RPC','C1DC_LPO','C1DC_LPC','CONCP_RPO','CONCU_RWO', 'TASX')
+    VRPlot$PV20 <- c('CUHSAS_RPO', 'CS200_RPI','CCDP_RPC','C1DC_LPO','C1DC_LPC', 'TASX')
     
   ## plot sample of UHSAS size distributions; include PCASP if present (not HIPPO-2)
     VRPlot$PV21 <- NA#c('CUHSAS_LWII') #c('CONCU','CONCU100','CONCP') # 'UREF','USCAT','PREF'
@@ -111,7 +111,7 @@ if (Project == "WECAN") {
     VRPlot$PV22 <- NA
   
   # RPlot23.R: TRACE GASES + INLET PRESSURE
-    VRPlot$PV23 <- c("INLETP_AL", "CO2_PIC2401", "CH4_PIC2401","CO_PIC2401", "CO_ARI")#, "FO3_AD")
+    VRPlot$PV23 <- c("INLETP_AL", "CO2_PIC2401", "CH4_PIC2401","CO_PIC2401", "CO_ARI", "FO3C_ACD")
 # ============================================================================
 } 
 # End Project WECAN
