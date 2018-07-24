@@ -726,6 +726,7 @@ ui <- fluidPage (
             'aerosols',
             'cloud probes',
             'liquid water',
+            'size distributions',
             'trace gases',
             'skew-T',
             'potential T',

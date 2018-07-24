@@ -257,6 +257,7 @@ server <- function(input, output, session) {
       'aerosols' = 21, 
       'cloud probes' = 22,
       'liquid water' = 23,
+      'size distributions' = 29,
       'trace gases' = 41,
       'skew-T' = 26,
       'potential T' = 27,
