@@ -133,6 +133,8 @@ RPlot20 <- function (data, Seq=NA) {
       for (tt in 1:length(tckmarks)){
         abline(h=tckmarks[tt], lty=2)
       }
+      title(paste(nm1,'Number Size Distributions'))
+        mtext('Use time range slider to adjust one-minute averaging window', side=3)
     }
     
     return()
