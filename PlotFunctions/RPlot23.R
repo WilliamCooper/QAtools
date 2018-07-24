@@ -55,17 +55,30 @@ RPlot23 <- function (data, Seq=NA) {
     }
     
     # plot OZONE with Methane, if available
-    idx<-match(c("CO_PIC2401", "FO3_ACD", "CO_ARI"), names(data))
+    idx<-match(c("CO_PIC2401", "FO3C_ACD", "CO_ARI"), names(data))
     idx<-idx[is.finite(idx)==TRUE]
     if (length(idx)>0) {
-        dummyDF<-as.data.frame(cbind(data[,"Time"], data[,names(data[idx])]))
+        dummyDF<-as.data.frame(data[,names(data[idx])])
+        for (j in 1:ncol(dummyDF)){ 
+          id<-which(!is.finite(dummyDF[,j]))
+          if (length(id)>0){
+               dummyDF[id,j]<-NA
+               print(names(dummyDF)[j])
+               print(range(dummyDF[,j],na.rm=TRUE))
+          }
+        }
         if ('CO_PIC2401' %in% names(dummyDF)){
           dummyDF$CO_PIC2401<-dummyDF$CO_PIC2401*1000.
         }
-        plotWAC (dummyDF, 
+        DF<-data[,"Time"]
+        DF<-cbind(DF,dummyDF)
+        ylm<-c(max(c(0,min(dummyDF, na.rm=TRUE))),
+          min(c(max(dummyDF, na.rm=TRUE),400)))
+        if (ylm[2]<ylm[1] | 'FALSE' %in% is.finite(ylm)){ ylm<-c(0,400)}
+        print(ylm)
+        plotWAC (DF, 
                  ylab="ppb", 
-                 ylim=c(max(c(0,min(dummyDF[,which(!grepl('Time',names(dummyDF)))], na.rm=TRUE))),
-                    min(c(max(dummyDF[,which(!grepl('Time',names(dummyDF)))], na.rm=TRUE),500))),
+                 ylim=ylm,
                  lty=c(1,1), lwd=c(2))
       title('Carbon Monoxide and Fast Ozone (if available)')
     }
@@ -77,7 +90,7 @@ RPlot23 <- function (data, Seq=NA) {
     #   plotWAC(data[, c("Time", "COFLOW_AL")])
     # }
     if ("INLETP_AL" %in% names (data)) {
-      plotWAC(data[, c("Time","INLETP_AL")])
+      plotWAC(data[, c("Time","INLETP_AL")], ylim=c(range(data[,"INLETP_AL"], na.rm=TRUE) ))
       title('Inlet Pressure')
     }
     #legend('bottomright', legend=c("COFLOW", "INLETP"), pch=20, col=c('red', 'blue'))
