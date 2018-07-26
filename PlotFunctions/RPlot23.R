@@ -28,13 +28,13 @@ RPlot23 <- function (data, Seq=NA) {
   if (is.na(Seq) || Seq == 1) {
     
     # plot CO2
-    if ("CO2_PIC2401" %in% names(data)) {
-      if ("CO2C_PIC2401" %in% names(data)) {
+    if ("CO2C_PIC2401" %in% names(data)) {
+      if ("CO2_PIC2401" %in% names(data)) {
         plotWAC (data[, c("Time", "CO2_PIC2401", "CO2C_PIC2401")], 
                  ylab="ppmv",
                  lty=c(1,1), lwd=c(2))
            } else {
-        plotWAC (data[, c("Time", "CO2_PIC2401")], ylab="ppmv",
+        plotWAC (data[, c("Time", "CO2C_PIC2401")], ylab="ppmv",
                  lty=c(1,1), lwd=c(2))
            }
       title('Carbon Dioxide')
@@ -42,13 +42,13 @@ RPlot23 <- function (data, Seq=NA) {
     
     # plot CH4
     
-    if ("CH4_PIC2401" %in% names(data)) {
-      if ("CH4C_PIC2401" %in% names(data)) {
+    if ("CH4C_PIC2401" %in% names(data)) {
+      if ("CH4_PIC2401" %in% names(data)) {
         plotWAC (data[, c("Time", "CH4_PIC2401", "CH4C_PIC2401")], 
                  ylab="ppmv",
                  lty=c(1,1), lwd=c(2))
       } else {
-        plotWAC (data[, c("Time", "CH4_PIC2401")], ylab="ppmv",
+        plotWAC (data[, c("Time", "CH4C_PIC2401")], ylab="ppmv",
                  lty=c(1,1), lwd=c(2))
       }
       title('Methane')
@@ -58,6 +58,7 @@ RPlot23 <- function (data, Seq=NA) {
     idx<-match(c("CO_PIC2401", "FO3C_ACD", "CO_ARI"), names(data))
     idx<-idx[is.finite(idx)==TRUE]
     if (length(idx)>0) {
+      SF<-vector ()
         dummyDF<-as.data.frame(data[,names(data[idx])])
         for (j in 1:ncol(dummyDF)){ 
           id<-which(!is.finite(dummyDF[,j]))
@@ -69,6 +70,13 @@ RPlot23 <- function (data, Seq=NA) {
         }
         if ('CO_PIC2401' %in% names(dummyDF)){
           dummyDF$CO_PIC2401<-dummyDF$CO_PIC2401*1000.
+        
+          if ('FO3C_ACD' %in% names(dummyDF)){
+            scalefactor<-mean(dummyDF$CO_PIC2401,na.rm=T)/mean(dummyDF$FO3C_ACD,na.rm=T)
+            dummyDF$FO3C_ACD<-dummyDF$FO3C_ACD*scalefactor
+            SF<-scalefactor
+          } 
+          
         }
         DF<-data[,"Time"]
         DF<-cbind(DF,dummyDF)
@@ -80,7 +88,7 @@ RPlot23 <- function (data, Seq=NA) {
                  ylab="ppb", 
                  ylim=ylm,
                  lty=c(1,1), lwd=c(2))
-      title('Carbon Monoxide and Fast Ozone (if available)')
+      title(paste('Carbon Monoxide and Fast Ozone (if available, scaled',toString(round(SF,2)),')'))
     }
     # AddFooter ()
     # if (!is.na(Seq) && (Seq == 1)) {return()}
