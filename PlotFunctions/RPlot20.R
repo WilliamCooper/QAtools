@@ -41,11 +41,13 @@ RPlot20 <- function (data, Seq=NA) {
   # print(StartTime)
   
   if (length(nm1) > 0) {
-    data[, nm1[1]] <- data[, nm1[1]] / diff(log10(CellLimitsU))
-    data[, nm1[1]][data[, nm1[1]] <= 0] <-  1e-4 # Can these not be set to NA???
- 
-    # Plot UHSAS here
+    # data[, nm1[1]] <- data[, nm1[1]] / diff(log10(CellLimitsU))
+    #data[, nm1[1]][data[, nm1[1]] <= 0] <-  1e-4 # Can these not be set to NA???
     Y1 <- apply(data[seq(idx1,idx1+59,by=1),nm1[[1]]],2,mean,na.rm=TRUE )
+    Y1 <- Y1 / diff(log10(CellLimitsU))
+    Y1[Y1<=0]<-1e-4 # for log plotting
+    
+    # Plot UHSAS here
     plot ((CellLimitsU*1000), c(1.e-4, Y1), type='S',ylim=c(1,1.e5), yaxt='n',
           ylab=expression('dN/dlog'[10]*'D'),cex.axis=2,
           xlab=expression('Diameter [nm]'), log="xy", col='blue', lwd=2, xlim=c(50,3000))
@@ -63,10 +65,14 @@ RPlot20 <- function (data, Seq=NA) {
   
   if (length(nm2) > 0) {
     #CPCASP <- sum(data[j, nm2[1]], na.rm=TRUE)
-    data[, nm2[1]] <- data[, nm2[1]] / diff(log10(CellLimitsP))
-    data[, nm2[1]][data[, nm2[1]] <= 0] <- 1e-4 # Can these not be set to NA???
-    # Plot PCASP here
+    # data[, nm2[1]][data[, nm2[1]] <= 0] <- 1e-4 # Can these not be set to NA???
     Y1 <- apply(data[seq(idx1,idx1+59,by=1),nm2[[1]]],2,mean,na.rm=TRUE )
+    Y1 <- Y1 / diff(log10(CellLimitsP))
+    Y1[Y1<=0]<-1e-4 # for log plotting
+  
+    
+    # Plot PCASP here
+    
    if (length(nm1)>0){
      lines ((CellLimitsP*1000), c(1.e-4, Y1), type='S', col='orangered', lwd=2)
     # tckmarks<-c(1,10,100,1000,10000,100000)
