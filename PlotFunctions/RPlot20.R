@@ -34,7 +34,7 @@ RPlot20 <- function (data, Seq=NA) {
   
 
   idx1 <- getIndex (data$Time, StartTime)
-  if (idx1 < 1) {idx1 <- 1}
+   if (idx1 < 1) {idx1 <- 1}
   ## reference to calling environment for StartTime
   jstart <- ifelse (StartTime > 0, idx1, 1)
   
@@ -50,7 +50,7 @@ RPlot20 <- function (data, Seq=NA) {
     # Plot UHSAS here
     plot ((CellLimitsU*1000), c(1.e-4, Y1), type='S',ylim=c(1,1.e5), yaxt='n',
           ylab=expression('dN/dlog'[10]*'D'),cex.axis=2,
-          xlab=expression('Diameter [nm]'), log="xy", col='blue', lwd=2, xlim=c(50,3000))
+          xlab=expression('Diameter [nm]'), log="xy", col='white', lwd=2, xlim=c(50,3000))
     tckmarks<-c(1,10,100,1000,10000,100000)
     axis(2,at = tckmarks,#, 1000000), 
          labels=c(expression(10^0),expression(10^1), expression(10^2),
@@ -67,14 +67,24 @@ RPlot20 <- function (data, Seq=NA) {
     #CPCASP <- sum(data[j, nm2[1]], na.rm=TRUE)
     # data[, nm2[1]][data[, nm2[1]] <= 0] <- 1e-4 # Can these not be set to NA???
     Y1 <- apply(data[seq(idx1,idx1+59,by=1),nm2[[1]]],2,mean,na.rm=TRUE )
+    PCASP_N<<-Y1
+    PCASP_D<<-diff(log10(CellLimitsP))
     Y1 <- Y1 / diff(log10(CellLimitsP))
+    PCASP_R<<-Y1
     Y1[Y1<=0]<-1e-4 # for log plotting
+    print('PCASP data')
+    print(Y1)
+    print(CellLimitsP)
   
     
     # Plot PCASP here
     
    if (length(nm1)>0){
      lines ((CellLimitsP*1000), c(1.e-4, Y1), type='S', col='orangered', lwd=2)
+    # Testing below how different plotting affects histogram
+     # lines ((CellLimitsP*1000), c(Y1,1.e-4), type='S', col='cyan', lwd=2)
+    #lines ((CellLimitsP*1000), c(1.e-4, Y1), type='s', col='gray40', lwd=2)
+     
     # tckmarks<-c(1,10,100,1000,10000,100000)
     # axis(2,at = tckmarks,#, 1000000), 
     #      labels=c(expression(10^0),expression(10^1), expression(10^2),
@@ -83,11 +93,11 @@ RPlot20 <- function (data, Seq=NA) {
     #      cex.axis=2)
     title(paste(nm1,',',nm2,'Number Size Distributions'))
     text(2000, 10^4+3000,'PCASP*', col='red', cex=2)
-    mtext('Use time range slider to adjust one-minute averaging window', side=3)
+    mtext('Use time range slider to adjust one-minute forward averaging window', side=3)
     
    } else{
      title(paste(nm1,'Number Size Distributions'))
-     mtext('Use time range slider to adjust one-minute averaging window', side=3)
+     mtext('Use time range slider to adjust one-minute forward averaging window', side=3)
      plot ((CellLimitsP*1000), c(1.e-4, Y1), type='S',ylim=c(1,1.e5), yaxt='n',
            ylab=expression('dN/dlog'[10]*'D'),cex.axis=2,
            xlab=expression('Diameter [nm]'), log="xy", col='blue', lwd=2)
@@ -98,10 +108,10 @@ RPlot20 <- function (data, Seq=NA) {
           #expression(10^6)), 
           cex.axis=2)
      title(paste(nm1,',',nm2,'Number Size Distributions'))
-     mtext('Use time range slider to adjust one-minute averaging window', side=3)
+     mtext('Use time range slider to adjust one-minute forward averaging window', side=3)
     
    }
-    #mtext('Use time range slider to adjust one-minute averaging window', side=3)
+    #mtext('Use time range slider to adjust one-minute forward averaging window', side=3)
     for (tt in 1:length(tckmarks)){
       abline(h=tckmarks[tt], lty=2)
     }
@@ -140,7 +150,7 @@ RPlot20 <- function (data, Seq=NA) {
         abline(h=tckmarks[tt], lty=2)
       }
       title(paste(nm1,'Number Size Distributions'))
-        mtext('Use time range slider to adjust one-minute averaging window', side=3)
+        mtext('Use time range slider to adjust one-minute forward averaging window', side=3)
     }
     
     return()
@@ -165,12 +175,12 @@ RPlot20 <- function (data, Seq=NA) {
       }
         title(paste(nm1,',',nm2,'Number Size Distributions'))
         text(2000, 10^4+3000,'1DC', col='red', cex=2)
-        mtext('Use time range slider to adjust one-minute averaging window', side=3)
+        mtext('Use time range slider to adjust one-minute forward averaging window', side=3)
         
       } 
     if (length(nm2) > 0 & length(nm1)<1) {
         title(paste(nm1,'Number Size Distributions'))
-        mtext('Use time range slider to adjust one-minute averaging window', side=3)
+        mtext('Use time range slider to adjust one-minute forward averaging window', side=3)
         for (j in 1:length(nm2)){
           CellLimitD <- attr(data[,nm2[j]], 'CellSizes')
           data[, nm2[j]] <- data[, nm2[j]] / diff(log10(CellLimitsD))
@@ -189,7 +199,7 @@ RPlot20 <- function (data, Seq=NA) {
                  #expression(10^6)), 
                  cex.axis=2)
             title(paste(nm1,',',nm2,'Number Size Distributions'))
-            mtext('Use time range slider to adjust one-minute averaging window', side=3) 
+            mtext('Use time range slider to adjust one-minute forward averaging window', side=3) 
           } else { 
           lines ((CellLimitsD*1000), c(1.e-4, Y1), type='S', col='orangered', lwd=2)
           # tckmarks<-c(1,10,100,1000,10000,100000)
@@ -202,7 +212,7 @@ RPlot20 <- function (data, Seq=NA) {
         }
         
       
-      #mtext('Use time range slider to adjust one-minute averaging window', side=3)
+      #mtext('Use time range slider to adjust one-minute forward averaging window', side=3)
       for (tt in 1:length(tckmarks)){
         abline(h=tckmarks[tt], lty=2)
       }
