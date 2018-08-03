@@ -50,7 +50,7 @@ RPlot20 <- function (data, Seq=NA) {
     # Plot UHSAS here
     plot ((CellLimitsU*1000), c(1.e-4, Y1), type='S',ylim=c(1,1.e5), yaxt='n',
           ylab=expression('dN/dlog'[10]*'D'),cex.axis=2,
-          xlab=expression('Diameter [nm]'), log="xy", col='white', lwd=2, xlim=c(50,3000))
+          xlab=expression('Diameter [nm]'), log="xy", col='blue', lwd=2, xlim=c(50,3000))
     tckmarks<-c(1,10,100,1000,10000,100000)
     axis(2,at = tckmarks,#, 1000000), 
          labels=c(expression(10^0),expression(10^1), expression(10^2),
