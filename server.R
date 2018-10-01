@@ -284,7 +284,7 @@ server <- function(input, output, session) {
     showNotification ('generating plots: please wait...', action=NULL, duration=NULL, id='plotgenWait',
       type='default', closeButton=FALSE)
     savePDF (Data=data(), inp=input)
-    browseURL('www/latestPlots.pdf', '/usr/bin/evince')
+    browseURL('www/latestPlots.pdf')  ##, '/usr/bin/evince')
     removeNotification (id='plotgenWait')
   })
   
@@ -2688,6 +2688,7 @@ server <- function(input, output, session) {
       }
       if (Trace) {print (sprintf ('FPP is %d', FPP))}
       Data <- DataPP[DataPP$RF == FPP, ]
+      DataSave <<- Data
     }
     
     # if (input$AllPP) {
@@ -2713,16 +2714,18 @@ server <- function(input, output, session) {
     # }
     cf <- c(-2.2717351e+00, 1.0044060e+00, 1.7229198e-02, -3.1450368e-06) # ORCAS only
     cf <- c(-2.6239872e+00, 1.0063093e+00, 1.6020764e-02, -4.6657542e-06)  #CSET+ORCAS+DEEPWAVE
-    cf130a <- c(-4.033993e-01,  9.963757e-01, -1.478601e-02,  2.501531e-06) # WINTER and NOMADSS
-    cf130b <- c(2.198842e+00, 9.998276e-01, -5.479780e-02, 2.150005e-07)
+    cf130a <- c(-3.601e-03, 9.965e-01, 1.958e-06, -1.524e-02) # WINTER, NOMADSS, WECAN
+    # cf130a <- c(-4.033993e-01,  9.963757e-01, -1.478601e-02,  2.501531e-06) # WINTER, NOMADSS
+    cf130b <- c(1.298e+00, 1.000e+00, 5.490e-07, -5.042e-02)  #2.198842e+00, 9.998276e-01, -5.479780e-02, 2.150005e-07)
     if (grepl ('130', FI$Platform)) {  ## fits to PSFDC and PSFC:
-      Data$PSFIT1 <- with (Data, cf130a[1] + PS_A * (cf130a[2] + cf130a[4] * PS_A) + cf130a[3] * QC_A)
-      Data$PSFIT2 <- with (Data, cf130b[1] + PS_A * (cf130b[2] + cf130b[4] * PS_A) + cf130b[3] * QC_A)
+      Data$PSFIT1 <- with (Data, cf130a[1] + PS_A * (cf130a[2] + cf130a[3] * PS_A) + cf130a[4] * QC_A)
+      Data$PSFIT2 <- with (Data, cf130b[1] + PS_A * (cf130b[2] + cf130b[3] * PS_A) + cf130b[4] * QC_A)
     } else {
       Data$PSFIT <- with(Data, cf[1] + PS_A * (cf[2] + cf[4] * PS_A) + cf[3] * QC_A)
     }
     # DataPP <<- Data
     # with(Data, plotWAC(data.frame(Time, PSXC-PS_A), ylim=c(-2,2), ylab='PSXC-PS_A'))
+    # print (sprintf('Plotform is %s', FI$Platform))
     if (grepl ('130', FI$Platform)) {
       M <- with(Data, sprintf('mean and std dev: PSFDC %.2f +/- %.2f hPa PSFC %.2f +/- %.2f', 
         mean(PSFDC-PSFIT1, na.rm=TRUE), sd(PSFDC-PSFIT1, na.rm=TRUE),
@@ -2788,24 +2791,28 @@ server <- function(input, output, session) {
     cf <- c(-2.6239872e+00, 1.0063093e+00, 1.6020764e-02, -4.6657542e-06)  #CSET+ORCAS+DEEPWAVE
     cf130a <- c(-4.033993e-01,  9.963757e-01, -1.478601e-02,  2.501531e-06)
     cf130b <- c(2.198842e+00, 9.998276e-01, -5.479780e-02, 2.150005e-07)
+    cf130a <- c(-3.601e-03, 9.965e-01, 1.958e-06, -1.524e-02) # WINTER, NOMADSS, WECAN
+    # cf130a <- c(-4.033993e-01,  9.963757e-01, -1.478601e-02,  2.501531e-06) # WINTER, NOMADSS
+    cf130b <- c(1.298e+00, 1.000e+00, 5.490e-07, -5.042e-02)  #2.198842e+00, 9.998276e-01, -5.479780e-02, 2.150005e-07)
     if (grepl ('130', FI$Platform)) {  ## fits to PSFDC and PSFC:
-      Data$PSFIT1 <- with (Data, cf130a[1] + PS_A * (cf130a[2] + cf130a[4] * PS_A) + cf130a[3] * QC_A)
-      Data$PSFIT2 <- with (Data, cf130b[1] + PS_A * (cf130b[2] + cf130b[4] * PS_A) + cf130b[3] * QC_A)
+      Data$PSFIT1 <- with (Data, cf130a[1] + PS_A * (cf130a[2] + cf130a[3] * PS_A) + cf130a[4] * QC_A)
+      Data$PSFIT2 <- with (Data, cf130b[1] + PS_A * (cf130b[2] + cf130b[3] * PS_A) + cf130b[4] * QC_A)
       bsA <- with(Data, binStats(data.frame(PSFDC-PSFIT1, PSXC), bins=10))
       bsB <- with(Data, binStats(data.frame(PSFC-PSFIT2, PSXC), bins=10))
       g <- ggplot(data=bsA)
-      g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma, 
+      g <- g + geom_errorbarh (aes (y=xc, xmin=ybar-sigma, 
         xmax=ybar+sigma), na.rm=TRUE) 
       xlow <- floor(min (bsA$ybar-bsA$sigma, na.rm=TRUE))
       xhigh <- ceiling(max (bsA$ybar+bsA$sigma, na.rm=TRUE))
       if (xhigh < 2) {xhigh <- 2}
       if (xlow > -2) {xlow <- -2}
-      g <- g + xlim(xlow, xhigh) + theme_WAC()
+      g <- g + xlim(xlow, xhigh) 
       g <- g + xlab('PSFDC-PSFIT1 [hPa]') + ylab('PSXC [hPa]') + ylim(1050, 400) 
-      g <- g + geom_point (aes (x=bsA$ybar, y=bsA$xc, colour='PSFDC'), size=3, na.rm=TRUE)
-      g <- g + geom_path (aes (x=bsB$ybar, y=bsB$xc, colour='PSFC'), size=1.5, na.rm=TRUE)
-      g <- g + geom_label (aes (x=1.9, y=bsA$xc, label=sprintf('%d', bsA$nb)))
+      g <- g + geom_point (aes (x=ybar, y=xc, colour='PSFDC'), size=3, na.rm=TRUE)
+      g <- g + geom_label (aes (x=1.9, y=xc, label=sprintf('%d', bsA$nb)))
+      g <- g + geom_path (data=bsB, aes (x=ybar, y=xc, colour='PSFC'), size=1.5, na.rm=TRUE)
       g <- g + scale_colour_manual (name='', values=c("PSFDC"="blue", "PSFC"="forestgreen"))
+      g <- g + theme_WAC()
     } else {
       Data$PSFIT <- with(Data, cf[1] + PS_A * (cf[2] + cf[4] * PS_A) + cf[3] * QC_A)
       bs <- with(Data, binStats(data.frame(PSXC-PSFIT, PSXC), bins=10))
@@ -2859,6 +2866,8 @@ server <- function(input, output, session) {
     cfq <- c(2.7809637e+00, 9.7968460e-01, -6.7437126e-03, 4.8584555e-06)
     cfqA <- c(-7.922e-01, -6.355e-04, 1.115e-06, 1.041e+00)
     cfqB <- c(-1.824e+00, -2.161e-03, 1.486e-06, 1.060e+00)
+    cfqA <- c(-1.053e+00, 2.827e-03, -1.562e-06, 1.032e+00) ## including WECAN
+    cfqB <- c(-1.088e+00, -9.244e-04, -1.765e-07, 1.054e+00)
     if (grepl ('130', FI$Platform)) {
       Data$QCFIT3 <- with(Data, cfqA[1] + PS_A * (cfqA[2] + cfqA[3] * PS_A) + cfqA[4] * QC_A)
       Data$QCFIT4 <- with(Data, cfqB[1] + PS_A * (cfqB[2] + cfqB[3] * PS_A) + cfqB[4] * QC_A)
@@ -2914,13 +2923,15 @@ server <- function(input, output, session) {
     cfq <- c(2.7809637e+00, 9.7968460e-01, -6.7437126e-03, 4.8584555e-06)
     cfqA <- c(-7.922e-01, -6.355e-04, 1.115e-06, 1.041e+00)
     cfqB <- c(-1.824e+00, -2.161e-03, 1.486e-06, 1.060e+00)
+    cfqA <- c(-1.053e+00, 2.827e-03, -1.562e-06, 1.032e+00) ## including WECAN
+    cfqB <- c(-1.088e+00, -9.244e-04, -1.765e-07, 1.054e+00)
     if (grepl ('130', FI$Platform)) {
       Data$QCFIT3 <- with(Data, cfqA[1] + PS_A * (cfqA[2] + cfqA[3] * PS_A) + cfqA[4] * QC_A)
       Data$QCFIT4 <- with(Data, cfqB[1] + PS_A * (cfqB[2] + cfqB[3] * PS_A) + cfqB[4] * QC_A)
       bsC <- with(Data, binStats(data.frame(QCFC-QCFIT3, QCXC), bins=20))
       bsD <- with(Data, binStats(data.frame(QCFRC-QCFIT4, QCXC), bins=20))
       g <- ggplot(data=bsD)
-      g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma, 
+      g <- g + geom_errorbarh (aes (y=xc, xmin=ybar-sigma, 
         xmax=ybar+sigma), na.rm=TRUE) 
       xlow <- floor(min (bsD$ybar-bsD$sigma, na.rm=TRUE))
       xhigh <- ceiling(max (bsD$ybar+bsD$sigma, na.rm=TRUE))
@@ -3045,6 +3056,7 @@ server <- function(input, output, session) {
     
     cfA <- c(0.28178716560, 1.01636832046, -0.00012560891)  ## const, AT_A, AT_A^2
     cfAC130 <- c(-0.9496482, 0.9965342, 0.0003855)
+    cfAC130 <- c(-1.0523932, 0.9936793, 0.0001471) # with WECAN
     if (grepl ('130', FI$Platform)) {
       Data$ATFIT <- with(Data, cfAC130[1] + AT_A * (cfAC130[2] + cfAC130[3] * AT_A))
     } else {
