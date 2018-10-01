@@ -2,7 +2,7 @@
 
 ## clear global environment that might be left from the last run
 rm(list=ls( ))
-setwd('~/RStudio/QAtools')
+# setwd('/home/cooperw/RStudio/QAtools')
 suppressMessages (
   library(shiny, quietly=TRUE, warn.conflicts=FALSE)
 )
@@ -15,6 +15,7 @@ options (stringsAsFactors=FALSE)
 
 library(tictoc)
 require(numDeriv, quietly = TRUE, warn.conflicts=FALSE) ## needed, KalmanFilter
+source('./ggplotWAC.R')
 
 ## if this is set TRUE then messages will print in the console
 ## indicating which functions are entered, to trace the sequence
@@ -29,7 +30,7 @@ minT <- as.POSIXct(0, origin='2012-05-29', tz='UTC')
 maxT <- as.POSIXct(3600*8, origin='2012-05-29', tz='UTC')
 step <- 60
 
-PJ <- c('SOCRATES', 'WECAN-TEST', 'ECLIPSE', 'ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
+PJ <- c('WECAN', 'SOCRATES', 'WECAN-TEST', 'ECLIPSE', 'ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
   'DEEPWAVE', 'CONTRAST', 'SPRITE-II', 'MPEX', 'DC3', 'HEFT10', 'IDEAS-4',
   'TORERO', 'HIPPO-5', 'HIPPO-4', 'HIPPO-3', 'HIPPO-2', 'DC3-TEST',
   'HIPPO-1','PREDICT', 'START08', 'PACDEX', 'TREX', 'WINTER', 'NOMADSS')
