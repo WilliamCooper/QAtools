@@ -1,6 +1,6 @@
 ### plot 9: wind
 RPlot9 <- function (data, Seq=NA) {
-  ## needs WDC, WSC, WIC, IWD, IWS, ADIFR, QCF, PSF
+  ## needs WDC, WSC, WIC, IWD, IWS
   op <- par (mar=c(2,5,1,1)+0.1,oma=c(1.1,0,0,0))
   layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,6))
   line.widths <- c(1,1,2)

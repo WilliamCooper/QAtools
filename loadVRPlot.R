@@ -1,4 +1,4 @@
-loadVRPlot <- function (Project, Production, Flight, psq) {
+loadVRPlot <- function (Project, Production = FALSE, Flight, psq) {
   source ('Configuration.R')
   # print (sprintf ('in loadVRPlot, Project=%s', Project))
   # print (VRPlot)

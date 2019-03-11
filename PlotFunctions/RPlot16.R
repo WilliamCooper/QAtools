@@ -87,19 +87,19 @@ RPlot16 <- function (data, Seq=NA) {
     REJDOF <- data[, names(data)[grepl("REJDOF_", names(data))]]
     DOFACC <- TCNTD / (TCNTD + REJDOF)
     DOFACC <- SmoothInterp (DOFACC)
-    plotWAC (data.frame (data$Time, DOFACC), ylab="DOF acceptance fraction")
+    plotWAC (data.frame (Time=data$Time, DOFACC), ylab="DOF acceptance fraction")
     hline (0.2, 'red')
   }
   if (any (grepl ("AVGTRNS_", names (data)))) {
     AVGTRNS <- data[, names(data)[grepl("AVGTRNS_", names(data))]]
     AVT <- SmoothInterp (AVGTRNS)
-    plotWAC (data.frame (data$Time, AVT), ylim=c(0, 2))
+    plotWAC (data.frame (Time=data$Time, AVT), ylim=c(0, 2))
   }
   op <- par (mar=c(5,4,1,1)+0.1)
   if (any(grepl ("CDPLSRP_", names (data)))) {
     CDPLSRP <- data[, names(data)[grepl("CDPLSRP_", names(data))]]
     op <- par (mar=c(5,4,1,1)+0.1)
-    plotWAC (data.frame(data$Time, CDPLSRP), ylab="CDP laser power", ylim=c(0,4))
+    plotWAC (data.frame(Time=data$Time, CDPLSRP), ylab="CDP laser power", ylim=c(0,4))
   }
   AddFooter ()
   hline(3, 'red')

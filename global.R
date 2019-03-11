@@ -2,7 +2,7 @@
 
 ## clear global environment that might be left from the last run
 rm(list=ls( ))
-# setwd('/home/cooperw/RStudio/QAtools')
+#setwd('~/RStudio/QAtools')
 suppressMessages (
   library(shiny, quietly=TRUE, warn.conflicts=FALSE)
 )
@@ -15,7 +15,6 @@ options (stringsAsFactors=FALSE)
 
 library(tictoc)
 require(numDeriv, quietly = TRUE, warn.conflicts=FALSE) ## needed, KalmanFilter
-source('./ggplotWAC.R')
 
 ## if this is set TRUE then messages will print in the console
 ## indicating which functions are entered, to trace the sequence

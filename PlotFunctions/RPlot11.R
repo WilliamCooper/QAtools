@@ -1,10 +1,17 @@
 ### plot 11: attack, sideslip
 RPlot11 <- function (data, ...) {
-  ## needs AKRD, PITCH, SSRD, WSC, WDC, GGVEW, GGVNS, VSPD, TASX, THDG, 
+  ## needs AKRD, PITCH, SSRD, WSC, WDC, GGVEW, GGVNS, TASX, THDG, GGVSPD or VSPD_A
   layout(matrix(1:2, ncol = 1), widths = 1, heights = c(5,6))
   op <- par (mar=c(2,4,1,1)+0.1,oma=c(1.1,0,0,0))
   DF <- data[, c("Time", "AKRD", "PITCH")]
-  DF$AOAREF <- DF$PITCH - (180/pi) * data[, VRPlot[[11]][3]] / data$TASX
+  if ('GGVSPD' %in% VRPlot[[11]]) {
+    VSPD <- data$GGVSPD
+  } else if ('VSPD_A' %in% VRPlot[[11]]) {
+    VSPD <- data$VSPD_A
+  } else {
+    VSPD <- NA
+  }
+  DF$AOAREF <- DF$PITCH - (180/pi) * VSPD / data$TASX
   plotWAC (DF, lwd=c(2,1,1), lty=c(1,2,1), ylab=expression (paste ("AKRD [",degree,"]")), legend.position='topright')
   title (sprintf ("mean diff AKRD-AOAREF = %.02f", 
                   mean (DF$AKRD-DF$AOAREF, na.rm=TRUE)), cex.main=0.75)

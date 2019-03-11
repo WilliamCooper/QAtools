@@ -3,7 +3,8 @@ savePDF <- function(Data, inp) {
   FlightPDF <<- sprintf ('%s%02d', inp$typeFlight, inp$Flight)
   plotfile <<- sprintf("%s%s%02dPlots.pdf", inp$Project, inp$typeFlight, inp$Flight)
   unlink (plotfile)
-  cairo_pdf (filename = plotfile, onefile=TRUE)
+  cairo_pdf (filename = plotfile, onefile=TRUE, width = 7.5, height=10, 
+             pointsize=8, family='sans', fallback_resolution = 50)
   ## enable something like the next to get individual png files instead of one large pdf
   #### png (file = sprintf ("./Figures/WINTER%s-%%02d.png", Flight))
   print (sprintf ("saving plots to file %s", plotfile))

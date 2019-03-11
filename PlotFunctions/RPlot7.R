@@ -22,11 +22,12 @@ RPlot7 <- function (data, Seq=NA) {
     QC <- VRPlot[[7]][grepl ('^QC', VRPlot[[7]])]
     ## corrected QCs only
     QC <- QC[grepl ('QC_A', QC) | grepl ('C$', QC)]
-    ir <- which ('QCXC' == QC)
-    if (length (ir) != 1) {
-      ir <- which ('QCFC' == QC)
-    }
-    if (length(ir) != 1) {ir <- 1}
+    # left in for old projects; QCXC now absent from VRPlot[[7]]
+    ir <- which ('QCXC' == QC)  
+#    if (length (ir) != 1) {
+#      ir <- which ('QCFC' == QC)
+#    }
+    if (length(ir) != 1) {ir <- 1}  ## use first in list as ref; now = QCXC
     plotWAC (data[, c("Time", QC)], ylab=' corrected QCyC [hPa]',
              legend.position='top', ylim=c(0,200))
     if ('QC_A' %in% QC) {
@@ -56,11 +57,13 @@ RPlot7 <- function (data, Seq=NA) {
   plotWAC (data[, c("Time", TAS)], 
            col=c('blue', 'darkorange', 'darkgreen', 'cyan'), ylab='TASy [m/s]', 
            legend.position='bottom')
-  points(data$Time, (data[, TAS[length(TAS)-1]] - data[, TAS[1]]) *20+200, type='l',
+  tref <- mean(data[, TAS[1]], na.rm=TRUE)
+  tref <- (tref %/% 50) * 50
+  points(data$Time, (data[, TAS[length(TAS)-1]] - data[, TAS[1]]) *20+tref, type='l',
          col='red')  
-  ltext <- sprintf("red: (%s-%s)*20+200", TAS[length(TAS)-1], TAS[1])
+  ltext <- sprintf("red: (%s-%s)*20+%.0f", TAS[length(TAS)-1], TAS[1], tref)
   legend("bottomleft", c(ltext, "dashed red: +/- 1 m/s [diff]"), cex=0.75)
-  hline(220, 'red'); hline(180, 'red')
+  hline(tref+20, 'red'); hline(tref-20, 'red')
   labl <- TAS
   labl <- sub("TAS", "", labl)
   titl <- "Mean diff: "

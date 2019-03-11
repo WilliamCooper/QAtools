@@ -13,10 +13,11 @@ RPlot6 <- function (data, ...) {
   #         legend=c("(PSXC-PS_A)*50+600", "+/-2 hPa"),
   #         lty=c(1,2), cex=0.75,
   #         col=c('red', 'red'))
-  ir <- which ('PSXC' == VRPlot[[6]])
-  if (length (ir) != 1) {
-    ir <- which ('PS_A' %in% VRPlot[[6]])
-  }
+  ir <- which ('PSXC' == VRPlot[[6]])  ## leave for older project configs
+  # change Feb 2019: use first in list, not PS_A; PSXC removed
+  # if (length (ir) != 1) {
+#     ir <- which ('PS_A' %in% VRPlot[[6]])
+  # }
   if (length (ir) != 1) {ir <- 1}
   labl <- VRPlot[[6]]
   labl <- sub("PS", "", labl)

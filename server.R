@@ -232,13 +232,15 @@ server <- function(input, output, session) {
       reac$newdata <- TRUE
     }
     jp <- psq[1, np]
-    ## need to change VRPlot to have the specified variables
+    ## need to change VRPlot to include the specified variables
     if (Trace) {
       print (sprintf ('redefined global VRPlot[[%d]]', jp))
+      print (VRPlot[[jp]])
       print (PVar)
     }
     # reac$newdisplay <- TRUE
-    VRPlot[[jp]] <<- PVar
+    VRPlot[[jp]] <<- unique(VRPlot[[jp]], PVar)
+    print (VRPlot[[jp]])
   }, priority=-5)
   
   observe({                             ## Rplot
@@ -1772,7 +1774,7 @@ server <- function(input, output, session) {
         fl <- load (file=fnRdata)
         if (Trace) {print (sprintf ('fnRdata=%s', fnRdata))}
         FI <<- DataFileInfo (fnRdata)
-        loadVRPlot (Project, Production=FALSE, input$Flight, psq)
+        VRPlot <<- loadVRPlot (Project, Production=FALSE, input$Flight, psq)
         fname.last <<- fname
         # print (sprintf ('data returned with dimensions %d', dim(Data)))
         return (Data)

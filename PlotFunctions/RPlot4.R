@@ -1,14 +1,13 @@
 ### plot 4: plot differences, individual pairs of temperatures
 RPlot4 <- function (data, ...) { 
   op <- par (mar=c(5,5,2,4)+0.1,oma=c(1.1,0,0,0))
-  labelled=F
   layout(matrix(1:4, nrow=2, ncol = 2), widths = c(5,5), heights = c(6,6))
-  ## use ATX as abscissa if present, otherwise ATH1 if present,
-  ## otheerwise first in VRPlot[[4]] list:
+  ## use ATX as abscissa if present, 
+  ## otherwise first in VRPlot[[4]] list:
   ir <- which ('ATX' == VRPlot[[4]])
-  if (length (ir) != 1) {
-    ir <- which ('ATH1' == VRPlot[[4]])
-  }
+  # if (length (ir) != 1) {
+  #   ir <- which ('ATH1' == VRPlot[[4]])
+  # }
   if (length(ir) != 1) {ir = 1}
   for (i in 1:length(VRPlot[[4]])) {
     if (i == ir) {next}

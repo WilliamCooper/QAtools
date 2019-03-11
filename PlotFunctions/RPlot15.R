@@ -23,6 +23,7 @@ RPlot15 <- function(data, Seq=NA) {
       va <- vector()
       for (c in CU1) {
         nm <- names(data)[which(grepl(c, names(data)))]
+        nm <- nm[nm %in% CU]
         if (length (nm) > 1) {nm <- nm[1]}  ## if not explicitly given, select first match
         # v <- sub("_.*", "", c)
         data[, nm] <- SmoothInterp (data[, nm])
@@ -58,13 +59,13 @@ RPlot15 <- function(data, Seq=NA) {
       data[, nm] <- SmoothInterp (data[, nm])
       va2 <- c(va2, nm)
     }
-    print (c("va2", va2))
+    # print (c("va2", va2))
     for (v in va2) {
       data[!is.na(data[, v]) & (data[, v] <= 0), v] <- NA
     }
     if (length(va2) > 0) {
       plotWAC (data[, c("Time", va2)],
-             logxy='y', ylim=c(0.001,1e4), ylab=expression(paste("CONCy [cm"^"-3"*"]")))
+             logxy='y', ylim=c(0.0001,1e4), ylab=expression(paste("CONCy [cm"^"-3"*"]")))
       title ("1-min filter", cex.main=0.75)
     } 
     AddFooter ()
@@ -85,7 +86,7 @@ RPlot15 <- function(data, Seq=NA) {
   nm9 <- names(data)[grepl("USCAT_", names(data))]
   USCAT <- data[, nm9]
   USHF <- USHFLW/10
-  plotWAC (data.frame(data$Time, USMPFLW, USHF),
+  plotWAC (data.frame(Time=data$Time, USMPFLW, USHF),
            ylab="flows", legend.position='topright',
            ylim=c(0,2.5))
   hline (0.82, 'blue'); hline (1, 'darkgreen'); hline(0.5, 'red'); hline (1.5, 'red')
@@ -93,7 +94,7 @@ RPlot15 <- function(data, Seq=NA) {
                               "dashed blue-green: expected values for corresponding flows"), text.col=c('red', 'blue'), cex=0.55)
   title ("USHF is USHFLW_RWOOU/10", cex.main=0.75)
   op <- par (mar=c(5,4,1,1)+0.1)
-  plotWAC (data.frame (data$Time, UREF, USCAT), 
+  plotWAC (data.frame (Time=data$Time, UREF, USCAT), 
            ylab="laser V", legend.position='topright', ylim=c(0,10))
   hline (2.10, 'blue'); hline (1.90, 'darkgreen'); hline(6, 'red'); hline (9.95, 'red')
   title ("dashed-blue: lower limit for UREF; dashed-green: upper limit for USCAT", cex.main=0.65)
