@@ -17,7 +17,7 @@ server <- function(input, output, session) {
     nm <- c('Temperature [deg. C]', 'Wind Speed [m/s]', 'Pressure [hPa]')
     names (nm) <- c('ATX', 'WSC', 'PSXC')    ## these are the actual variables in the data file
     # Data <- getNetCDF('/Data/DEEPWAVE/DEEPWAVErf20.nc', c('ATX', 'WSC', 'PSXC'))
-    load ('~/RStudio/RSessions/RSessions/Session1/Data.Rdata')
+    load ('../RSessions/RSessions/Session1/Data.Rdata')
     plot (Data$Time, Data[, V], type='l', col='blue', lwd=2, xlab='Time [UTC]', ylab=nm[V])
     title ("DEEPWAVE flight 20")
     # with (Data, plotWAC (data.frame (Time, Data[, V]), ylab=nm[V]))
@@ -31,7 +31,7 @@ server <- function(input, output, session) {
     # # XXX set variables needed, here a standard list including DPX and EWX
     # # preliminary look shows that final descent was from 84400 to 91100
     # Data <- getNetCDF (fname, c("Time", "DPXC", "ATX", "PALT"), 84400, 91100)
-    saveDataFile <- '~/RStudio/RSessions/RSessions/Session1/Data2.RData'
+    saveDataFile <- '../RSessions/RSessions/Session1/Data2.RData'
     # save (Data, file = saveDataFile) 
     # for future runs, it will be much faster to use:
     load(saveDataFile)
@@ -49,8 +49,8 @@ server <- function(input, output, session) {
     Ds <- getNetCDF ('/Data/DEEPWAVE/DEEPWAVErf20.nc', VarList)
     ## FL400 means pressure altitude of 40000 ft
     Ds <- Ds[Ds$PALT/0.3048 > 40000, ]  ## select only points above 40000 ft
-    save (Ds, file='~/RStudio/RSessions/RSessions/Session1/Data3.Rdata')
-    load ('~/RStudio/RSessions/RSessions/Session1/Data3.Rdata')
+    save (Ds, file='../RSessions/RSessions/Session1/Data3.Rdata')
+    load ('../RSessions/RSessions/Session1/Data3.Rdata')
     Dstats['Time', 1] <- 'Time'
     Dstats['Time', 2] <- NA
     Dstats['Time', 3] <- NA
@@ -124,8 +124,8 @@ server <- function(input, output, session) {
         ' ', ' ', ' ', ' ', ' ', ' ', sep='<br/>')
     }
     ## retrieve data.frame Data:
-    load('~/RStudio/RSessions/RSessions/Session2/DataS2b.Rdata')
-    load('~/RStudio/RSessions/RSessions/Session2/txw.Rdata')
+    load('../RSessions/RSessions/Session2/DataS2b.Rdata')
+    load('../RSessions/RSessions/Session2/txw.Rdata')
     blkline <- '                           '
     
     # Data$ATX[5]
@@ -207,18 +207,27 @@ server <- function(input, output, session) {
   
   ################ OBSERVERS ########################
   
+  exprProject <- quote ({
+    if (input$Project != Project) {
+      Project <<- input$Project
+      reac$newdisplay <- TRUE
+    }
+  })
+  obsProject <- observe (exprProject, quoted=TRUE)
+  
   observe ({                              ## PlotVar
     if (Trace) {
       print ('entered observe for PlotVar')
       print (sprintf ('PVar is %s', PVar))
       print (sprintf ('PlotVar is %s', input$PlotVar))
     }
-    if (is.na (any (match(PVar, input$PlotVar)))
-      || is.na (any (match(input$PlotVar, PVar)))) {
-      reac$newdisplay <- FALSE
-    } else {
-      reac$newdisplay <- TRUE
-    }
+    # if (is.na (any (match(PVar, input$PlotVar)))
+    #   || is.na (any (match(input$PlotVar, PVar)))) {
+    #   reac$newdisplay <- FALSE
+    # } else {
+    #   reac$newdisplay <- TRUE
+    # }
+    print (sprintf ('in PlotVar observer, newdisplay=%s', reac$newdisplay))
     input$plot
     isolate (np <- input$plot)
     if (length (input$PlotVar) < 1) {return()}
@@ -230,34 +239,37 @@ server <- function(input, output, session) {
     if ((length(data ()) < 2) || any (!(PVar %in% names (data ())))) {
       print ('need new data')
       reac$newdata <- TRUE
-    }
+    } 
     jp <- psq[1, np]
     ## need to change VRPlot to include the specified variables
     if (Trace) {
       print (sprintf ('redefined global VRPlot[[%d]]', jp))
-      print (VRPlot[[jp]])
       print (PVar)
     }
     # reac$newdisplay <- TRUE
     VRPlot[[jp]] <<- unique(VRPlot[[jp]], PVar)
-    print (VRPlot[[jp]])
   }, priority=-5)
   
   observe({                             ## Rplot
     vp <- switch (input$Rplot,
-      'track' = 1,
+      'flight track' = 1,
+      'altitude, heading'= 2,
       'temperature' = 3,
       'humidity' = 5,
-      'pressure' = 9,
+      'static pressure' = 9,
+      'dynamic pressure' = 10,
+      'total pressure' = 12,
+      'airspeed' = 11,
       'wind' = 13,
+      'angles, ADIFR, BDIFR' = 17,
       'radiation' = 20,
-      'particles' = 21,
+      'aerosols' = 21, 
+      'cloud probes' = 22,
+      'liquid water' = 23,
+      'size distributions' = 29,
+      'trace gases' = 41,
       'skew-T' = 26,
       'potential T' = 27,
-      'CDP' = 29,
-      'UHSAS/PCASP' = 33,
-      '2DC' = 37,
-      'air chemistry' = 41,
       'extras' = 43
     )
     updateNumericInput (session, 'plot', value=vp)
@@ -286,7 +298,7 @@ server <- function(input, output, session) {
     showNotification ('generating plots: please wait...', action=NULL, duration=NULL, id='plotgenWait',
       type='default', closeButton=FALSE)
     savePDF (Data=data(), inp=input)
-    browseURL('www/latestPlots.pdf')  ##, '/usr/bin/evince')
+    browseURL('www/latestPlots.pdf')
     removeNotification (id='plotgenWait')
   })
   
@@ -1372,15 +1384,31 @@ server <- function(input, output, session) {
   }, priority=0)
   
   observeEvent (input$plot_brush, {
-    xmin <- as.integer(input$plot_brush$xmin)
-    xmax <- as.integer(input$plot_brush$xmax)
-    T1 <- as.POSIXlt(xmin, origin='1970-01-01', tz='UTC')
-    T2 <- as.POSIXlt(xmax, origin='1970-01-01', tz='UTC')
-    TB1 <- T1$hour*10000 + T1$min*100 + T1$sec
-    TB2 <- T2$hour*10000 + T2$min*100 + T2$sec
-    #   print (sprintf ('brush times are %d %d', TB1, TB2))
-    updateSliderInput (session, 'times', value=c(T1, T2))
-    times <<- c(T1, T2)
+      xmin <- as.integer(input$plot_brush$xmin)
+      xmax <- as.integer(input$plot_brush$xmax)
+      T1 <- as.POSIXlt(xmin, origin='1970-01-01', tz='UTC')
+      T2 <- as.POSIXlt(xmax, origin='1970-01-01', tz='UTC')
+      TB1 <- T1$hour*10000 + T1$min*100 + T1$sec
+      TB2 <- T2$hour*10000 + T2$min*100 + T2$sec
+      #   print (sprintf ('brush times are %d %d', TB1, TB2))
+      updateSliderInput (session, 'times', value=c(T1, T2))
+      times <<- c(T1, T2)
+  })
+  observeEvent(input$plot_dblclick, {
+    Data <- data ()
+    step <- 60
+    minT <- Data$Time[1]
+    minT <- minT - as.integer (minT) %% step
+    maxT <- Data$Time[nrow(Data)]
+    maxT <- maxT - as.integer (maxT) %% step + step
+    lowT <- minT
+    itx <- which (Data$TASX > 50)
+    lowT <- Data$Time[itx[1]]
+    highT <- Data$Time[itx[length(itx)]]
+    updateSliderInput(session, inputId='times', label=NULL,
+                      value=c(lowT, highT),
+                      min=minT, max=maxT)
+    times <<- c(lowT, highT)  
   } )
   
   observeEvent (input$plot2_brush, {
@@ -1480,7 +1508,7 @@ server <- function(input, output, session) {
   
   observeEvent (input$XS2a, {
     showModal(modalDialog(
-      includeHTML('~/RStudio/RSessions/RSessions/Session2/Session2c3.html'),
+      includeHTML('../RSessions/RSessions/Session2/Session2c3.html'),
       title = "Solution: One Example",
       size='l',
       easyClose = TRUE
@@ -1957,7 +1985,8 @@ server <- function(input, output, session) {
       #       updateSelectInput (session, 'Rplot', selected=st[si])
       if (Trace) {print ('finished display')}
     }
-  }, width=920, height=680)
+  }, width=920, height = 1200
+  ) #height=680)
   
   output$stats <- renderDataTable ({
     if (Trace) {print ('entered stats')}
@@ -2925,8 +2954,6 @@ server <- function(input, output, session) {
     cfq <- c(2.7809637e+00, 9.7968460e-01, -6.7437126e-03, 4.8584555e-06)
     cfqA <- c(-7.922e-01, -6.355e-04, 1.115e-06, 1.041e+00)
     cfqB <- c(-1.824e+00, -2.161e-03, 1.486e-06, 1.060e+00)
-    cfqA <- c(-1.053e+00, 2.827e-03, -1.562e-06, 1.032e+00) ## including WECAN
-    cfqB <- c(-1.088e+00, -9.244e-04, -1.765e-07, 1.054e+00)
     if (grepl ('130', FI$Platform)) {
       Data$QCFIT3 <- with(Data, cfqA[1] + PS_A * (cfqA[2] + cfqA[3] * PS_A) + cfqA[4] * QC_A)
       Data$QCFIT4 <- with(Data, cfqB[1] + PS_A * (cfqB[2] + cfqB[3] * PS_A) + cfqB[4] * QC_A)
@@ -3985,7 +4012,7 @@ server <- function(input, output, session) {
   })
   
   output$RS3apng <- renderImage ({
-    list(src = sprintf('~/RStudio/RSessions/RSessions/Session3/S%02d.png', input$S3aframe),
+    list(src = sprintf('../RSessions/RSessions/Session3/S%02d.png', input$S3aframe),
       contentType = 'image/png',
       width = 800,
       height = 600,
@@ -3993,7 +4020,7 @@ server <- function(input, output, session) {
   }, deleteFile = FALSE)
   
   output$RS3bpng <- renderImage ({
-    list(src = sprintf('~/RStudio/RSessions/RSessions/Session3/S%02d.png', input$S3bframe),
+    list(src = sprintf('../RSessions/RSessions/Session3/S%02d.png', input$S3bframe),
       contentType = 'image/png',
       width = 800,
       height = 600,
@@ -4001,7 +4028,7 @@ server <- function(input, output, session) {
   }, deleteFile = FALSE)
   
   output$RS3cpng <- renderImage ({
-    list(src = sprintf('~/RStudio/RSessions/RSessions/Session3/S%02d.png', input$S3cframe),
+    list(src = sprintf('../RSessions/RSessions/Session3/S%02d.png', input$S3cframe),
       contentType = 'image/png',
       width = 800,
       height = 600,
@@ -4009,7 +4036,7 @@ server <- function(input, output, session) {
   }, deleteFile = FALSE)
   
   output$RS3dpng <- renderImage ({
-    list(src = sprintf('~/RStudio/RSessions/RSessions/Session3/S%02d.png', input$S3dframe),
+    list(src = sprintf('../RSessions/RSessions/Session3/S%02d.png', input$S3dframe),
       contentType = 'image/png',
       width = 800,
       height = 600,
@@ -4017,63 +4044,63 @@ server <- function(input, output, session) {
   }, deleteFile = FALSE)
   
   output$RS4png <- renderImage ({
-    list(src = sprintf('~/RStudio/RSessions/RSessions/Session4/S%02d.png', input$S4frame),
+    list(src = sprintf('../RSessions/RSessions/Session4/S%02d.png', input$S4frame),
       contentType = 'image/png',
       width = 800,
       height = 600,
       alt = "RSessions image goes here")
   }, deleteFile = FALSE)
   output$RS5png <- renderImage ({
-    list(src = sprintf('~/RStudio/RSessions/RSessions/Session5/S%02d.png', input$S5frame),
+    list(src = sprintf('../RSessions/RSessions/Session5/S%02d.png', input$S5frame),
       contentType = 'image/png',
       width = 800,
       height = 600,
       alt = "RSessions image goes here")
   }, deleteFile = FALSE)
   output$RS5apng <- renderImage ({
-    list(src = sprintf('~/RStudio/RSessions/RSessions/Session5/S%02d.png', input$S5aframe),
+    list(src = sprintf('../RSessions/RSessions/Session5/S%02d.png', input$S5aframe),
       contentType = 'image/png',
       width = 800,
       height = 600,
       alt = "RSessions image goes here")
   }, deleteFile = FALSE)
   output$RS5bpng <- renderImage ({
-    list(src = sprintf('~/RStudio/RSessions/RSessions/Session5/S%02d.png', input$S5bframe),
+    list(src = sprintf('../RSessions/RSessions/Session5/S%02d.png', input$S5bframe),
       contentType = 'image/png',
       width = 800,
       height = 600,
       alt = "RSessions image goes here")
   }, deleteFile = FALSE)
   output$RS5cpng <- renderImage ({
-    list(src = sprintf('~/RStudio/RSessions/RSessions/Session5/S%02d.png', input$S5cframe),
+    list(src = sprintf('../RSessions/RSessions/Session5/S%02d.png', input$S5cframe),
       contentType = 'image/png',
       width = 800,
       height = 600,
       alt = "RSessions image goes here")
   }, deleteFile = FALSE)
   output$RS6png <- renderImage ({
-    list(src = sprintf('~/RStudio/RSessions/RSessions/Session6/S%02d.png', input$S6frame),
+    list(src = sprintf('../RSessions/RSessions/Session6/S%02d.png', input$S6frame),
       contentType = 'image/png',
       width = 800,
       height = 600,
       alt = "RSessions image goes here")
   }, deleteFile = FALSE)
   output$RS7png <- renderImage ({
-    list(src = sprintf('~/RStudio/RSessions/RSessions/Session7/S%02d.png', input$S7frame),
+    list(src = sprintf('../RSessions/RSessions/Session7/S%02d.png', input$S7frame),
       contentType = 'image/png',
       width = 800,
       height = 600,
       alt = "RSessions image goes here")
   }, deleteFile = FALSE)
   output$RS8png <- renderImage ({
-    list(src = sprintf('~/RStudio/RSessions/RSessions/Session8/S%02d.png', input$S8frame),
+    list(src = sprintf('../RSessions/RSessions/Session8/S%02d.png', input$S8frame),
       contentType = 'image/png',
       width = 800,
       height = 600,
       alt = "RSessions image goes here")
   }, deleteFile = FALSE)
   output$RS9png <- renderImage ({
-    list(src = sprintf('~/RStudio/RSessions/RSessions/Session9/S%02d.png', input$S9frame),
+    list(src = sprintf('../RSessions/RSessions/Session9/S%02d.png', input$S9frame),
       contentType = 'image/png',
       width = 800,
       height = 600,

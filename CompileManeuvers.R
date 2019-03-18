@@ -4,7 +4,7 @@ PJ <- c('ARISTO2017', 'ORCAS', 'CSET', 'HCRTEST',
         'TORERO', 'HIPPO-5', 'HIPPO-4', 'HIPPO-3', 'HIPPO-2', 'HIPPO-1',
         'IDEAS-4', 'PACDEX', 'SOCRATES-TEST', 'START08',  'PREDICT', 'TREX')
 Platform <- 'N677F'
-PJ <- c('WECAN-TEST', 'WINTER', 'NOMADSS')
+PJ <- c('WECAN-TEST', 'WINTER', 'NOMADSS', 'WECAN')
 Platform <- 'N130AR'
 library(Ranadu)
 source ("./PlotFunctions/SpeedRunSearch.R")
