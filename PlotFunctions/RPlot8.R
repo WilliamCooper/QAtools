@@ -1,5 +1,5 @@
 ### plot 8: total pressure (static + dynamic)
-RPlot8 <- function (data, ...) { 
+RPlot8 <- function (data, Seq=NA, panl=1, ...) { 
   op <- par (mar=c(5,4,1,1)+0.1, oma=c(1.1,0,0,0))
   layout(matrix(1:1, ncol = 1), widths = 1, heights = 5)
   DFP <- data.frame(Time=data$Time)
@@ -36,8 +36,12 @@ RPlot8 <- function (data, ...) {
   }
   names(DFP) <- colnames
   # colnames(DF) <- c("Time", "PtotF", "PtotAvionics", "Diff*20+500", 'PCOR chk')
-  plotWAC (DFP, col=c('blue', 'darkgreen', 'red', 'cyan', 'darkorange'), ylab='Ptot [hPa]',
-           legend.position='topright')
+  ifelse (exists ('panel1ylim'),
+    plotWAC (DFP, col=c('blue', 'darkgreen', 'red', 'cyan', 'darkorange'), 
+      ylab='Ptot [hPa]', legend.position='topright', ylim=panel1ylim),
+    plotWAC (DFP, col=c('blue', 'darkgreen', 'red', 'cyan', 'darkorange'), 
+      ylab='Ptot [hPa]', legend.position='topright')
+  )
   abline(h=520, col='red', lty=2); abline(h=480, col='red', lty=2)
   if (length (VRPlot[[8]]) > 4) {
     title (sprintf ("mean differences avionics - research 1 & 2: %.2f %.2f",

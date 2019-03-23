@@ -102,7 +102,7 @@ if (Project == 'WECAN') {
   VRPlot$PV8 <- c('PSFD', 'QCF', 'PS_A', 'QC_A', 'PSFRD', 'QCFR')
   VRPlot$PV9 <- c('WDC', 'IWD', 'WSC', 'IWS', 'WIC', 'ADIFR', 'WD', 'WS')
   VRPlot$PV10 <- c('GGVEW', 'VEW', 'GGVNS', 'VNS', 'GGQUAL', 'VEWC', 'VNSC')
-  VRPlot$PV11 <- c('AKRD', 'PITCH', 'GGVSPD', 'TASX', 'SSRD', 'WDC', 'WSC', 'GGVEW', 'GGVNS', 'THDG')
+  VRPlot$PV11 <- c('AKRD', 'ADIFR', 'BDIFR', 'PITCH', 'GGVSPD', 'TASX', 'SSRD', 'WDC', 'WSC', 'GGVEW', 'GGVNS', 'THDG')
   VRPlot$PV12 <- c('PITCH', 'PITCH_IRS2', 'ROLL', 'ROLL_IRS2', 'THDG', 'THDG_IRS2')
   VRPlot$PV13 <- c('ACINS', 'ACINS_IRS2', 'VSPD', 'VSPD_A', 'GGALT', 'ALT_A', 'GGVSPD', 'GGVSPD_232', 'VSPD_G2', 'VSPD_IRS2', 'ALT', 'ALT_G2', 'ALT_IRS2', 'GEOPTH', 'GEOPTH_232', 'GGALT_232')
   VRPlot$PV14 <- c('RSTB', 'RSTB1', 'RSTT', 'TRSTB')
@@ -318,7 +318,7 @@ if (Project == "ORCAS") {
   VRPlot$PV8 <- c("PSF", "PS_A", "QCF", "QC_A")
   VRPlot$PV9 <- c("IWD", "WDC", "IWS", "WSC", "WIC")
   VRPlot$PV10 <- c("GGVEW", "VEW", "VEWC", "GGVNS", "VNS", "VNSC", "GGQUAL")
-  VRPlot$PV11 <- c("AKRD", "PITCH", "GGVSPD", "TASX", "SSRD", "WDC", "WSC", "GGVEW", "GGVNS")
+  VRPlot$PV11 <- c("AKRD", "PITCH", "ADIFR", "BDIFR", "GGVSPD", "TASX", "SSRD", "WDC", "WSC", "GGVEW", "GGVNS")
   VRPlot$PV12 <- c("PITCH", "PITCH_IRS2", "ROLL", "ROLL_IRS2", "THDG", "THDG_IRS2")
   VRPlot$PV13 <- c("ACINS", "ACINS_IRS2", "VSPD", "VSPD_A", "ALT_A", "GGALT")
   VRPlot$PV14 <- "RSTB"

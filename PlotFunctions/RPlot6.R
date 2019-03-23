@@ -1,8 +1,12 @@
 ### plot 6: ambient pressures
-RPlot6 <- function (data, ...) { 
+RPlot6 <- function (data, Seq=NA, panl=1, ...) { 
   op <- par (mar=c(5,4,1,2)+0.1, oma=c(1.1,0,0,0))
   layout(matrix(1:1, ncol = 1), widths = 1, heights = 5)
-  plotWAC (DF <- data[, c("Time", VRPlot[[6]])], ylab='pressure  PSy [hPa]')
+  ifelse (exists ('panel1ylim'),
+    plotWAC (DF <- data[, c("Time", VRPlot[[6]])], ylab='pressure  PSy [hPa]',
+      ylim=panel1ylim),
+    plotWAC (DF <- data[, c("Time", VRPlot[[6]])], ylab='pressure  PSy [hPa]')
+  )
   if (('PSXC' %in% VRPlot[[6]]) && ('PS_A' %in% VRPlot[[6]])) {
     points (data$Time, (data$PS_A-data$PSXC)*50+600, type='l', col='brown', lty=2)
   }

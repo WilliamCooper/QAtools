@@ -1,5 +1,5 @@
 ### plot 22: 2DC size distributions
-RPlot22 <- function (data, Seq=NA) {
+RPlot22 <- function (data, Seq=NA, panl=1) {
   ## needs C1DC_LWOI; references fname from calling environment
   if (is.na (VRPlot$PV22) || (length(VRPlot$PV22) < 1)) {
     plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)

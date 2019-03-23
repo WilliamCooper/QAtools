@@ -207,6 +207,16 @@ server <- function(input, output, session) {
   
   ################ OBSERVERS ########################
   
+  exprPlot <- quote ({  ## clear any remnant specs for ordinate scale
+    input$plot  ## for dependence
+    while (exists('panel1ylim')) {rm(panel1ylim, inherits=TRUE)}
+    while (exists('panel2ylim')) {rm(panel2ylim, inherits=TRUE)}
+    while (exists('panel3ylim')) {rm(panel3ylim, inherits=TRUE)}
+    while (exists('panel4ylim')) {rm(panel4ylim, inherits=TRUE)}
+    reac$newdisplay <- TRUE
+  })
+  obsPlot <- observe (exprPlot, quoted=TRUE)
+
   exprProject <- quote ({
     if (input$Project != Project) {
       Project <<- input$Project
@@ -228,27 +238,28 @@ server <- function(input, output, session) {
     #   reac$newdisplay <- TRUE
     # }
     print (sprintf ('in PlotVar observer, newdisplay=%s', reac$newdisplay))
-    input$plot
+    # input$plot
     isolate (np <- input$plot)
+    if (Trace) {print (sprintf ('PlotVar: plot is %d', np))}
     if (length (input$PlotVar) < 1) {return()}
     PVar <- input$PlotVar
     if (Trace) {
       print (sprintf ('PlotVar observer: ncol(data) is %d', ncol(data())))
-      print (sort(names(data())))
+      # print (sort(names(data())))
     }
     if ((length(data ()) < 2) || any (!(PVar %in% names (data ())))) {
       print ('need new data')
       reac$newdata <- TRUE
     } 
     jp <- psq[1, np]
-    ## need to change VRPlot to include the specified variables
+    ## need to change VRPlot to ensure that the specified variables are included:
     if (Trace) {
       print (sprintf ('redefined global VRPlot[[%d]]', jp))
       print (PVar)
     }
     # reac$newdisplay <- TRUE
     VRPlot[[jp]] <<- unique(VRPlot[[jp]], PVar)
-  }, priority=-5)
+  }, priority=500)
   
   observe({                             ## Rplot
     vp <- switch (input$Rplot,
@@ -298,12 +309,12 @@ server <- function(input, output, session) {
     showNotification ('generating plots: please wait...', action=NULL, duration=NULL, id='plotgenWait',
       type='default', closeButton=FALSE)
     savePDF (Data=data(), inp=input)
-    browseURL('www/latestPlots.pdf')
+    browseURL('./www/latestPlots.pdf', browser='/usr/bin/evince')
     removeNotification (id='plotgenWait')
   })
   
   output$pdfviewer <- renderText({
-      return('<iframe style="height:600px; width:100%; scrolling=yes;", src=plotfile></iframe>')
+    return('<iframe style="height:600px; width:100%; scrolling=yes;", src=plotfile></iframe>')
   })
   
   observeEvent (input$savePNG,
@@ -322,7 +333,7 @@ server <- function(input, output, session) {
       load ('Maneuvers.Rdata')
       Maneuvers <<- Maneuvers
     }
-
+    
     countPM <<- 0
     countYM <<- 1
     countRH <<- 1
@@ -1383,18 +1394,41 @@ server <- function(input, output, session) {
     times <<- c(lowT, highT)
   }, priority=0)
   
-  observeEvent (input$plot_brush, {
-      xmin <- as.integer(input$plot_brush$xmin)
-      xmax <- as.integer(input$plot_brush$xmax)
-      T1 <- as.POSIXlt(xmin, origin='1970-01-01', tz='UTC')
-      T2 <- as.POSIXlt(xmax, origin='1970-01-01', tz='UTC')
-      TB1 <- T1$hour*10000 + T1$min*100 + T1$sec
-      TB2 <- T2$hour*10000 + T2$min*100 + T2$sec
-      #   print (sprintf ('brush times are %d %d', TB1, TB2))
-      updateSliderInput (session, 'times', value=c(T1, T2))
-      times <<- c(T1, T2)
+  observeEvent (input$panel_brush, {
+    Brush <<- input$panel_brush
+    if (isolate(input$plot) %in% noBrush) {
+      return()
+    }
+    xmin <- as.integer(input$panel_brush$xmin)
+    xmax <- as.integer(input$panel_brush$xmax)
+    ymin <- input$panel_brush$ymin
+    ymax <- input$panel_brush$ymax
+    if (input$ybrush) {
+      if (input$panel_brush$outputId == 'display') {
+        panel1ylim <<- c(ymin, ymax)
+      } else if (input$panel_brush$outputId == 'display2') {
+        panel2ylim <<- c(ymin, ymax)
+      }  else if (input$panel_brush$outputId == 'display3') {
+        panel3ylim <<- c(ymin, ymax)
+      }  else if (input$panel_brush$outputId == 'display4') {
+        panel4ylim <<- c(ymin, ymax)
+      }
+    }
+    T1 <- as.POSIXlt(xmin, origin='1970-01-01', tz='UTC')
+    T2 <- as.POSIXlt(xmax, origin='1970-01-01', tz='UTC')
+    TB1 <- T1$hour*10000 + T1$min*100 + T1$sec
+    TB2 <- T2$hour*10000 + T2$min*100 + T2$sec
+    print (sprintf ('panel brush times are %d %d', TB1, TB2))
+    print (sprintf ('ordinate limits are %f %f', ymin, ymax))
+    updateSliderInput (session, 'times', value=c(T1, T2))
+    times <<- c(T1, T2)
   })
+  
   observeEvent(input$plot_dblclick, {
+    while (exists ('panel1ylim')) {rm (panel1ylim, inherits=TRUE)}
+    while (exists ('panel2ylim')) {rm (panel2ylim, inherits=TRUE)}
+    while (exists ('panel3ylim')) {rm (panel3ylim, inherits=TRUE)}
+    while (exists ('panel4ylim')) {rm (panel4ylim, inherits=TRUE)}
     Data <- data ()
     step <- 60
     minT <- Data$Time[1]
@@ -1406,8 +1440,8 @@ server <- function(input, output, session) {
     lowT <- Data$Time[itx[1]]
     highT <- Data$Time[itx[length(itx)]]
     updateSliderInput(session, inputId='times', label=NULL,
-                      value=c(lowT, highT),
-                      min=minT, max=maxT)
+      value=c(lowT, highT),
+      min=minT, max=maxT)
     times <<- c(lowT, highT)  
   } )
   
@@ -1496,6 +1530,10 @@ server <- function(input, output, session) {
   } )
   
   observeEvent (input$resetT, {
+    if (exists ('panel1ylim')) {rm (panel1ylim, inherits=TRUE)}
+    if (exists ('panel2ylim')) {rm (panel2ylim, inherits=TRUE)}
+    if (exists ('panel3ylim')) {rm (panel3ylim, inherits=TRUE)}
+    if (exists ('panel4ylim')) {rm (panel4ylim, inherits=TRUE)}
     step <- 60
     Data <- data ()
     minT <- Data$Time[1]
@@ -1894,10 +1932,119 @@ server <- function(input, output, session) {
       print (reac$newdisplay)
     }
     if (reac$newdisplay) {
-      input$PlotVar
+      #input$PlotVar  ## this dependence causes duplicate generation of plots
       Project <- input$Project
       # VRPlot <- VRP ()
       if (Trace) {print ('entered display')}
+      # VRPlot <<- VRPlot
+      Data <- data()
+      DataRef <<- Data
+      if (length (Data) < 2) {
+        warning (sprintf ('variable error in (%s)', fname))
+        plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+        text (0.5, 0.8, sprintf ('requested data file (%s) not found', fname))
+        return ()
+      }
+      
+      if (Trace) {
+        print (sprintf ('input$times %s %s', formatTime (input$times[1]),
+          formatTime (input$times[2])))
+        print (sprintf ('global times are %s %s',
+          formatTime (times[1]), formatTime (times[2])))
+      }
+      namesV <- names(Data)
+      namesV <- namesV[namesV != "Time"]
+      for (n in namesV) {
+        Data[!is.na(Data[ ,n]) & (abs(Data[,n]+32767) < 1), n] <- NA
+      }
+      DataVa <<- Data
+      # Data <- Data[(Data$Time > input$times[1]) & (Data$Time < input$times[2]), ]
+      Data <- Data[(Data$Time > times[1]) & (Data$Time < times[2]), ]
+      if (nrow (Data) <= 0) {
+        plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+        text (0.5, 0.8, sprintf ('loading requested data file (%s)', fname))
+        reac$newdisplay <- TRUE
+        reac#newdata <- TRUE
+        return()
+      } 
+      ## see global.R functions:
+      DataV <- limitData (Data, input)
+      ndv <- names (DataV)
+      ## guard against inf. VCSEL limits
+      if (('DP_VXL' %in% ndv) && all(is.na(DataV$DP_VXL))) {
+        DataV$DP_VXL <- rep(0, nrow(DataV))
+      }
+      if (('DP_DPR' %in% ndv) && all(is.na(DataV$DP_DPR))) {
+        DataV$DP_DPR <- rep(0, nrow(DataV))
+      }
+      if (('DP_DPL' %in% ndv) && all(is.na(DataV$DP_DPL))) {
+        DataV$DP_DPL <- rep(0, nrow(DataV))
+      }
+      DataV$DPXC[!is.na(DataV$DPXC) & (DataV$DPXC < -1000)] <- NA
+      if (psq[1, input$plot] %in% c(20:22)) {
+        t1 <- times[1]    #input$times[1]
+        # print (class(t1))
+        t <- as.POSIXlt (t1, tz='UTC')
+        # print (class(t))
+        StartTime <<- as.integer (10000*t$hour+100*t$min+t$sec)
+        # print (StartTime)
+      }
+      #       if (fname != fname.last) {
+      #         warning (sprintf ('requested data file (%s) not found', fname))
+      #         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+      #         text (0.5, 0.8, sprintf ('requested data file (%s) not found', fname))
+      #       } else {
+      # if (Trace) {print (str(Data))}
+      SE <- getStartEnd (Data$Time)
+      i <- getIndex (Data$Time, SE[1])
+      FigFooter <<- sprintf("%s %s%02d %s %s-%s UTC,", Project, input$typeFlight,
+        input$Flight, strftime(Data$Time[i], format="%Y-%m-%d", tz='UTC'),
+        strftime(Data$Time[i], format="%H:%M:%S", tz='UTC'),
+        strftime(Data$Time[getIndex(Data$Time,SE[2])],
+          format="%H:%M:%S", tz='UTC'))
+      FigDatestr <<-strftime(Sys.time(), format="%Y-%m-%d %H:%M:%S %Z")
+      AddFooter <<- function() {
+        CallingFunction <- sub ("\\(.*\\)", "", deparse (sys.call (-1)))
+        mtext(paste(FigFooter,'generated by ', CallingFunction,
+          FigDatestr),1,outer=T,cex=0.75)
+      }
+      # Only generate the first panel here:
+      if (input$limits) {
+        DataV <- transferAttributes(DataV, DataVa)
+        eval(parse(text=sprintf("RPlot%d(DataV, Seq=%d, panl=1)",
+          psq[1, input$plot], psq[2, input$plot])))
+      } else {
+        Data <- transferAttributes(Data, DataVa)
+        DataVc <<- Data
+        eval(parse(text=sprintf("RPlot%d(Data, Seq=%d, panl=1)",
+          psq[1, input$plot], psq[2, input$plot])))
+      }
+      if (Trace) {print (sprintf ('have called RPlot%d.R', input$plot))}
+      # }
+      #       si <- input$plot
+      #       updateSelectInput (session, 'Rplot', selected=st[si])
+      if (Trace) {print ('finished display')}
+    } 
+  }, width=920, height=function() 680 / dpan[input$plot] # , width=920, height = plotHeight # 1200
+  ) #height=680)
+  
+  
+  output$display2 <- renderPlot ({  ## display
+    # # input$typeFlight
+    # if (is.null(input$times[1])) {
+    #   if (Trace) {print ('in display but input time is NULL')}
+    #   return ()
+    # }
+    # if (Trace) {
+    #   print ('display entry, reac$newdisplay is:')
+    #   print (reac$newdisplay)
+    # }
+    if (dpan[input$plot] < 2) {return ()}
+    if (reac$newdisplay) {
+      # input$PlotVar
+      Project <- input$Project
+      # VRPlot <- VRP ()
+      if (Trace) {print ('entered display2')}
       # VRPlot <<- VRPlot
       Data <- data()
       DataRef <<- Data
@@ -1943,50 +2090,206 @@ server <- function(input, output, session) {
         DataV$DP_DPL <- rep(0, nrow(DataV))
       }
       DataV$DPXC[!is.na(DataV$DPXC) & (DataV$DPXC < -1000)] <- NA
-      if (psq[1, input$plot] %in% c(20:22)) {
-        t1 <- times[1]    #input$times[1]
-        # print (class(t1))
-        t <- as.POSIXlt (t1, tz='UTC')
-        # print (class(t))
-        StartTime <<- as.integer (10000*t$hour+100*t$min+t$sec)
-        # print (StartTime)
+      if (dpan[input$plot] > 1) {
+        if (input$limits) {
+          DataV <- transferAttributes(DataV, DataVa)
+          eval(parse(text=sprintf("RPlot%d(DataV, Seq=%d, panl=2)",
+            psq[1, input$plot], psq[2, input$plot])))
+        } else {
+          Data <- transferAttributes(Data, DataVa)
+          DataVc <<- Data
+          eval(parse(text=sprintf("RPlot%d(Data, Seq=%d, panl=2)",
+            psq[1, input$plot], psq[2, input$plot])))
+        }
       }
-      #       if (fname != fname.last) {
-      #         warning (sprintf ('requested data file (%s) not found', fname))
-      #         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
-      #         text (0.5, 0.8, sprintf ('requested data file (%s) not found', fname))
-      #       } else {
-      # if (Trace) {print (str(Data))}
-      SE <- getStartEnd (Data$Time)
-      i <- getIndex (Data$Time, SE[1])
-      FigFooter=sprintf("%s %s%02d %s %s-%s UTC,", Project, input$typeFlight,
-        input$Flight, strftime(Data$Time[i], format="%Y-%m-%d", tz='UTC'),
-        strftime(Data$Time[i], format="%H:%M:%S", tz='UTC'),
-        strftime(Data$Time[getIndex(Data$Time,SE[2])],
-          format="%H:%M:%S", tz='UTC'))
-      FigDatestr=strftime(Sys.time(), format="%Y-%m-%d %H:%M:%S %Z")
-      AddFooter <<- function() {
-        CallingFunction <- sub ("\\(.*\\)", "", deparse (sys.call (-1)))
-        mtext(paste(FigFooter,'generated by ', CallingFunction,
-          FigDatestr),1,outer=T,cex=0.75)
-      }
-      if (input$limits) {
-        DataV <- transferAttributes(DataV, DataVa)
-        eval(parse(text=sprintf("RPlot%d(DataV, Seq=%d)",
-          psq[1, input$plot], psq[2, input$plot])))
-      } else {
-        Data <- transferAttributes(Data, DataVa)
-        DataVc <<- Data
-        eval(parse(text=sprintf("RPlot%d(Data, Seq=%d)",
-          psq[1, input$plot], psq[2, input$plot])))
-      }
-      # }
-      #       si <- input$plot
-      #       updateSelectInput (session, 'Rplot', selected=st[si])
-      if (Trace) {print ('finished display')}
+      if (Trace) {print ('finished display2')}
     }
-  }, width=920, height = 1200
+  }, width=920, height=function() {
+    if (dpan[input$plot] < 2) {
+      return(10) 
+    } else if(dpan[input$plot] == 2) { # increase height of last panel a little
+      return(680 * 6 / 5 / dpan[input$plot])
+    } else {
+      return(680 / dpan[input$plot])
+    }#, width=920, height = 480 # 1200 
+  }
+  )
+  
+  output$display3 <- renderPlot ({  ## display
+    # # input$typeFlight
+    # if (is.null(input$times[1])) {
+    #   if (Trace) {print ('in display but input time is NULL')}
+    #   return ()
+    # }
+    # if (Trace) {
+    #   print ('display entry, reac$newdisplay is:')
+    #   print (reac$newdisplay)
+    # }
+    if (dpan[input$plot] < 3) {return ()}
+    if (reac$newdisplay) {
+      # input$PlotVar
+      Project <- input$Project
+      # VRPlot <- VRP ()
+      if (Trace) {print ('entered display2')}
+      # VRPlot <<- VRPlot
+      Data <- data()
+      DataRef <<- Data
+      if (length (Data) < 2) {
+        warning (sprintf ('variable error in (%s)', fname))
+        plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+        text (0.5, 0.8, sprintf ('requested data file (%s) not found', fname))
+        return ()
+      }
+      
+      if (Trace) {
+        print (sprintf ('input$times %s %s', formatTime (input$times[1]),
+          formatTime (input$times[2])))
+        print (sprintf ('global times are %s %s',
+          formatTime (times[1]), formatTime (times[2])))
+      }
+      namesV <- names(Data)
+      namesV <- namesV[namesV != "Time"]
+      for (n in namesV) {
+        Data[!is.na(Data[ ,n]) & (abs(Data[,n]+32767) < 1), n] <- NA
+      }
+      DataVa <<- Data
+      # Data <- Data[(Data$Time > input$times[1]) & (Data$Time < input$times[2]), ]
+      Data <- Data[(Data$Time > times[1]) & (Data$Time < times[2]), ]
+      if (nrow (Data) <= 0) {
+        plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+        text (0.5, 0.8, sprintf ('loading requested data file (%s)', fname))
+        reac$newdisplay <- TRUE
+        reac#newdata <- TRUE
+        return()
+      }
+      ## see global.R functions:
+      DataV <- limitData (Data, input)
+      ndv <- names (DataV)
+      ## guard against inf. VCSEL limits
+      if (('DP_VXL' %in% ndv) && all(is.na(DataV$DP_VXL))) {
+        DataV$DP_VXL <- rep(0, nrow(DataV))
+      }
+      if (('DP_DPR' %in% ndv) && all(is.na(DataV$DP_DPR))) {
+        DataV$DP_DPR <- rep(0, nrow(DataV))
+      }
+      if (('DP_DPL' %in% ndv) && all(is.na(DataV$DP_DPL))) {
+        DataV$DP_DPL <- rep(0, nrow(DataV))
+      }
+      DataV$DPXC[!is.na(DataV$DPXC) & (DataV$DPXC < -1000)] <- NA
+      if (dpan[input$plot] > 2) {
+        if (input$limits) {
+          DataV <- transferAttributes(DataV, DataVa)
+          eval(parse(text=sprintf("RPlot%d(DataV, Seq=%d, panl=3)",
+            psq[1, input$plot], psq[2, input$plot])))
+        } else {
+          Data <- transferAttributes(Data, DataVa)
+          DataVc <<- Data
+          eval(parse(text=sprintf("RPlot%d(Data, Seq=%d, panl=3)",
+            psq[1, input$plot], psq[2, input$plot])))
+        }
+      }
+      if (Trace) {print ('finished display3')}
+    }
+  }, width=920, height=function() {
+    if (dpan[input$plot] < 3) {
+      return(10) 
+    } else if(dpan[input$plot] == 3) { # increase height of last panel a little
+      return(680 * 6 / 5 / dpan[input$plot])
+    } else {
+      return(680 / dpan[input$plot])
+    }#, width=920, height = 480 # 1200
+  }
   ) #height=680)
+  
+  output$display4 <- renderPlot ({  ## display
+    # # input$typeFlight
+    # if (is.null(input$times[1])) {
+    #   if (Trace) {print ('in display but input time is NULL')}
+    #   return ()
+    # }
+    # if (Trace) {
+    #   print ('display entry, reac$newdisplay is:')
+    #   print (reac$newdisplay)
+    # }
+    if (dpan[input$plot] < 4) {return ()}
+    if (reac$newdisplay) {
+      # input$PlotVar
+      Project <- input$Project
+      # VRPlot <- VRP ()
+      if (Trace) {print ('entered display4')}
+      # VRPlot <<- VRPlot
+      Data <- data()
+      DataRef <<- Data
+      if (length (Data) < 2) {
+        warning (sprintf ('variable error in (%s)', fname))
+        plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+        text (0.5, 0.8, sprintf ('requested data file (%s) not found', fname))
+        return ()
+      }
+      
+      if (Trace) {
+        print (sprintf ('input$times %s %s', formatTime (input$times[1]),
+          formatTime (input$times[2])))
+        print (sprintf ('global times are %s %s',
+          formatTime (times[1]), formatTime (times[2])))
+      }
+      namesV <- names(Data)
+      namesV <- namesV[namesV != "Time"]
+      for (n in namesV) {
+        Data[!is.na(Data[ ,n]) & (abs(Data[,n]+32767) < 1), n] <- NA
+      }
+      DataVa <<- Data
+      # Data <- Data[(Data$Time > input$times[1]) & (Data$Time < input$times[2]), ]
+      Data <- Data[(Data$Time > times[1]) & (Data$Time < times[2]), ]
+      if (nrow (Data) <= 0) {
+        plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+        text (0.5, 0.8, sprintf ('loading requested data file (%s)', fname))
+        reac$newdisplay <- TRUE
+        reac#newdata <- TRUE
+        return()
+      }
+      ## see global.R functions:
+      DataV <- limitData (Data, input)
+      ndv <- names (DataV)
+      ## guard against inf. VCSEL limits
+      if (('DP_VXL' %in% ndv) && all(is.na(DataV$DP_VXL))) {
+        DataV$DP_VXL <- rep(0, nrow(DataV))
+      }
+      if (('DP_DPR' %in% ndv) && all(is.na(DataV$DP_DPR))) {
+        DataV$DP_DPR <- rep(0, nrow(DataV))
+      }
+      if (('DP_DPL' %in% ndv) && all(is.na(DataV$DP_DPL))) {
+        DataV$DP_DPL <- rep(0, nrow(DataV))
+      }
+      DataV$DPXC[!is.na(DataV$DPXC) & (DataV$DPXC < -1000)] <- NA
+      if (dpan[input$plot] > 3) {
+        if (input$limits) {
+          DataV <- transferAttributes(DataV, DataVa)
+          eval(parse(text=sprintf("RPlot%d(DataV, Seq=%d, panl=4)",
+            psq[1, input$plot], psq[2, input$plot])))
+        } else {
+          Data <- transferAttributes(Data, DataVa)
+          DataVc <<- Data
+          eval(parse(text=sprintf("RPlot%d(Data, Seq=%d, panl=4)",
+            psq[1, input$plot], psq[2, input$plot])))
+        }
+      }
+      if (Trace) {print ('finished display2')}
+    }
+  }, width=920, height=function() {
+    if (dpan[input$plot] < 4) {
+      return(10) 
+    } else { # increase height of last panel a little
+      return(680 * 6 / 5 / dpan[input$plot])
+    }
+  }
+  ) 
+  
+  ## try to get all other changes before display generation
+  outputOptions(output, "display", priority = -1000)
+  outputOptions(output, "display2", priority = -1000)
+  outputOptions(output, "display3", priority = -1000)
+  outputOptions(output, "display4", priority = -1000)
   
   output$stats <- renderDataTable ({
     if (Trace) {print ('entered stats')}

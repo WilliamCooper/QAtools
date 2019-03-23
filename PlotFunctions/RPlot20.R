@@ -1,5 +1,5 @@
 ### plot 20: CDP/CS100 (FSSP) size distributions
-RPlot20 <- function (data, Seq=NA) {
+RPlot20 <- function (data, Seq=NA, panl=1) {
   if (is.na (VRPlot$PV20) || (length(VRPlot$PV20) < 1)) {
     plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
     text (0.5, 0.8, 'no cloud-droplet measurements')

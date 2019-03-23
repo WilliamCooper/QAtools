@@ -1,5 +1,5 @@
 ### Plot 17: all-flight Skew-T
-RPlot17 <- function (data, Flight=NA, ...) {
+RPlot17 <- function (data, Flight=NA, Seq=NA, panl=1, ...) {
   ## needs PSXC, ATX, DPXC
   if (is.na(Flight) && exists('FlightPDF')) {Flight <- FlightPDF}
   op <- par (mfrow=c(1,1), mar=c(5,5,2,2)+0.1,oma=c(1.1,0,0,0))
@@ -7,10 +7,10 @@ RPlot17 <- function (data, Flight=NA, ...) {
   colnames(DF) <- c("Pressure", "Temperature", "DewPoint")
   if (grepl ('130', FI$Platform)) {
     print(SkewTSounding (DF, AverageInterval=5, BackgroundSpecs="skewTDiagramC130.Rdata") +
-      ggtitle(sprintf("Flight %d, whole-flight-average", Flight)))
+      ggtitle(sprintf("Flight %s, whole-flight-average", Flight)))
   } else {
   print(SkewTSounding (DF, AverageInterval=5, BackgroundSpecs="skewTDiagram.Rdata") +
-    ggtitle(sprintf("Flight %d, whole-flight-average", Flight)))
+    ggtitle(sprintf("Flight %s, whole-flight-average", Flight)))
   }
   ### this Footer command crashes knitr for some reason (works to make pdf, and for html if plot 17 run alone, 
   ### but if plot17 run with other plots (e.g. -1 or 16:17) then knitr crashes. 

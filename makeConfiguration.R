@@ -195,7 +195,7 @@ VRX[[10]] <-
   unique (c(VRX[[10]], 'GGVEW', 'GGVNS', 'VEW', 'VNS', 'GGQUAL'))
 
 # RPlot11.R: (attack and sideslip angles)
-VRX[[11]] <- unique (c(VRX[[11]], 'AKRD', 'PITCH', 'SSRD', 'WSC',
+VRX[[11]] <- unique (c(VRX[[11]], 'AKRD', 'PITCH', 'SSRD', 'WSC', 'ADIFR', 'BDIFR',
                        'WDC', 'GGVEW', 'GGVNS', 'TASX', 'THDG', 'GGVSPD', 'VSPD_A'))
 
 # RPlot12.R and RPlot13.R: (IRU comparisons)

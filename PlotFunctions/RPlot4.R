@@ -1,4 +1,5 @@
 ### plot 4: plot differences, individual pairs of temperatures
+### (brush is inhibited for this plot)
 RPlot4 <- function (data, ...) { 
   op <- par (mar=c(5,5,2,4)+0.1,oma=c(1.1,0,0,0))
   layout(matrix(1:4, nrow=2, ncol = 2), widths = c(5,5), heights = c(6,6))
