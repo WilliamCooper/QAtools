@@ -20,15 +20,15 @@ suppressMessages (suppressWarnings (
   library(Ranadu, quietly=TRUE, warn.conflicts=FALSE))
 )
 options (stringsAsFactors=FALSE)
-
-library(tictoc)
-require(numDeriv, quietly = TRUE, warn.conflicts=FALSE) ## needed, KalmanFilter
-
 ## if this is set TRUE then messages will print in the console
 ## indicating which functions are entered, to trace the sequence
 ## of interactions when window entries are changed.
 Trace <- FALSE
-Trace <- TRUE
+# Trace <- TRUE
+
+library(tictoc)
+if (Trace) {tic('global')}
+require(numDeriv, quietly = TRUE, warn.conflicts=FALSE) ## needed, KalmanFilter
 
 ## temporary, pending update of Ranadu package:
 # source ("../Ranadu/R/getNetCDF.R")
@@ -1098,10 +1098,35 @@ psq <- c(1,1, 1,2, 3,1, 4,1, 5,1, 5,2, 5,3, 5,4, 6,1, 7,1, 7,2,  #11
   20,1, 20,2, 20,3, 20,4, 21,1, 21,2, 21,3, 21,4, #36
   22,1, 22,2, 22,3, 22,4, 23,1, 23,2, #42
   24,1, 25,1, 26,1, 27,1, 28,1, 29,1, 30,1) #49
-dpan <- c(1, 1, 1, 1, 1, 1, 2, 3, 1, 2, 2, #11
+dpan <- c(1, 3, 1, 1, 1, 1, 2, 3, 1, 2, 2, #11
   1, 3, 2, 3, 2, 4, 3, 3, 4, 2, 2,        #22
   3, 3, 3, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  # 40
   4, 1, 2, 1, 1, 1, 1, 1, 1)  #49
+PlotTypes <- c(      
+  'flight track' = 1,
+  'altitude, heading'= 2,
+  'temperature' = 3,
+  'humidity' = 5,
+  'static pressure' = 9,
+  'dynamic pressure' = 10,
+  'airspeed' = 11,
+  'total pressure' = 12,
+  'wind' = 13,
+  'angles, radome' = 17,
+  'IRU comparisons' = 18,
+  'radiation' = 20,
+  'concentrations' = 21, 
+  'instr. monitor' = 22,
+  'LWC, dbar' = 23,
+  'instr. checks' = 25,
+  'skew-T' = 26,
+  'potential T' = 27,
+  'droplet size dist.' = 29,
+  'particle size dist.' = 33,
+  'precip size dist.' = 37,
+  'trace gases' = 41,
+  'extras' = 43
+)
 L <- length (psq)/2
 dim(psq) <- c(2,L)
 netCDFfile <- NULL
@@ -1154,16 +1179,16 @@ times <- c(as.POSIXct(0, origin='2012-05-29', tz='UTC'),
   as.POSIXct(3600*8, origin='2012-05-29', tz='UTC'))
 
 ## make plot functions available
-for (np in 1:2) {
-  if (testPlot(np)) {
-    eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))
-  }
-}
-for (np in 3:30) {
-  if (file.exists (sprintf ("./PlotFunctions/RPlot%d.R", np))) {
-    eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))
-  }
-}
+# for (np in 1:2) {
+#   if (testPlot(np)) {
+#     eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))
+#   }
+# }
+# for (np in 3:30) {
+#   if (file.exists (sprintf ("./PlotFunctions/RPlot%d.R", np))) {
+#     eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))
+#   }
+# }
 # functions used later:
 hline <<- function(y, col='black', lwd=1, lty=2) {
   abline(h=y, col=col, lwd=lwd, lty=lty)
@@ -1340,10 +1365,11 @@ seeManual <- function () {
 
 ## get VRPlot and chp/shp:
 ## load a starting-point version
-Project <- 'ORCAS'
+Project <- 'WECAN'
 source('loadVRPlot.R')
 
 load ('CalibrationExercise/CalData.Rdata')
+
 chooseQVar <- function (fname, inp) {
   quickPlotVar <<- setVariableList (fname, single=TRUE)
 }
@@ -1380,8 +1406,8 @@ if (!file.exists (fn)) {
   fn <- sub ('\\.nc', '.Rdata', fn)
 }
 if (!file.exists (fn)) {warning ('need tf01 or rf01 to initialize')}
-if (Trace) {print (sprintf ('fnG=%s', fn))}
-FI <- DataFileInfo (fn)
+# if (Trace) {print (sprintf ('fnG=%s', fn))}
+FI <- DataFileInfo (fn, LLrange=FALSE)
 
 limitData <- function (Data, input) {
   DataV <- Data
@@ -1419,6 +1445,7 @@ makeVRPlot <- function (slp, psq) {
 
 ## DPcheck additions:
 VRPlot <- loadVRPlot(Project, FALSE, 1, psq)
+
 VarListTDP <- standardVariables (c('CAVP_DPL', 'BALNC_DPL', 'MIRRTMP_DPL', 'DP_DPL', 'DP_VXL', 'EW_DPL', 'EW_VXL', 'ATX'))
 setNA <- function (.x, .v) {
   X <- zoo::na.approx (as.vector (.x), maxgap=1000, na.rm=FALSE)
@@ -1579,3 +1606,4 @@ getDataTDP <- function (project, flight, typeFlight) {
   DataTDP$DPLQUAL[abs(DataTDP$CBAL) > 10] <- -20
   DataTDP <<- DataTDP
 }
+if (Trace) {toc()}

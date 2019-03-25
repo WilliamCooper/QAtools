@@ -57,9 +57,13 @@ loadVRPlot <- function (Project, Production = FALSE, Flight, psq) {
     warning ('need tf01 or rf01 to initialize')
     return (VRPlot)
   }
-  if (Trace) {print (sprintf ('fnE=%s', fn))}
+  # if (Trace) {print (sprintf ('fnE=%s', fn))}
   # print (sprintf ('setting chp/slp from %s', fn))
-  FI <<- DataFileInfo (fn, LLrange=FALSE)
+  ## see if info for this file is already available:
+  if (!exists ('FI') || FI$Project != Project) {
+    FI <<- DataFileInfo (fn, LLrange=FALSE)
+  }
+  
   VLALL <<- FI$Variables
   LAT <- FI$Variables[grepl ('^LAT', FI$Variables)]
   LON <- FI$Variables[grepl ('^LON', FI$Variables)]

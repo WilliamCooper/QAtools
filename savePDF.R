@@ -28,6 +28,10 @@ savePDF <- function(Data, inp) {
   DataV <- transferAttributes (DataV, Data)  
   for (np in 1:30) {
     if (file.exists (sprintf ("./PlotFunctions/RPlot%d.R", np))) {
+      sourceFile <- sprintf ('RPlot%d', np)
+      if (!exists (sourceFile)) {
+        source (sprintf ('./PlotFunctions/%s.R', sourceFile))
+      }
       if (testPlot(np) && (length(VRPlot[[np]]) > 0)) {
         print(paste('Plot',np))
         ## eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))

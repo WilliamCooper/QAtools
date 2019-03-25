@@ -209,6 +209,16 @@ server <- function(input, output, session) {
   
   exprPlot <- quote ({  ## clear any remnant specs for ordinate scale
     input$plot  ## for dependence
+    # Set Rplot appropriately:
+    Rp <- min (which(input$plot < as.integer (PlotTypes))[1] - 1, 
+      length (PlotTypes))
+    if (Trace) {
+      print (sprintf ('updating Rplot with plot=%d, Rp=%d',
+      input$plot, Rp))
+    }
+    if (!is.null (Rp)) {
+      updateSelectInput(session, 'Rplot', selected=as.integer(PlotTypes[Rp]))
+    }
     while (exists('panel1ylim')) {rm(panel1ylim, inherits=TRUE)}
     while (exists('panel2ylim')) {rm(panel2ylim, inherits=TRUE)}
     while (exists('panel3ylim')) {rm(panel3ylim, inherits=TRUE)}
@@ -237,10 +247,15 @@ server <- function(input, output, session) {
     # } else {
     #   reac$newdisplay <- TRUE
     # }
-    print (sprintf ('in PlotVar observer, newdisplay=%s', reac$newdisplay))
+    if (Trace) {
+      print (sprintf ('in PlotVar observer, newdisplay=%s', reac$newdisplay))
+    }
     # input$plot
     isolate (np <- input$plot)
-    if (Trace) {print (sprintf ('PlotVar: plot is %d', np))}
+    if (Trace) {
+      print (sprintf ('PlotVar: plot is %d', np))
+      print (sprintf ('length of input$PlotVar is %d', length (input$PlotVar)))
+    }
     if (length (input$PlotVar) < 1) {return()}
     PVar <- input$PlotVar
     if (Trace) {
@@ -259,31 +274,13 @@ server <- function(input, output, session) {
     }
     # reac$newdisplay <- TRUE
     VRPlot[[jp]] <<- unique(VRPlot[[jp]], PVar)
-  }, priority=500)
+  }, priority=50)
   
   observe({                             ## Rplot
-    vp <- switch (input$Rplot,
-      'flight track' = 1,
-      'altitude, heading'= 2,
-      'temperature' = 3,
-      'humidity' = 5,
-      'static pressure' = 9,
-      'dynamic pressure' = 10,
-      'total pressure' = 12,
-      'airspeed' = 11,
-      'wind' = 13,
-      'angles, ADIFR, BDIFR' = 17,
-      'radiation' = 20,
-      'aerosols' = 21, 
-      'cloud probes' = 22,
-      'liquid water' = 23,
-      'size distributions' = 29,
-      'trace gases' = 41,
-      'skew-T' = 26,
-      'potential T' = 27,
-      'extras' = 43
-    )
-    updateNumericInput (session, 'plot', value=vp)
+    # vp <- as.integer (PlotTypes [as.integer (input$Rplot)])
+    # print (sprintf ('Rplot is %s, vp = %d', input$Rplot, vp))
+    # Rplot <<- input$Rplot
+    updateNumericInput (session, 'plot', value=as.integer(input$Rplot))
   })
   
   # observeEvent (input$Tmaneuvers, {
@@ -328,7 +325,10 @@ server <- function(input, output, session) {
   
   observe ({
     reac$plotYM
-    print (c('observe: ProjectPP is', input$ProjectPP))
+    if (Trace) {
+      tic('ProjectPP observe')
+      print (c('observe: ProjectPP is', input$ProjectPP))
+    }
     if (!exists('Maneuvers')) {
       load ('Maneuvers.Rdata')
       Maneuvers <<- Maneuvers
@@ -349,7 +349,11 @@ server <- function(input, output, session) {
     chRH <- vector('character');chCR <- vector('character')
     if (nrow(SR) > 0) {
       for (i in 1:nrow(SR)) {
-        print (s <- sprintf ('%s %d-%d', SR$Flight[i], SR$Start[i], SR$End[i]))
+        s <- sprintf ('%s %d-%d', SR$Flight[i], SR$Start[i], 
+          SR$End[i])
+        if (Trace) {
+          print (s)
+        }
         chSR[i] <- sprintf ('%d', i)
         names(chSR)[i] <- s
       }
@@ -359,7 +363,8 @@ server <- function(input, output, session) {
     }
     if (nrow(PM) > 0) {
       for (i in 1:nrow(PM)) {
-        print (s <- sprintf ('%s %d-%d', PM$Flight[i], PM$Start[i], PM$End[i]))
+        s <- sprintf ('%s %d-%d', PM$Flight[i], PM$Start[i], PM$End[i])
+        if (Trace) {print(s)}
         chPM[i] <- sprintf ('%d', i)
         names(chPM)[i] <- s
       }
@@ -367,10 +372,11 @@ server <- function(input, output, session) {
     } else {
       updateRadioButtons(session, inputId='selPM', choices='none')
     }
-    print (sprintf ('yaw maneuvers for project %s', input$ProjectPP))
+    if (Trace) {print (sprintf ('yaw maneuvers for project %s', input$ProjectPP))}
     if (nrow(YM) > 0) {
       for (i in 1:nrow(YM)) {
-        print (s <- sprintf ('%s %d-%d', YM$Flight[i], YM$Start[i], YM$End[i]))
+        s <- sprintf ('%s %d-%d', YM$Flight[i], YM$Start[i], YM$End[i])
+        if (Trace) {print (s)}
         chYM[i] <- sprintf ('%d', i)
         names(chYM)[i] <- s
       }
@@ -379,10 +385,13 @@ server <- function(input, output, session) {
     } else {
       updateRadioButtons(session, inputId='selYM', choices='none')
     }
-    print (sprintf ('circle maneuvers for project %s', input$ProjectPP))
+    if (Trace) {
+      print (sprintf ('circle maneuvers for project %s', input$ProjectPP))
+    }
     if (nrow(CR) > 0) {
       for (i in 1:nrow(CR)) {
-        print (s <- sprintf ('%s %d-%d', CR$Flight[i], CR$Start[i], CR$End[i]))
+        s <- sprintf ('%s %d-%d', CR$Flight[i], CR$Start[i], CR$End[i])
+        if (Trace) {print (s)}
         chCR[i] <- sprintf ('%d', i)
         names(chCR)[i] <- s
       }
@@ -391,10 +400,14 @@ server <- function(input, output, session) {
     } else {
       updateRadioButtons(session, inputId='selCR', choices='none')
     }
-    print (sprintf ('reverse heading maneuvers for project %s', input$ProjectPP))
+    if (Trace) {
+      print (sprintf ('reverse heading maneuvers for project %s', 
+        input$ProjectPP))
+    }
     if (nrow(RH) > 0) {
       for (i in 1:nrow(RH)) {
-        print (s <- sprintf ('%s %d-%d', RH$Flight[i], RH$Start[i], RH$Other2[i]))
+        s <- sprintf ('%s %d-%d', RH$Flight[i], RH$Start[i], RH$Other2[i])
+        if (Trace) {print (s)}
         chRH[i] <- sprintf ('%d', i)
         names(chRH)[i] <- s
       }
@@ -403,6 +416,7 @@ server <- function(input, output, session) {
     } else {
       updateRadioButtons(session, inputId='selRH', choices='none')
     }
+    if (Trace) {toc()}
   }, priority=10)
   
   observe ({
@@ -411,7 +425,7 @@ server <- function(input, output, session) {
     item <- input$selYM
     if (item != 'none' && !is.na(item)) {
       item <- as.integer(item)
-      print (sprintf ('item %s nrow(YM)=%d', input$selYM, nrow(YM)))
+      if (Trace) {print (sprintf ('item %s nrow(YM)=%d', input$selYM, nrow(YM)))}
       if (is.na(item) || nrow(YM) < 1) {
         itemYM <<- item <- 0
         DYM <<- data.frame()
@@ -419,7 +433,7 @@ server <- function(input, output, session) {
       ProjDir <- input$ProjectPP
       if (!is.na(item) && item != 'none' && item != 0 && length(item) > 0 && item <= nrow(YM)) {
         itemYM <<- item
-        print (c('item, YM', item, YM[item,]))
+        if (Trace) {print (c('item, YM', item, YM[item,]))}
         if (grepl('HIPPO', ProjDir)) {ProjDir <- 'HIPPO'}
         VL <- c('TASX', 'GGALT', 'SSRD', 'BDIFR', 'QCF', 'WDC', 'WSC', 'THDG', 'VYC',
           'GGVNS', 'GGVEW')
@@ -429,7 +443,10 @@ server <- function(input, output, session) {
         minT <- DYM$Time[1]; maxT <- DYM$Time[nrow(DYM)]
         # mint <- as.POSIXlt (minT, tz='UTC'); maxT <- as.POSIXlt (maxT, tz='UTC')
         updateSliderInput (session, 'sliderYM', min=minT, max=maxT, value=c(minT, maxT))
-        print ( sprintf ('updating YM time slider, limits are %s %s', minT, maxT))
+        if (Trace) {
+          print ( sprintf ('updating YM time slider, limits are %s %s', 
+            minT, maxT))
+        }
         # print (str(DYM))
       }
     }
@@ -440,7 +457,7 @@ server <- function(input, output, session) {
     updateSelectInput(session, 'setRHT', selected='leg 1')
     if (item != 'none' && !is.na(item)) {
       item <- as.integer(item)
-      print (sprintf ('item %s nrow(RH)=%d', input$selRH, nrow(RH)))
+      if (Trace) {print (sprintf ('item %s nrow(RH)=%d', input$selRH, nrow(RH)))}
       if (is.na(item) || nrow(RH) < 1) {
         itemRH <<- item <- 0
         DRH <<- data.frame()
@@ -448,7 +465,7 @@ server <- function(input, output, session) {
       ProjDir <- input$ProjectPP
       if (!is.na(item) && item != 'none' && item != 0 && length(item) > 0 && item <= nrow(RH)) {
         itemRH <<- item
-        print (c('item, RH', item, RH[item,]))
+        if (Trace) {print (c('item, RH', item, RH[item,]))}
         if (grepl('HIPPO', ProjDir)) {ProjDir <- 'HIPPO'}
         VL <- c('LATC', 'LONC', 'TASX', 'GGALT', 'SSLIP', 'BDIFR', 'QCF', 'WDC', 'WSC', 'THDG', 'VYC',
           'GGVNS', 'GGVEW')
@@ -460,7 +477,10 @@ server <- function(input, output, session) {
         setT2 <- DRH$Time[getIndex(DRH, RH$End[item])]
         # mint <- as.POSIXlt (minT, tz='UTC'); maxT <- as.POSIXlt (maxT, tz='UTC')
         updateSliderInput (session, 'sliderRH', min=minT, max=maxT, value=c(setT1, setT2))
-        print ( sprintf ('updating RH time slider, limits are %s %s setting is %s %s', minT, maxT, setT1, setT2))
+        if (Trace) {
+          print ( sprintf ('updating RH time slider, limits are %s %s setting is %s %s', 
+            minT, maxT, setT1, setT2))
+        }
         # print (str(DRH))
         countRH <<- 1
       }
@@ -473,7 +493,7 @@ server <- function(input, output, session) {
     updateSelectInput(session, 'setCRT', selected='leg 1')
     if (item != 'none' && !is.na(item)) {
       item <- as.integer(item)
-      print (sprintf ('item %s nrow(CR)=%d', input$selCR, nrow(CR)))
+      if (Trace) {print (sprintf ('item %s nrow(CR)=%d', input$selCR, nrow(CR)))}
       if (is.na(item) || nrow(CR) < 1) {
         itemCR <<- item <- 0
         DCR <<- data.frame()
@@ -481,7 +501,7 @@ server <- function(input, output, session) {
       ProjDir <- input$ProjectPP
       if (!is.na(item) && item != 'none' && item != 0 && length(item) > 0 && item <= nrow(CR)) {
         itemCR <<- item
-        print (c('item, CR', item, CR[item,]))
+        if (Trace) {print (c('item, CR', item, CR[item,]))}
         if (grepl('HIPPO', ProjDir)) {ProjDir <- 'HIPPO'}
         VL <- c('LATC', 'LONC', 'TASX', 'GGALT', 'PITCH', 'ATTACK', 'ROLL', 'SSLIP', 'SSRD', 'BDIFR', 
           'QCF', 'WDC', 'WSC', 'THDG', 'VYC', 'GGVSPD', 'VEW', 'VNS', 'GGVNS', 'GGVEW')
@@ -493,7 +513,10 @@ server <- function(input, output, session) {
         setT2 <- DCR$Time[getIndex(DCR, CR$End[item])]
         # mint <- as.POSIXlt (minT, tz='UTC'); maxT <- as.POSIXlt (maxT, tz='UTC')
         updateSliderInput (session, 'sliderCR', min=minT, max=maxT, value=c(setT1, setT2))
-        print ( sprintf ('updating CR time slider, limits are %s %s setting is %s %s', minT, maxT, setT1, setT2))
+        if (Trace) {
+          print ( sprintf ('updating CR time slider, limits are %s %s setting is %s %s', 
+            minT, maxT, setT1, setT2))
+        }
         # print (str(DCR))
         countCR <<- 1
       }
@@ -524,7 +547,7 @@ server <- function(input, output, session) {
     if (Trace) {print (sprintf ('entered typeFlight observer with value %s', input$typeFlight))}
     typeFlight <<- input$typeFlight
     reac$newdata <- TRUE
-  })
+  }, priority=150) # Must be higher than 'times' observer, which calls data()
   
   observe ({
     if (input$ProjectPP != ProjectPP) {
@@ -573,6 +596,7 @@ server <- function(input, output, session) {
   exprbadFrozen=quote ({
     slct <- input$badFrozen
     if (Trace) {
+      tic('badFrozen observer')
       print (sprintf ('entered badFrozen, length(slct)=%d', length(slct)))
       print (c('slct', slct))
       print (c('chBAD', chBAD))
@@ -581,24 +605,24 @@ server <- function(input, output, session) {
       times <- isolate (input$timesFrozen)
       ## set slctd to match BAD
       slctd <- BAD$Flag[chBAD > 0]
-      print (c('reached badFrozen; slctd=', slctd))
+      if (Trace) {print (c('reached badFrozen; slctd=', slctd))}
       ## which has changed? (first, removals:)
-      print (sprintf ('slct=%s', slct))
+      if (Trace) {print (sprintf ('slct=%s', slct))}
       isl <- which (!slctd %in% slct)[1] 
       if (length (isl) < 1) {isl <- slctd}
-      print (sprintf('isl %s', isl))
+      if (Trace) {print (sprintf('isl %s', isl))}
       whichChange <- NA
       if (!is.na(isl) && length(isl) > 0) {
         whichChange <- as.integer(slctd[isl])
       } else {  ## addition
         isl <- which (!slct %in% slctd)[1]
         if (length (isl) < 1 && length(slct) > 0) {isl <- slct}
-        print (sprintf('isl2 %s', isl))
+        if (Trace) {print (sprintf('isl2 %s', isl))}
         if (length(isl) > 0) {
           whichChange <- as.integer(slct[isl])
         }
       }
-      print (sprintf ('whichChange=%d', whichChange))
+      if (Trace) {print (sprintf ('whichChange=%d', whichChange))}
       if (length(whichChange) > 0 && !is.na(whichChange)) {
         times <- c(BAD$Start[whichChange]-120, BAD$End[whichChange]+120)
         updateSliderInput (session, 'timesFrozen', value=times)
@@ -610,14 +634,15 @@ server <- function(input, output, session) {
         if (chBAD[i] %in% slct) {
           BAD$Flag[k] <<- abs(BAD$Flag[k])
           if (BAD$Flag[k] == 0) {BAD$Flag[k] <<- 1}
-          print (sprintf ('i=%d, chBAD[i]=%s', i, chBAD[i]))
+          if (Trace) {print (sprintf ('i=%d, chBAD[i]=%s', i, chBAD[i]))}
         } else {
           BAD$Flag[k] <<- -abs(BAD$Flag[k])
           if (BAD$Flag[k] == 0) {BAD$Flag[k] <<- -1}
-          print (sprintf ('i=%d, reset chBAD[i]=%s', i, chBAD[i]))
+          if (Trace) {print (sprintf ('i=%d, reset chBAD[i]=%s', i, chBAD[i]))}
         }
       }
     }
+    if (Trace) {toc()}
   })
   obsbadFrozen <- observe (exprbadFrozen, quoted=TRUE, priority=10)
   
@@ -1319,8 +1344,11 @@ server <- function(input, output, session) {
   ## end of the 'frozen' server section       ######################
   
   observe ({                              ## VRP
-    if (Trace) {print (sprintf ('entered VRP, Project=%s %s',
-      input$Project, Project))}
+    if (Trace) {
+      tic('VRP observer')
+      print (sprintf ('entered VRP, Project=%s %s',
+      input$Project, Project))
+    }
     if (input$Project != Project) {
       Project <<- Project <- input$Project
       if (Trace) {print (sprintf ('set new project: %s', Project))}
@@ -1361,9 +1389,14 @@ server <- function(input, output, session) {
       }
       VRPlot <<- loadVRPlot (Project, FALSE, 1, psq)
     }
-  }, priority=10)
+    if (Trace) {toc()}
+  }, priority=200)
   
   observe ({                             ## time
+    ## Depends on:
+    input$Project
+    input$Flight
+    input$typeFlight
     if (Trace) {print ('setting time')}
     if (Trace) {print (sprintf ('Project and Flight: %s %s%02d',
       isolate(input$Project),
@@ -1392,7 +1425,7 @@ server <- function(input, output, session) {
       value=c(lowT, highT),
       min=minT, max=maxT)
     times <<- c(lowT, highT)
-  }, priority=0)
+  }, priority=100)
   
   observeEvent (input$panel_brush, {
     Brush <<- input$panel_brush
@@ -1418,8 +1451,11 @@ server <- function(input, output, session) {
     T2 <- as.POSIXlt(xmax, origin='1970-01-01', tz='UTC')
     TB1 <- T1$hour*10000 + T1$min*100 + T1$sec
     TB2 <- T2$hour*10000 + T2$min*100 + T2$sec
-    print (sprintf ('panel brush times are %d %d', TB1, TB2))
-    print (sprintf ('ordinate limits are %f %f', ymin, ymax))
+    if (Trace) {
+      print (sprintf ('display brush times are %d %d', TB1, TB2))
+      print (sprintf ('display is %s, ordinate limits are %f %f', 
+        input$panel_brush$outputId, ymin, ymax))
+    }
     updateSliderInput (session, 'times', value=c(T1, T2))
     times <<- c(T1, T2)
   })
@@ -1770,7 +1806,10 @@ server <- function(input, output, session) {
   })
   
   data <- reactive({                     ## data
-    if (Trace) {print ('entered data')}
+    if (Trace) {
+      tic('data')
+      print ('entered data')
+    }
     # Project <<- Project <- input$Project
     reac$newdata
     reac$newdata <- FALSE
@@ -1825,8 +1864,10 @@ server <- function(input, output, session) {
       D <- getNetCDF (fname, VarList)
       if (ncol (D) > 1) {
         fname.last <<- fname
+        if (Trace) {toc()}
         return (D)
       } else {
+        if (Trace) {toc()}
         print (sprintf ('fname=%s', fname))
         print (VarList)
         ## stopping to prevent looping
@@ -1853,6 +1894,7 @@ server <- function(input, output, session) {
             input$Flight, input$Flight))
           updateRadioButtons (session, 'typeFlight', label=NULL, selected='tf')
           typeFlight <<- 'tf'
+          if (Trace) {toc()}
           return (getNetCDF (fn, VarList))
         }
         ## return a substitute to avoid looping
@@ -1874,60 +1916,66 @@ server <- function(input, output, session) {
           D <- getNetCDF (fname, VarList)
           if (length (D) > 1) {
             fname.last <<- fname
+            if (Trace) {toc()}
             return (D)
           } else {
             print (sprintf ('fname=%s', fname))
             print (VarList)
+            if (Trace) {toc()}
             ## stopping to prevent looping
             stop ('variable not found; stopping to avoid looping')
           }
         } else {
+          if (Trace) {toc()}
           stop ('file not found; stopping to avoid looping')
         }
       }
     }
+    if (Trace) {toc()}
   })
   
   
   ################ OUTPUTS ########################
   
   output$M1 <- renderText ({
-    switch (psq[1, input$plot],
-      'Track Plot and z-t',
-      'Track Plot and z-t',
-      'Temperature history',
-      'Temp. scatterplots',
-      'Humidity plots',
-      'pressure',
-      'dynamic p/TAS/M',
-      'total pressure',
-      'wind',
-      'Schuler/comp f.',
-      'AKRD/SSRD',
-      'IRU comparison',
-      'more IRU',
-      'radiation',
-      'concentrations',
-      'dbar/lwc/housek.',
-      'skew-T diagram',
-      'plot not available',
-      'potential T',
-      'CDP',
-      'UHSAS/PCASP',
-      '2DC (1D sizes)',
-      'air chemistry',
-      'extra2',
-      'extra'
-    )
+    switch (psq[1, input$plot], PlotTypes)
+    #   'Track Plot and z-t',
+    #   'Track Plot and z-t',
+    #   'Temperature history',
+    #   'Temp. scatterplots',
+    #   'Humidity plots',
+    #   'pressure',
+    #   'dynamic p/TAS/M',
+    #   'total pressure',
+    #   'wind',
+    #   'Schuler/comp f.',
+    #   'AKRD/SSRD',
+    #   'IRU comparison',
+    #   'more IRU',
+    #   'radiation',
+    #   'concentrations',
+    #   'dbar/lwc/housek.',
+    #   'skew-T diagram',
+    #   'plot not available',
+    #   'potential T',
+    #   'CDP',
+    #   'UHSAS/PCASP',
+    #   '2DC (1D sizes)',
+    #   'air chemistry',
+    #   'extra2',
+    #   'extra'
+    # )
   })
   
   output$display <- renderPlot ({  ## display
+    input$times
     # input$typeFlight
     if (is.null(input$times[1])) {
       if (Trace) {print ('in display but input time is NULL')}
       return ()
     }
     if (Trace) {
+      tic('display1')
       print ('display entry, reac$newdisplay is:')
       print (reac$newdisplay)
     }
@@ -2009,13 +2057,18 @@ server <- function(input, output, session) {
           FigDatestr),1,outer=T,cex=0.75)
       }
       # Only generate the first panel here:
+      # source the plot routine if needed:
+      sourceFile <- sprintf ('RPlot%d', psq[1, input$plot])
+      if (!exists (sourceFile)) {
+        source(sprintf ('PlotFunctions/%s.R', sourceFile))
+      }
       if (input$limits) {
         DataV <- transferAttributes(DataV, DataVa)
         eval(parse(text=sprintf("RPlot%d(DataV, Seq=%d, panl=1)",
           psq[1, input$plot], psq[2, input$plot])))
       } else {
         Data <- transferAttributes(Data, DataVa)
-        DataVc <<- Data
+        # DataVc <<- Data
         eval(parse(text=sprintf("RPlot%d(Data, Seq=%d, panl=1)",
           psq[1, input$plot], psq[2, input$plot])))
       }
@@ -2024,12 +2077,14 @@ server <- function(input, output, session) {
       #       si <- input$plot
       #       updateSelectInput (session, 'Rplot', selected=st[si])
       if (Trace) {print ('finished display')}
-    } 
+    }
+    if (Trace) {toc()}
   }, width=920, height=function() 680 / dpan[input$plot] # , width=920, height = plotHeight # 1200
   ) #height=680)
   
   
   output$display2 <- renderPlot ({  ## display
+    input$times   ## for dependence on time change
     # # input$typeFlight
     # if (is.null(input$times[1])) {
     #   if (Trace) {print ('in display but input time is NULL')}
@@ -2091,13 +2146,18 @@ server <- function(input, output, session) {
       }
       DataV$DPXC[!is.na(DataV$DPXC) & (DataV$DPXC < -1000)] <- NA
       if (dpan[input$plot] > 1) {
+        # source the plot routine if needed:
+        sourceFile <- sprintf ('RPlot%d', psq[1, input$plot])
+        if (!exists (sourceFile)) {
+          source(sprintf ('PlotFunctions/%s.R', sourceFile))
+        }
         if (input$limits) {
           DataV <- transferAttributes(DataV, DataVa)
           eval(parse(text=sprintf("RPlot%d(DataV, Seq=%d, panl=2)",
             psq[1, input$plot], psq[2, input$plot])))
         } else {
           Data <- transferAttributes(Data, DataVa)
-          DataVc <<- Data
+          # DataVc <<- Data
           eval(parse(text=sprintf("RPlot%d(Data, Seq=%d, panl=2)",
             psq[1, input$plot], psq[2, input$plot])))
         }
@@ -2116,6 +2176,7 @@ server <- function(input, output, session) {
   )
   
   output$display3 <- renderPlot ({  ## display
+    input$times   ## for dependence on time change
     # # input$typeFlight
     # if (is.null(input$times[1])) {
     #   if (Trace) {print ('in display but input time is NULL')}
@@ -2130,7 +2191,7 @@ server <- function(input, output, session) {
       # input$PlotVar
       Project <- input$Project
       # VRPlot <- VRP ()
-      if (Trace) {print ('entered display2')}
+      if (Trace) {print ('entered display3')}
       # VRPlot <<- VRPlot
       Data <- data()
       DataRef <<- Data
@@ -2177,13 +2238,18 @@ server <- function(input, output, session) {
       }
       DataV$DPXC[!is.na(DataV$DPXC) & (DataV$DPXC < -1000)] <- NA
       if (dpan[input$plot] > 2) {
+        # source the plot routine if needed:
+        sourceFile <- sprintf ('RPlot%d', psq[1, input$plot])
+        if (!exists (sourceFile)) {
+          source(sprintf ('PlotFunctions/%s.R', sourceFile))
+        }
         if (input$limits) {
           DataV <- transferAttributes(DataV, DataVa)
           eval(parse(text=sprintf("RPlot%d(DataV, Seq=%d, panl=3)",
             psq[1, input$plot], psq[2, input$plot])))
         } else {
           Data <- transferAttributes(Data, DataVa)
-          DataVc <<- Data
+          # DataVc <<- Data
           eval(parse(text=sprintf("RPlot%d(Data, Seq=%d, panl=3)",
             psq[1, input$plot], psq[2, input$plot])))
         }
@@ -2202,6 +2268,7 @@ server <- function(input, output, session) {
   ) #height=680)
   
   output$display4 <- renderPlot ({  ## display
+    input$times   ## for dependence on time change
     # # input$typeFlight
     # if (is.null(input$times[1])) {
     #   if (Trace) {print ('in display but input time is NULL')}
@@ -2263,13 +2330,18 @@ server <- function(input, output, session) {
       }
       DataV$DPXC[!is.na(DataV$DPXC) & (DataV$DPXC < -1000)] <- NA
       if (dpan[input$plot] > 3) {
+        # source the plot routine if needed:
+        sourceFile <- sprintf ('RPlot%d', psq[1, input$plot])
+        if (!exists (sourceFile)) {
+          source(sprintf ('PlotFunctions/%s.R', sourceFile))
+        }
         if (input$limits) {
           DataV <- transferAttributes(DataV, DataVa)
           eval(parse(text=sprintf("RPlot%d(DataV, Seq=%d, panl=4)",
             psq[1, input$plot], psq[2, input$plot])))
         } else {
           Data <- transferAttributes(Data, DataVa)
-          DataVc <<- Data
+          # DataVc <<- Data
           eval(parse(text=sprintf("RPlot%d(Data, Seq=%d, panl=4)",
             psq[1, input$plot], psq[2, input$plot])))
         }
@@ -2284,13 +2356,7 @@ server <- function(input, output, session) {
     }
   }
   ) 
-  
-  ## try to get all other changes before display generation
-  outputOptions(output, "display", priority = -1000)
-  outputOptions(output, "display2", priority = -1000)
-  outputOptions(output, "display3", priority = -1000)
-  outputOptions(output, "display4", priority = -1000)
-  
+
   output$stats <- renderDataTable ({
     if (Trace) {print ('entered stats')}
     input$times
@@ -4641,7 +4707,10 @@ server <- function(input, output, session) {
   
   observe ({
     itm <- input$overshoot
-    print (sprintf ('entry to overshoot observer, overshoot item = %s', itm))
+    if (Trace) {
+      tic('overshoot observer')
+      print (sprintf ('entry to overshoot observer, overshoot item = %s', itm))
+    }
     if (itm != 'none' && length(itm) > 0) {
       itm <- as.integer(itm)
       # if (itm == itmL) {DQF$Use[itm] <<- !DQF$Use[itm]}
@@ -4670,11 +4739,15 @@ server <- function(input, output, session) {
         chDQF <<- chDQF
       }
     }
+    if (Trace) {toc()}
   })
   
   observe ({
-    print (sprintf ('entry to dqftimes observer, value is %s %s', 
-      input$dqftimes[1], input$dqftimes[2]))
+    if (Trace) {
+      tic('dqftimes observer')
+      print (sprintf ('entry to dqftimes observer, value is %s %s', 
+        input$dqftimes[1], input$dqftimes[2]))
+    }
     itm <- isolate(input$overshoot)
     if (length(itm) > 0 && itm != 'none') {
       itm <- as.integer(itm)
@@ -4683,8 +4756,10 @@ server <- function(input, output, session) {
         DQF$Use[itm] <<- TRUE
         DQF$Start[itm] <<- times[1]
         DQF$End[itm] <<- times[2]
-        print (s <- sprintf ('Y %d %s-%s', itm, 
-          formatTime(DQF$Start[itm]), formatTime(DQF$End[itm])))
+        if (Trace) {
+          print (s <- sprintf ('Y %d %s-%s', itm, 
+            formatTime(DQF$Start[itm]), formatTime(DQF$End[itm])))
+        }
         chDQF[itm] <<- sprintf ('%d', itm)
         names(chDQF)[itm] <<- s
         chDQF <<- chDQF

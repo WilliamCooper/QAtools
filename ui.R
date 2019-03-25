@@ -5,8 +5,8 @@
 # http://shiny.rstudio.com
 #
 
+
 ui <- fluidPage (
-  
   # Application title
   titlePanel("QA / QC Tools"),
   tabsetPanel (id='whichTab', type='pills',
@@ -709,28 +709,10 @@ ui <- fluidPage (
       
       
       sidebarLayout ( sidebarPanel(width=3, 
-        textOutput ('M1'),
+        # textOutput ('M1'),
         selectInput ('Rplot', label='plot class',
-          selectize=FALSE, size=14,
-          choices=c('flight track',
-            'altitude, heading',
-            'temperature',
-            'humidity',
-            'static pressure',
-            'dynamic pressure',
-            'total pressure',
-            'airspeed',
-            'wind',
-            'angles, ADIFR, BDIFR',
-            'radiation',
-            'aerosols',
-            'cloud probes',
-            'liquid water',
-            'size distributions',
-            'trace gases',
-            'skew-T',
-            'potential T',
-            'extras')),
+          selectize = FALSE, size=14,
+          choices=PlotTypes),
         fluidRow (
           column(6, checkboxInput ('limits','apply restrictions')),
           column(6, checkboxInput('ybrush', 'brush for ordinate?', value=FALSE))
@@ -744,17 +726,20 @@ ui <- fluidPage (
           verticalLayout(
             plotOutput (outputId='display', 
               dblclick = "plot_dblclick", 
-              brush=brushOpts(id='panel_brush', 
-              resetOnNew=TRUE), inline=TRUE), # delay=3000, delayType='debounce', resetOnNew=TRUE))),
+              brush=brushOpts(id='panel_brush', delay=1000, delayType='debounce',
+                resetOnNew=TRUE), inline=TRUE),
             plotOutput (outputId='display2', 
               dblclick = "plot_dblclick", 
-              brush=brushOpts(id='panel_brush', resetOnNew=TRUE),inline=TRUE), #,
+              brush=brushOpts(id='panel_brush', delay=1000, delayType='debounce',
+                resetOnNew=TRUE),inline=TRUE), #,
             plotOutput (outputId='display3',
               dblclick = "plot_dblclick", 
-              brush=brushOpts(id='panel_brush', resetOnNew=TRUE),inline=TRUE),
+              brush=brushOpts(id='panel_brush', delay=1000, delayType='debounce',
+                resetOnNew=TRUE), inline=TRUE),
             plotOutput (outputId='display4',
               dblclick = "plot_dblclick", 
-              brush=brushOpts(id='panel_brush', resetOnNew=TRUE),inline=TRUE)
+              brush=brushOpts(id='panel_brush', delay=1000, delayType='debounce',
+                resetOnNew=TRUE), inline=TRUE)
             )
           ),
           tabPanel ('stats', dataTableOutput ('stats')),
@@ -1071,6 +1056,7 @@ ui <- fluidPage (
     )
   )
 )
+
 
 
 
