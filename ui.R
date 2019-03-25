@@ -711,7 +711,7 @@ ui <- fluidPage (
       sidebarLayout ( sidebarPanel(width=3, 
         # textOutput ('M1'),
         selectInput ('Rplot', label='plot class',
-          selectize = FALSE, size=14,
+          selectize = FALSE, size=length(PlotTypes),
           choices=PlotTypes),
         fluidRow (
           column(6, checkboxInput ('limits','apply restrictions')),

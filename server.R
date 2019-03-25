@@ -207,18 +207,23 @@ server <- function(input, output, session) {
   
   ################ OBSERVERS ########################
   
-  exprPlot <- quote ({  ## clear any remnant specs for ordinate scale
+  exprPlot <- quote ({  
     input$plot  ## for dependence
     # Set Rplot appropriately:
     Rp <- min (which(input$plot < as.integer (PlotTypes))[1] - 1, 
-      length (PlotTypes))
-    if (Trace) {
-      print (sprintf ('updating Rplot with plot=%d, Rp=%d',
-      input$plot, Rp))
+               length (PlotTypes))
+    if (TRUE) {
+      print (sprintf ('entered Plot observer, plot=%d, Rp=%d',
+        input$plot, Rp))
     }
-    if (!is.null (Rp)) {
-      updateSelectInput(session, 'Rplot', selected=as.integer(PlotTypes[Rp]))
+    if (!is.null (Rp) && (PlotTypes[Rp] != isolate(input$Rplot))) {
+      updateSelectInput(session, inputId='Rplot', selected=PlotTypes[Rp])
+      if (TRUE) {
+        print (sprintf ('updating Rplot with plot=%d, Rp=%d',
+          input$plot, Rp))
+      }
     }
+    ## clear any remnant specs for ordinate scale
     while (exists('panel1ylim')) {rm(panel1ylim, inherits=TRUE)}
     while (exists('panel2ylim')) {rm(panel2ylim, inherits=TRUE)}
     while (exists('panel3ylim')) {rm(panel3ylim, inherits=TRUE)}
@@ -280,7 +285,20 @@ server <- function(input, output, session) {
     # vp <- as.integer (PlotTypes [as.integer (input$Rplot)])
     # print (sprintf ('Rplot is %s, vp = %d', input$Rplot, vp))
     # Rplot <<- input$Rplot
-    updateNumericInput (session, 'plot', value=as.integer(input$Rplot))
+    ## Don't reset if the Rplot value is consistent with the existing plot.
+    ## That avoids reset in case of decrementing plot into a new range of
+    ## Rplot plots, as in changing from plot 9 to plot 8, which otherwise
+    ## would reset plot to 5.
+    np <- isolate (input$plot)
+    Rp <- min (which(np < as.integer (PlotTypes))[1] - 1, 
+      length (PlotTypes))
+    if (input$Rplot != PlotTypes[Rp]) {
+      updateNumericInput (session, 'plot', value=as.integer(input$Rplot))
+      if (TRUE) {
+        print (sprintf ('Rplot observer: update plot to %d',
+          as.integer (input$Rplot)))
+      }
+    }
   })
   
   # observeEvent (input$Tmaneuvers, {
@@ -2079,7 +2097,7 @@ server <- function(input, output, session) {
       if (Trace) {print ('finished display')}
     }
     if (Trace) {toc()}
-  }, width=920, height=function() 680 / dpan[input$plot] # , width=920, height = plotHeight # 1200
+  }, width=WWidth, height=function() WHeight / dpan[input$plot] # , width=920, height = plotHeight # 1200
   ) #height=680)
   
   
@@ -2164,13 +2182,13 @@ server <- function(input, output, session) {
       }
       if (Trace) {print ('finished display2')}
     }
-  }, width=920, height=function() {
+  }, width=WWidth, height=function() {
     if (dpan[input$plot] < 2) {
       return(10) 
     } else if(dpan[input$plot] == 2) { # increase height of last panel a little
-      return(680 * 6 / 5 / dpan[input$plot])
+      return(WHeight * 6 / 5 / dpan[input$plot])
     } else {
-      return(680 / dpan[input$plot])
+      return(WHeight / dpan[input$plot])
     }#, width=920, height = 480 # 1200 
   }
   )
@@ -2256,13 +2274,13 @@ server <- function(input, output, session) {
       }
       if (Trace) {print ('finished display3')}
     }
-  }, width=920, height=function() {
+  }, width=WWidth, height=function() {
     if (dpan[input$plot] < 3) {
       return(10) 
     } else if(dpan[input$plot] == 3) { # increase height of last panel a little
-      return(680 * 6 / 5 / dpan[input$plot])
+      return(WHeight * 6 / 5 / dpan[input$plot])
     } else {
-      return(680 / dpan[input$plot])
+      return(WHeight / dpan[input$plot])
     }#, width=920, height = 480 # 1200
   }
   ) #height=680)
@@ -2348,11 +2366,11 @@ server <- function(input, output, session) {
       }
       if (Trace) {print ('finished display2')}
     }
-  }, width=920, height=function() {
+  }, width=WWidth, height=function() {
     if (dpan[input$plot] < 4) {
       return(10) 
     } else { # increase height of last panel a little
-      return(680 * 6 / 5 / dpan[input$plot])
+      return(WHeight * 6 / 5 / dpan[input$plot])
     }
   }
   ) 
