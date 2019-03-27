@@ -4,7 +4,6 @@ RPlot15 <- function(data, Seq=NA, panl=1) {
   # For a call from savePDF this will be FALSE.
   shinyDisplay <- any(grepl('renderPlot', sys.calls()))
   
-  
   panel11 <- function(data) {
     if (is.na(VRPlot[[15]][1])) {
       plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
@@ -38,14 +37,10 @@ RPlot15 <- function(data, Seq=NA, panl=1) {
       }
       
       if (length(va) > 0) {
-        ifelse (exists ('panel1ylim'),
-          plotWAC (data[, c("Time", va)], 
-          logxy='y', ylim=panel1ylim, 
-          ylab=expression (paste ("CONCy [cm"^"-3"*"]"))),
-          plotWAC (data[, c("Time", va)], 
-            logxy='y', ylim=c(1,1.e5), 
-            ylab=expression (paste ("CONCy [cm"^"-3"*"]")))
-        )
+        plotWAC (data[, c("Time", va)], 
+          logxy='y', 
+          ylim = YLMF (1, c(1, 1.e5)), 
+          ylab=expression (paste ("CONCy [cm"^"-3"*"]")))
         title ("1-min filter", cex.main=0.75)
       } else {
         plot (0,0, xlim=c(data$Time[1], data$Time[nrow(data)]), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
@@ -74,14 +69,10 @@ RPlot15 <- function(data, Seq=NA, panl=1) {
       data[!is.na(data[, v]) & (data[, v] <= 0), v] <- NA
     }
     if (length(va2) > 0) {
-      ifelse (exists ('panel2ylim'),
-        plotWAC (data[, c("Time", va2)],
-          logxy='y', ylim=panel2ylim, 
-          ylab=expression(paste("CONCy [cm"^"-3"*"]"))),
-        plotWAC (data[, c("Time", va2)],
-          logxy='y', ylim=c(0.0001,1e4), 
-          ylab=expression(paste("CONCy [cm"^"-3"*"]")))
-      )
+      plotWAC (data[, c("Time", va2)],
+        logxy='y', 
+        ylim = YLMF (2, c(1.e-4, 1e4)),  
+        ylab=expression(paste("CONCy [cm"^"-3"*"]")))
       title ("1-min filter", cex.main=0.75)
     } 
   }
@@ -97,14 +88,9 @@ RPlot15 <- function(data, Seq=NA, panl=1) {
     nm7 <- names(data)[grepl("USMPFLW_", names(data))]
     USMPFLW <- data[, nm7]
     USHF <- USHFLW/10
-    ifelse (exists ('panel1ylim'),
-      plotWAC (data.frame(Time=data$Time, USMPFLW, USHF),
-        ylab="flows", legend.position='topright',
-        ylim=panel1ylim),
-      plotWAC (data.frame(Time=data$Time, USMPFLW, USHF),
-        ylab="flows", legend.position='topright',
-        ylim=c(0,2.5))
-    )
+    plotWAC (data.frame(Time=data$Time, USMPFLW, USHF),
+      ylab="flows", legend.position='topright',
+      ylim = YLMF (1, c(0, 2.5)))
     hline (0.82, 'blue'); hline (1, 'darkgreen'); hline(0.5, 'red'); hline (1.5, 'red')
     legend ("topleft", legend=c("dashed red: limits for FCNC, XICNC, PFLWC", 
       "dashed blue-green: expected values for corresponding flows"), text.col=c('red', 'blue'), cex=0.55)
@@ -116,12 +102,9 @@ RPlot15 <- function(data, Seq=NA, panl=1) {
     UREF <- data[, nm8]
     nm9 <- names(data)[grepl("USCAT_", names(data))]
     USCAT <- data[, nm9]
-    ifelse (exists ('panel2ylim'),
-      plotWAC (data.frame (Time=data$Time, UREF, USCAT), 
-        ylab="laser V", legend.position='topright', ylim=panel2ylim),
-      plotWAC (data.frame (Time=data$Time, UREF, USCAT), 
-        ylab="laser V", legend.position='topright', ylim=c(0,10))
-    )
+    plotWAC (data.frame (Time=data$Time, UREF, USCAT), 
+      ylab="laser V", legend.position='topright', 
+      ylim = YLMF (2, c(0, 10)))
     hline (2.10, 'blue'); hline (1.90, 'darkgreen'); hline(6, 'red'); hline (9.95, 'red')
     title ("dashed-blue: lower limit for UREF; dashed-green: upper limit for USCAT", 
       cex.main=0.65)
@@ -130,41 +113,42 @@ RPlot15 <- function(data, Seq=NA, panl=1) {
   
   ############################################################
   if (shinyDisplay) {
-    op <- par (mfrow=c(1,1), mar=c(5,5,1,1)+0.1,oma=c(1.1,0,0,0))
     nseq <- 2*(Seq-1) + panl
     switch(nseq,
       {
-        op <- par (mar=c(1,5,1,1)+0.1)
-        panel11(data)
+        setMargins (2)
+        panel11 (data)
       },
       {
-        panel12(data)
-        AddFooter()
+        setMargins (3)
+        panel12 (data)
+        AddFooter ()
       },
       {
-        op <- par (mar=c(1,5,1,1)+0.1)
-        panel21(data)
+        setMargins (2)
+        panel21 (data)
       },
       {
-        panel22(data)
-        AddFooter()
+        setMargins (3)
+        panel22 (data)
+        AddFooter ()
       }
     )
     ############################################################
   } else {
     layout(matrix(1:2, ncol = 1), widths = 1, heights = c(5,6))
     if (is.na(Seq) || (Seq == 1)) {
-      op <- par (mar=c(2,4,1,1)+0.1,oma=c(1.1,0,0,0))
-      panel11(data)
-      op <- par (mar=c(5,4,1,1)+0.1)
-      panel12(data)
+      setMargins (4)
+      panel11 (data)
+      setMargins (5)
+      panel12 (data)
       AddFooter ()
       if (!is.na(Seq) && (Seq == 1)) {return ()}
     }
-    op <- par (mar=c(5,4,1,1)+0.1)
-    panel21(data)
-    op <- par (mar=c(5,4,1,1)+0.1)
-    panel22(data)
+    setMargins (4)
+    panel21 (data)
+    setMargins (5)
+    panel22 (data)
     AddFooter ()
   }
 }

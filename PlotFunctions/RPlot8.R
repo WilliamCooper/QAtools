@@ -1,6 +1,6 @@
 ### plot 8: total pressure (static + dynamic)
 RPlot8 <- function (data, Seq=NA, panl=1, ...) { 
-  op <- par (mar=c(5,4,1,1)+0.1, oma=c(1.1,0,0,0))
+  setMargins(1)
   layout(matrix(1:1, ncol = 1), widths = 1, heights = 5)
   DFP <- data.frame(Time=data$Time)
   ## find possible pairs
@@ -36,19 +36,16 @@ RPlot8 <- function (data, Seq=NA, panl=1, ...) {
   }
   names(DFP) <- colnames
   # colnames(DF) <- c("Time", "PtotF", "PtotAvionics", "Diff*20+500", 'PCOR chk')
-  ifelse (exists ('panel1ylim'),
-    plotWAC (DFP, col=c('blue', 'darkgreen', 'red', 'cyan', 'darkorange'), 
-      ylab='Ptot [hPa]', legend.position='topright', ylim=panel1ylim),
-    plotWAC (DFP, col=c('blue', 'darkgreen', 'red', 'cyan', 'darkorange'), 
-      ylab='Ptot [hPa]', legend.position='topright')
-  )
+  plotWAC (DFP, col=c('blue', 'darkgreen', 'red', 'cyan', 'darkorange'), 
+    ylab='Ptot [hPa]', legend.position='topright', 
+    ylim = YLMF (1, range (as.matrix (DFP[, colnames[-1]]), finite=TRUE)))
   abline(h=520, col='red', lty=2); abline(h=480, col='red', lty=2)
   if (length (VRPlot[[8]]) > 4) {
     title (sprintf ("mean differences avionics - research 1 & 2: %.2f %.2f",
       (mean (DFP$Diff1, na.rm=TRUE)-500)/20, (mean (DFP$Diff2, na.rm=TRUE)-500)/20), cex.main=0.75)
   } else {
     title (sprintf ("mean difference avionics-research: %.2f", 
-                  (mean (DFP$Diff1, na.rm=TRUE)-500)/20), cex.main=0.75)
+      (mean (DFP$Diff1, na.rm=TRUE)-500)/20), cex.main=0.75)
   }
   hline (0.2); hline (-0.2)
   AddFooter ()

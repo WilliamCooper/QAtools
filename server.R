@@ -212,13 +212,13 @@ server <- function(input, output, session) {
     # Set Rplot appropriately:
     Rp <- min (which(input$plot < as.integer (PlotTypes))[1] - 1, 
                length (PlotTypes))
-    if (TRUE) {
+    if (Trace) {
       print (sprintf ('entered Plot observer, plot=%d, Rp=%d',
         input$plot, Rp))
     }
     if (!is.null (Rp) && (PlotTypes[Rp] != isolate(input$Rplot))) {
       updateSelectInput(session, inputId='Rplot', selected=PlotTypes[Rp])
-      if (TRUE) {
+      if (Trace) {
         print (sprintf ('updating Rplot with plot=%d, Rp=%d',
           input$plot, Rp))
       }
@@ -294,7 +294,7 @@ server <- function(input, output, session) {
       length (PlotTypes))
     if (input$Rplot != PlotTypes[Rp]) {
       updateNumericInput (session, 'plot', value=as.integer(input$Rplot))
-      if (TRUE) {
+      if (Trace) {
         print (sprintf ('Rplot observer: update plot to %d',
           as.integer (input$Rplot)))
       }

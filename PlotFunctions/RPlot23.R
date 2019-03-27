@@ -10,19 +10,14 @@ RPlot23 <- function (data, Seq=NA, panl=1) {
     # plot CO2
     if ("CO2C_PIC2401" %in% names(data)) {
       if ("CO2_PIC2401" %in% names(data)) {
-        ifelse (exists ('panel1ylim'),
           plotWAC (data[, c("Time", "CO2_PIC2401", "CO2C_PIC2401")], 
-            ylab="ppmv", lty=c(1,1), lwd=c(2), ylim=panel1ylim),
-          plotWAC (data[, c("Time", "CO2_PIC2401", "CO2C_PIC2401")], 
-            ylab="ppmv", lty=c(1,1), lwd=c(2))
-        )
+            ylab="ppmv", lty=c(1,1), lwd=c(2), 
+            ylim = YLMF (1, range (as.matrix (
+              data[, c("CO2_PIC2401", "CO2C_PIC2401")]), finite=TRUE)))
       } else {
-        ifelse (exists ('panel1ylim'),
           plotWAC (data[, c("Time", "CO2C_PIC2401")], ylab="ppmv",
-            lty=c(1,1), lwd=c(2), ylim=panel1ylim),
-          plotWAC (data[, c("Time", "CO2C_PIC2401")], ylab="ppmv",
-            lty=c(1,1), lwd=c(2))
-        )
+            lty=c(1,1), lwd=c(2), 
+            ylim=YLMF (1, range (data[, "CO2C_PIC2401"])))
       }
       title('Carbon Dioxide')
     }
@@ -33,19 +28,14 @@ RPlot23 <- function (data, Seq=NA, panl=1) {
     
     if ("CH4C_PIC2401" %in% names(data)) {
       if ("CH4_PIC2401" %in% names(data)) {
-        ifelse (exists ('panel2ylim'),
           plotWAC (data[, c("Time", "CH4_PIC2401", "CH4C_PIC2401")], 
-            ylab="ppmv", lty=c(1,1), lwd=c(2), ylim=panel2ylim),
-          plotWAC (data[, c("Time", "CH4_PIC2401", "CH4C_PIC2401")], 
-            ylab="ppmv", lty=c(1,1), lwd=c(2))
-        )
+            ylab="ppmv", lty=c(1,1), lwd=c(2), 
+            ylim = YLMF (2, range (as.matrix (
+              data[, c("CH4_PIC2401", "CH4C_PIC2401")]), finite=TRUE)))
       } else {
-        ifelse (exists ('panel2ylim'),
           plotWAC (data[, c("Time", "CH4C_PIC2401")], ylab="ppmv",
-            lty=c(1,1), lwd=c(2), ylim=panel2ylim),
-          plotWAC (data[, c("Time", "CH4C_PIC2401")], ylab="ppmv",
-            lty=c(1,1), lwd=c(2))
-        )
+            lty=c(1,1), lwd=c(2), 
+            ylim = YLMF(2, range(data[, "CH4C_PIC2401"], finite=TRUE)))
       }
       title('Methane')
     }
@@ -60,8 +50,8 @@ RPlot23 <- function (data, Seq=NA, panl=1) {
       dummyDF<-as.data.frame(data[,names(data[idx])])
       for (j in 1:ncol(dummyDF)){ 
         id<-which(!is.finite(dummyDF[,j]))
-        if (length(id)>0){
-          dummyDF[id,j]<-NA
+        if (Trace && (length(id)>0)) {
+          dummyDF[id,j] <- NA
           print(names(dummyDF)[j])
           print(range(dummyDF[,j],na.rm=TRUE))
         }
@@ -81,17 +71,11 @@ RPlot23 <- function (data, Seq=NA, panl=1) {
       ylm<-c(max(c(0,min(dummyDF, na.rm=TRUE))),
         min(c(max(dummyDF, na.rm=TRUE),400)))
       if (ylm[2]<ylm[1] | 'FALSE' %in% is.finite(ylm)){ ylm<-c(0,400)}
-      print(ylm)
-      ifelse (exists ('panel3ylim'),
+      if (Trace) {print(ylm)}
         plotWAC (DF, 
           ylab="ppb", 
-          ylim=panel3ylim,
-          lty=c(1,1), lwd=c(2)),
-        plotWAC (DF, 
-          ylab="ppb", 
-          ylim=ylm,
+          ylim = YLMF (3, ylm),
           lty=c(1,1), lwd=c(2))
-      )
       title(paste('Carbon Monoxide and Fast Ozone (if available, scaled',toString(round(SF,2)),')'))
     }
   }
@@ -104,12 +88,8 @@ RPlot23 <- function (data, Seq=NA, panl=1) {
     #   plotWAC(data[, c("Time", "COFLOW_AL")])
     # }
     if ("INLETP_AL" %in% names (data)) {
-      ifelse (exists ('panel4ylim'),
         plotWAC(data[, c("Time","INLETP_AL")], 
-          ylim=panel4ylim),
-        plotWAC(data[, c("Time","INLETP_AL")], 
-          ylim=c(range(data[,"INLETP_AL"], na.rm=TRUE) ))
-      )
+          ylim = YLMF (4, range(data[, "INLETP_AL"])))
       title('Inlet Pressure')
     }
     #legend('bottomright', legend=c("COFLOW", "INLETP"), pch=20, col=c('red', 'blue'))
@@ -118,23 +98,23 @@ RPlot23 <- function (data, Seq=NA, panl=1) {
   
   ###############################################################
   if (shinyDisplay) {
-    op <- par (mfrow=c(1,1), mar=c(5,5,1,1)+0.1,oma=c(1.1,0,0,0))
     switch (panl,
       {
-        op <- par (mar=c(1,5,1,1)+0.1)
-        panel11(data)
+        setMargins (2)
+        panel11 (data)
       },
       {
-        op <- par (mar=c(1,5,1,1)+0.1)
-        panel12(data)
+        setMargins (2)
+        panel12 (data)
       },
       {
-        op <- par (mar=c(1,5,1,1)+0.1)
-        panel13(data)
+        setMargins (2)
+        panel13 (data)
       },
       {
-        panel14(data)
-        AddFooter()
+        setMargins (3)
+        panel14 (data)
+        AddFooter ()
       }
     )
     
@@ -163,15 +143,15 @@ RPlot23 <- function (data, Seq=NA, panl=1) {
     # op <- par (mar=c(5,5,5,1),oma=c(0,3,0,3))
     # par(cex.lab=2, cex.main=2)
     layout (matrix(1:4, ncol=1), widths=1, heights=c(5,5,5,6))
-    op <- par (mar=c(2,4,1,1)+0.1,oma=c(1.1,0,0,0))
     
     
     if (is.na(Seq) || Seq == 1) {
-      panel11(data)
-      panel12(data)
-      panel13(data)
-      op <- par (mar=c(5,4,1,1)+0.1)
-      panel14(data)
+      setMargins (4)
+      panel11 (data)
+      panel12 (data)
+      panel13 (data)
+      setMargins (5)
+      panel14 (data)
       AddFooter ()
       if (!is.na(Seq) && (Seq == 1)) {return()}
     }

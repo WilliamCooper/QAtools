@@ -18,12 +18,9 @@ RPlot12 <- function (data, Seq=NA, panl=1, ...) {
     }
     line.colors=c('blue', 'darkorange', 'red', 'skyblue')
     line.types <- c(1, 9, 1, 2)
-    ifelse (exists ('panel1ylim'),
-      plotWAC (DF, ylab="PITCH [deg.]",
-        col=line.colors, lty=line.types, ylim=panel1ylim),
-      plotWAC (DF, ylim=c(-10.,10.), ylab="PITCH [deg.]",
-        col=line.colors, lty=line.types)
-    )
+    plotWAC (DF, ylab="PITCH [deg.]",
+      col=line.colors, lty=line.types, 
+      ylim = YLMF (1, c(-10, 10)))
     axis (4, at=c(-2.5,0,2.5), labels=c("-0.05", "0", "0.05"), col='red', col.axis='red')
     hline (-2.5, 'red'); hline (2.5, 'red')
     legend("bottomleft", legend="dashed lines: +/- 0.05 deg Difference",
@@ -47,11 +44,8 @@ RPlot12 <- function (data, Seq=NA, panl=1, ...) {
     }
     line.colors=c('blue', 'darkorange', 'red', 'skyblue')
     line.types <- c(1, 9, 1, 2)
-    ifelse (exists ('panel2ylim'),
-      plotWAC (DF, ylab="ROLL [deg.]", col=line.colors, lty=line.types,
-        ylim=panel2ylim),
-      plotWAC (DF, ylab="ROLL [deg.]", col=line.colors, lty=line.types)
-    )
+    plotWAC (DF, ylab="ROLL [deg.]", col=line.colors, lty=line.types,
+      ylim = YLMF (2, range (as.matrix (DF[, ROLL]), finite=TRUE)))
     axis (4, at=c(-2.5,0,2.5), labels=c(NA, "+/-0.05", NA), col='red', col.axis='red')
     hline (-2.5, 'red'); hline (2.5, 'red')
     legend("bottomleft", legend="dashed lines: +/- 0.05 deg Difference",
@@ -83,12 +77,10 @@ RPlot12 <- function (data, Seq=NA, panl=1, ...) {
     }
     line.colors=c('blue', 'darkorange', 'red', 'skyblue')
     line.types <- c(1, 9, 1, 2)
-    ifelse (exists ('panel3ylim'),
-      plotWAC (DF, ylim=c(-60,390), ylab="THDG [deg.]",
-        col=line.colors, lty=line.types, ylim=panel3ylim),
-      plotWAC (DF, ylim=c(-60,390), ylab="THDG [deg.]",
-        col=line.colors, lty=line.types)
-    )
+    plotWAC (DF, 
+      ylim = YLMF (3, c(-60,390)), 
+      ylab="THDG [deg.]",
+      col=line.colors, lty=line.types)
     axis (4, at=c(180-25, 180, 180+25), labels=c(NA, "+/-0.05", NA), col='red', col.axis='red')
     hline (180-25, 'red'); hline (180+25, 'red')
     #hline (180-125, 'green', lwd=2)
@@ -104,19 +96,19 @@ RPlot12 <- function (data, Seq=NA, panl=1, ...) {
   
   #########################################################
   if(shinyDisplay) {
-    op <- par (mfrow=c(1,1), mar=c(5,5,1,1)+0.1,oma=c(1.1,0,0,0))
     switch(panl,
       {
-        op <- par (mar=c(1,5,1,1)+0.1)
-        panel11(data)
+        setMargins (2)
+        panel11 (data)
       },
       {
-        op <- par (mar=c(1,5,1,1)+0.1)
-        panel12(data)
+        setMargins (2)
+        panel12 (data)
       },
       {
-        panel13(data)
-        AddFooter()
+        setMargins (3)
+        panel13 (data)
+        AddFooter ()
       }
     )
     
@@ -129,12 +121,12 @@ RPlot12 <- function (data, Seq=NA, panl=1, ...) {
     #   thdg_offset <- -0.35
     # pitch_offset <- roll_offset <- thdg_offset <- 0
     layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,6))
-    op <- par (mar=c(2,4,1,2)+0.1,oma=c(1.1,0,0,0))
-    panel11(data)
-    panel12(data)
-    op <- par (mar=c(5,4,1,2)+0.1)
-    panel13(data)
+    setMargins (4)
+    panel11 (data)
+    panel12 (data)
+    setMargins (5)
+    panel13 (data)
     AddFooter ()
   }
 }  
-  
+

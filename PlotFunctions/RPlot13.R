@@ -8,10 +8,8 @@ RPlot13 <- function (data, Seq=NA, panl=1, ...) {
     ACINS <- VRPlot[[13]]
     ACINS <- ACINS[which("ACINS" == substr(ACINS, 1, 5))]
     DF <- data[, c("Time", ACINS)]
-    ifelse (exists ('panel1ylim'),
-      plotWAC (DF, ylab="ACINS", ylim=panel1ylim),
-      plotWAC (DF, ylab="ACINS")
-    )
+    plotWAC (DF, ylab="ACINS", 
+      ylim = YLMF (1, range(as.matrix (data[, ACINS]), finite=TRUE)))
     title (sprintf ("mean vertical acceleration: %.3f", 
       mean (data[, VRPlot[[13]][1]], na.rm=TRUE)))
   }
@@ -19,11 +17,8 @@ RPlot13 <- function (data, Seq=NA, panl=1, ...) {
   panel12 <- function(data) {
     VSPD <- VRPlot[[13]]
     VSPD <- VSPD[grep("VSPD", VSPD)]
-    ifelse (exists ('panel2ylim'),
-      plotWAC (data[, c("Time", VSPD)], legend.position='topright',
-        ylim=panel2ylim),
-      plotWAC (data[, c("Time", VSPD)], legend.position='topright')
-    )
+    plotWAC (data[, c("Time", VSPD)], legend.position='topright',
+      ylim = YLMF (2, range (as.matrix (data[, VSPD]), finite=TRUE)))
     title (sprintf ("mean vertical speed: %.3f (IRS) and %.3f (GPS)",
       mean (data$VSPD, na.rm=TRUE), mean (data$VSPD_A, na.rm=TRUE)))
   }
@@ -31,37 +26,35 @@ RPlot13 <- function (data, Seq=NA, panl=1, ...) {
   panel13 <- function(data) {
     ALT <- VRPlot[[13]]
     ALT <- ALT[grep("ALT", ALT)]
-    ifelse (exists ('panel3ylim'),
-      plotWAC (data[, c("Time", ALT)], legend.position = "top", ylim=panel3ylim),
-      plotWAC (data[, c("Time", ALT)], legend.position = "top")
-    )
+    plotWAC (data[, c("Time", ALT)], legend.position = "top", 
+      ylim = YLMF (3, range (as.matrix (data[, ALT]), finite=TRUE)))
   }
   
   
   #########################################################
   if (shinyDisplay) {
-    op <- par (mfrow=c(1,1), mar=c(5,5,1,1)+0.1,oma=c(1.1,0,0,0))
     switch(panl,
       {
-        op <- par (mar=c(1,5,1,1)+0.1)
-        panel11(data)
+        setMargins (2)
+        panel11 (data)
       },
       {
-        op <- par (mar=c(1,5,1,1)+0.1)
-        panel12(data)
+        setMargins (2)
+        panel12 (data)
       },
       {
-        panel13(data)
+        setMargins (3)
+        panel13 (data)
         AddFooter()
       }
     )
     #########################################################
   } else {
     layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,6))
-    op <- par (mar=c(2,4,1,1)+0.1,oma=c(1.1,0,0,0))
+    setMargins (4)
     panel11(data)
     panel12(data)
-    op <- par (mar=c(5,4,1,1)+0.1)
+    setMargins (5)
     panel13(data)
     AddFooter ()
   }

@@ -1,6 +1,6 @@
 ### plot 2: construct one-per-hour track plots
 RPlot2 <- function (data, ...) { 
-  ## add outer margin footer as for other plots?
+  ## not used in current versions; saved for special use
   op <- par (oma=c(1.1,0,0,0))
   SE <- getStartEnd(data$Time)
   for (hr in 0:32) {

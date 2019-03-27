@@ -72,7 +72,8 @@ RPlot1 <- function (data, Flight=NA, Seq=NA, panl=1) {
   
   ####################################################
   if (shinyDisplay) {
-    op <- par (mfrow=c(1,1), mar=c(5,5,1,4.5)+0.1,oma=c(1.1,0,0,0)) #last for Footer
+    op <- par (mfrow=c(1,1), mar=c(5,5,1,4.5)+0.1,oma=c(1.1,0,0,0)) 
+    # oma is for Footer; non-standard 4.5 for right axis
     if (Seq == 1) {
       panel11 (data, Flight)
       AddFooter()

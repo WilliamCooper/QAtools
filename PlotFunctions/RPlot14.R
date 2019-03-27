@@ -11,10 +11,8 @@ RPlot14 <- function(data, Seq=NA, panl=1, ...) {
     if (any(grepl("^RSTB", VRPlot[[14]]))) {
       RSTB <- VRPlot[[14]][grepl('^RSTB', VRPlot[[14]])]
       ylb1 <- expression (paste("RSTB [", degree, "C]"))
-      ifelse (exists ('panel1ylim'),
-        plotWAC (data[c('Time', RSTB)], ylab=ylb1, ylim=panel1ylim),
-        plotWAC (data[c('Time', RSTB)], ylab=ylb1)
-      )
+      plotWAC (data[c('Time', RSTB)], ylab=ylb1, 
+        ylim = YLMF (1, range (as.matrix (data[, RSTB]), finite=TRUE)))
       title('Radiometric Temperature')
     }
   }
@@ -24,12 +22,9 @@ RPlot14 <- function(data, Seq=NA, panl=1, ...) {
       RSTB <- VRPlot[[14]][grepl('^RSTB', VRPlot[[14]])]
       if (length(RSTB) > 1) {
         ylb2 <- expression (paste (Delta," [", degree, "C]"))
-        ifelse (exists ('panel2ylim'),
-          plotWAC(data$Time, data[, RSTB[1]]-data[, RSTB[2]],
-            ylim=panel2ylim, ylab=ylb2),
-          plotWAC(data$Time, data[, RSTB[1]]-data[, RSTB[2]],
-            ylim=c(-2,2), ylab=ylb2)
-        )
+        plotWAC(data$Time, data[, RSTB[1]]-data[, RSTB[2]],
+          ylim = YLMF (2, c(-2, 2)),
+          ylab=ylb2)
         abline(h=-0.3, lty=2); abline(h=0.3, lty=2)
         title (sprintf('%s - %s', RSTB[1], RSTB[2]))
       }
@@ -40,10 +35,8 @@ RPlot14 <- function(data, Seq=NA, panl=1, ...) {
     # next panel: RSTT
     if ("RSTT" %in% VRPlot[[14]]) {
       ylb3 <- expression (paste ("RSTT [", degree, "C]"))
-      ifelse (exists ('panel3ylim'),
-        plotWAC (data[, c("Time", "RSTT")], ylab=ylb3, ylim=panel3ylim),
-        plotWAC (data[, c("Time", "RSTT")], ylab=ylb3)
-      )
+      plotWAC (data[, c("Time", "RSTT")], ylab=ylb3, 
+        ylim = YLMF (3, range (as.matrix (data[, 'RSTT']), finite=TRUE)))
     }
   }
   
@@ -51,10 +44,8 @@ RPlot14 <- function(data, Seq=NA, panl=1, ...) {
     # Panel 4: TRSTB
     if ("TRSTB" %in% VRPlot[[14]]) {
       ylb4 <- expression (paste ('TRSTB [', degree, "C]"))
-      ifelse (exists ('panel4ylim'),
-        plotWAC (data[, c("Time", "TRSTB")], ylab=ylb4, ylim=panel4ylim),
-        plotWAC (data[, c("Time", "TRSTB")], ylab=ylb4)
-      )
+      plotWAC (data[, c("Time", "TRSTB")], ylab=ylb4, 
+        ylim = YLMF (4, range (data[, 'TRSTB'], finite=TRUE)))
       title('RSTB Sensor-Heat Setting')
       # par(new=T)
       # plotWAC(data[,c("Time","GGALT")], axes=FALSE, xlab=NA, ylab=NA, col='black', lwd=1)
@@ -67,22 +58,22 @@ RPlot14 <- function(data, Seq=NA, panl=1, ...) {
   
   ###########################################################
   if(shinyDisplay) {
-    op <- par (mfrow=c(1,1), mar=c(5,5,1,1)+0.1,oma=c(1.1,0,0,0))
     switch(panl,
       {
-        op <- par (mar=c(1,5,1,1)+0.1)
-        panel11(data)
+        setMargins (2)
+        panel11 (data)
       },
       {
-        op <- par (mar=c(1,5,1,1)+0.1)
-        panel12(data)
+        setMargins (2)
+        panel12 (data)
       },
       {
-        op <- par (mar=c(1,5,1,1)+0.1)
-        panel13(data)
+        setMargins (2)
+        panel13 (data)
       },
       {
-        panel14(data)
+        setMargins (3)
+        panel14 (data)
         AddFooter()
       }
     )
@@ -96,10 +87,10 @@ RPlot14 <- function(data, Seq=NA, panl=1, ...) {
     # op <- par (mar=c(5,4,1,2.5)+0.1,oma=c(1.1,0,0,0))
     
     layout(matrix(1:4, ncol = 1), widths=1, heights=c(5,5,5,6))
-    op <- par (mar=c(2,4,0.5,1)+0.1,oma=c(1.1,0,0,0))
-    panel11(data)
-    panel12(data)
-    panel13(data)
+    setMargins (4)
+    panel11 (data)
+    panel12 (data)
+    panel13 (data)
     # # next panel: VISB    
     #   if ("VISB" %in% VRPlot[[14]]) {
     #     plotWAC (data[, c("Time", "VISB")], ylab=ylb)
@@ -110,7 +101,8 @@ RPlot14 <- function(data, Seq=NA, panl=1, ...) {
     #     plotWAC (data[, c("Time", "IRBC", "IRTC")], ylab=ylb)
     #   } 
     #   }
-    panel14(data)
+    setMargins (5)
+    panel14 (data)
     AddFooter ()
   }
 }

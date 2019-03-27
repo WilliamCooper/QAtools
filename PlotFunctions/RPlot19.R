@@ -8,12 +8,9 @@ RPlot19 <- function (data, Seq=NA, panl=1) {
   panel11 <- function (data) {
     vp <- VRPlot$PV19[match(c('THETA', 'THETAV'), VRPlot$PV19)]
     vp <- vp[!is.na(vp)]
-    ifelse (exists ('panel1ylim'),
-      plotWAC (data[, c("Time", vp)], ylab="potential temperatures",
-        legend.position = "top", ylim=panel1ylim),
-      plotWAC (data[, c("Time", vp)], ylab="potential temperatures",
-        legend.position = "top")
-    )
+    plotWAC (data[, c("Time", vp)], ylab="potential temperatures",
+      legend.position = "top", 
+      ylim = YLMF (1, range (as.matrix (data[, vp]), finite=TRUE)))
   } 
   
   panel12 <- function (data){
@@ -28,29 +25,20 @@ RPlot19 <- function (data, Seq=NA, panl=1) {
       if (!("PLWCC" %in% names(data))) {data$PLWCC <- rep (0, nrow(data))}
       data$TQ2 <- WetEquivalentPotentialTemperature (data$PSXC, data$ATX, data$EWX, data$PLWCC)
       if (max (data$THETAE, na.rm=TRUE) < Inf) {
-        ifelse (exists ('panel2ylim'),
-          plotWAC (data[, c('Time', vp)], 
-            ylab="ad. pot. temperatures", 
-            ylim=panel2ylim,
-            legend.position = "top"),
-          plotWAC (data[, c('Time', vp)], 
-            ylab="ad. pot. temperatures", 
-            legend.position = "top")
-        )
+        plotWAC (data[, c('Time', vp)], 
+          ylab="ad. pot. temperatures", 
+          ylim = YLMF (2, range (as.matrix (data[, vp]), finite=TRUE)),
+          legend.position = "top")
         title (sprintf("mean difference THETAE-TP2=%.2f THETAQ-TQ2=%.2f", 
           mean(data$THETAP-data$TP2, na.rm=TRUE),
           mean(data$THETAQ-data$TQ2, na.rm=TRUE)), cex.main=0.7)
       }
     } else {
       if (max (data$THETAE, na.rm=TRUE) < Inf) {
-        ifelse (exists ('panel2ylim'),
-          plotWAC (data[, c('Time', vp)], 
-            ylab="ad. pot. temperatures", 
-            legend.position = "top", ylim=panel2ylim),
-          plotWAC (data[, c('Time', vp)], 
-            ylab="ad. pot. temperatures", 
-            legend.position = "top")
-        )
+        plotWAC (data[, c('Time', vp)], 
+          ylab="ad. pot. temperatures", 
+          legend.position = "top", 
+          ylim = YLMF (2, range (as.matrix (data[, vp]), finite=TRUE)))
         title (sprintf("mean difference THETAE-TP2=%.2f", 
           mean(data$THETAP-data$TP2, na.rm=TRUE)), cex.main=0.7)
       }
@@ -86,16 +74,16 @@ RPlot19 <- function (data, Seq=NA, panl=1) {
   
   ########################################################
   if (shinyDisplay) {
-    op <- par (mfrow=c(1,1), mar=c(5,5,1,1)+0.1,oma=c(1.1,0,0,0))
     nseq <- 2*(Seq-1) + panl
     switch (nseq,
       {
-        op <- par (mar=c(1,5,1,1)+0.1)
-        panel11(data)
+        setMargins (2)
+        panel11 (data)
       },
       {
-        panel12(data)
-        AddFooter()
+        setMargins (3)
+        panel12 (data)
+        AddFooter ()
       },
       {
         panel21(data)
@@ -107,9 +95,9 @@ RPlot19 <- function (data, Seq=NA, panl=1) {
   } else {
     ## needs THETA, THETAV, THETAE, THETAP, THETAQ, PSXC
     layout(matrix(1:2, ncol = 1), widths = 1, heights = c(5,6))
-    op <- par (mar=c(2,4,1,1)+0.1,oma=c(1.1,0,0,0))
+    setMargins (4)
     panel11 (data)
-    op <- par (mar=c(5,4,1,1)+0.1)
+    setMargins (5)
     panel12 (data)
     AddFooter ()
     if (!is.na(Seq) && (Seq == 1)) {return()}

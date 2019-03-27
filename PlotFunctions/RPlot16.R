@@ -5,7 +5,6 @@ RPlot16 <- function (data, Seq=NA, panl=1) {
   # For a call from savePDF this will be FALSE.
   shinyDisplay <- any(grepl('renderPlot', sys.calls()))
   
-  
   panel11 <- function(data) {
     if (is.na(VRPlot[[16]][1])) {
       plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
@@ -25,12 +24,10 @@ RPlot16 <- function (data, Seq=NA, panl=1) {
     #   op <- par (mar=c(5,4,1,1)+0.1)
     # }
     if (length (va) > 0) {
-      ifelse (exists ('panel1ylim'),
-        plotWAC (data[, c("Time", va)], ylim=panel1ylim, ylab="DBARU/P", 
-          legend.position="topright"),
-        plotWAC (data[, c("Time", va)], ylim=c(0,0.5), ylab="DBARU/P", 
-          legend.position="topright")
-      )
+      plotWAC (data[, c("Time", va)], 
+        ylim = YLMF (1, c(0, 0.5)), 
+        ylab="DBARU/P", 
+        legend.position="topright")
     }
     title ("1-min filter", cex.main=0.75)
   }
@@ -47,12 +44,10 @@ RPlot16 <- function (data, Seq=NA, panl=1) {
       va <- c(va, v)
     }
     if (length (va) > 0) {
-      ifelse (exists ('panel2ylim'),
-        plotWAC(data[, c("Time", va)], ylim=panel2ylim, ylab="DBAR", 
-          legend.position="topright"),
-        plotWAC(data[, c("Time", va)], ylim=c(0,30), ylab="DBAR", 
-          legend.position="topright")
-      )
+      plotWAC(data[, c("Time", va)], 
+        ylim = YLMF (2, c(0, 30)), 
+        ylab="DBAR", 
+        legend.position="topright")
       title ("1-min filter", cex.main=0.75) 
     }
   }
@@ -60,10 +55,8 @@ RPlot16 <- function (data, Seq=NA, panl=1) {
   panel13 <- function (data) {
     if (any(grepl("DBAR1DC_", VRPlot[[16]]))) {
       nm <- names(data)[grepl("DBAR1DC_", names(data))]
-      ifelse (exists ('panel3ylim'),
-        plotWAC(data[, c("Time", nm)], ylim=panel3ylim),
-        plotWAC(data[, c("Time", nm)])
-      )
+      plotWAC(data[, c("Time", nm)], 
+        ylim = YLMF (3, range (as.matrix (data[, nm]), finite=TRUE)))
     }
   }
   
@@ -78,39 +71,30 @@ RPlot16 <- function (data, Seq=NA, panl=1) {
       data[, v] <- SmoothInterp(data[, nm])
       va3 <- c(va3, v)
     }
-    ifelse (exists ('panel1ylim'),
-      plotWAC (data[, c("Time", va3)], ylim=panel1ylim, ylab="PLWCy", 
-        legend.position="topright"),
-      plotWAC (data[, c("Time", va3)], ylim=c(0,2), ylab="PLWCy", 
-        legend.position="topright")
-    )
+    plotWAC (data[, c("Time", va3)], 
+      ylim = YLMF (1, c(0,2)),
+      ylab="PLWCy", 
+      legend.position="topright")
     title ("1-min filter", cex.main=0.75)
   }
   
   panel22 <- function (data) {
     if ("PLWC" %in% names(data) && "RICE" %in% names(data)) {
-      ifelse (exists ('panel2ylim'),
-        plotWAC (data[, c("Time", "PLWC", "RICE")], ylim=panel2ylim, 
-          ylab="PLWC (Watts)"),
-        plotWAC (data[, c("Time", "PLWC", "RICE")], ylim=c(0,25), 
-          ylab="PLWC (Watts)")
-      )
+      plotWAC (data[, c("Time", "PLWC", "RICE")], 
+        ylim = YLMF (2, c(0, 25)), 
+        ylab="PLWC (Watts)")
       hline (10); hline (15)
     }
   }
   
   panel23 <- function (data) {    
-  LW <- VRPlot[[16]]
-  LW <- LW[which(("PLWC" == substr(LW, 1, 4)) & ("PLWC" != LW))]
-  if ('RICE' %in% names (data)) {LW <- c(LW, "RICE")}
+    LW <- VRPlot[[16]]
+    LW <- LW[which(("PLWC" == substr(LW, 1, 4)) & ("PLWC" != LW))]
+    if ('RICE' %in% names (data)) {LW <- c(LW, "RICE")}
     if (any(grepl("PLWC1DC", LW))) {
-      ifelse (exists ('panel3ylim'),
-        plotWAC(data[, c("Time", 
-          names(data)[which(grepl('PLWC1DC', names(data)))])],
-          ylim=panel3ylim),
-        plotWAC(data[, c("Time", 
-          names(data)[which(grepl('PLWC1DC', names(data)))])])
-      )
+      va <- names(data)[which(grepl('PLWC1DC', names(data)))]
+      plotWAC(data[, c("Time", va)],
+        ylim = YLMF (3, range (as.matrix (data[, va]), finite=TRUE)))
     }
   }
   
@@ -120,12 +104,9 @@ RPlot16 <- function (data, Seq=NA, panl=1) {
       REJDOF <- data[, names(data)[grepl("REJDOF_", names(data))]]
       DOFACC <- TCNTD / (TCNTD + REJDOF)
       DOFACC <- SmoothInterp (DOFACC)
-      ifelse (exists ('panel1ylim'),
-        plotWAC (data.frame (Time=data$Time, DOFACC), 
-          ylab="DOF acceptance fraction", ylim=panel1ylim),
-        plotWAC (data.frame (Time=data$Time, DOFACC), 
-          ylab="DOF acceptance fraction")
-      )
+      plotWAC (data.frame (Time=data$Time, DOFACC), 
+        ylab="DOF acceptance fraction", 
+        ylim = YLMF (1, c(0,1)))
       hline (0.2, 'red')
     }
   }
@@ -134,23 +115,17 @@ RPlot16 <- function (data, Seq=NA, panl=1) {
     if (any (grepl ("AVGTRNS_", names (data)))) {
       AVGTRNS <- data[, names(data)[grepl("AVGTRNS_", names(data))]]
       AVT <- SmoothInterp (AVGTRNS)
-      ifelse (exists ('panel2ylim'),
-        plotWAC (data.frame (Time=data$Time, AVT), ylim=panel2ylim),
-        plotWAC (data.frame (Time=data$Time, AVT), ylim=c(0, 2))
-      )
+      plotWAC (data.frame (Time=data$Time, AVT), 
+        ylim = YLMF (2, c(0, 2)))
     }
   }
   
   panel33 <- function (data) {
     if (any(grepl ("CDPLSRP_", names (data)))) {
       CDPLSRP <- data[, names(data)[grepl("CDPLSRP_", names(data))]]
-      op <- par (mar=c(5,4,1,1)+0.1)
-      ifelse (exists ('panel3ylim'),
-        plotWAC (data.frame(Time=data$Time, CDPLSRP), 
-          ylab="CDP laser power", ylim=panel3ylim),
-        plotWAC (data.frame(Time=data$Time, CDPLSRP), 
-          ylab="CDP laser power", ylim=c(0,4))
-      )
+      plotWAC (data.frame(Time=data$Time, CDPLSRP), 
+        ylab="CDP laser power", 
+        ylim = YLMF (3, c(0, 4)))
       hline(3, 'red')
     }
   }
@@ -162,38 +137,41 @@ RPlot16 <- function (data, Seq=NA, panl=1) {
     nseq <- 3*(Seq-1) + panl
     switch (nseq,
       {
-        op <- par (mar=c(1,5,1,1)+0.1)
+        setMargins (2)
         panel11(data)
       },
       {
-        op <- par (mar=c(1,5,1,1)+0.1)
+        setMargins (2)
         panel12(data)
       },
       {
+        setMargins (3)
         panel13(data)
         AddFooter()
       },
       {
-        op <- par (mar=c(1,5,1,1)+0.1)
+        setMargins (2)
         panel21(data)
       },
       {
-        op <- par (mar=c(1,5,1,1)+0.1)
+        setMargins (2)
         panel22(data)
       }, 
       {
+        setMargins (3)
         panel23(data)
         AddFooter()
       },
       {
-        op <- par (mar=c(1,5,1,1)+0.1)
+        setMargins (2)
         panel31(data)
       },
       {
-        op <- par (mar=c(1,5,1,1)+0.1)
+        setMargins (2)
         panel32(data)
       },
       {
+        setMargins (3)
         panel33(data)
         AddFooter()
       }
@@ -206,10 +184,10 @@ RPlot16 <- function (data, Seq=NA, panl=1) {
       } else {
         layout(matrix(1:2, ncol = 1), widths = 1, heights = c(5,6))
       }
-      op <- par (mar=c(2,4,1,1)+0.1,oma=c(1.1,0,0,0))
+      setMargins (4)
       panel11(data)
       panel12(data)
-      op <- par (mar=c(5,4,1,1)+0.1)
+      setMargins (5)
       panel13(data)
       AddFooter()
       if (!is.na(Seq) && (Seq == 1)) {return()}
@@ -217,20 +195,19 @@ RPlot16 <- function (data, Seq=NA, panl=1) {
     if (is.na(Seq) || Seq == 2) {
       layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,6))
       ## Water measurements:
-      op <- par (mar=c(2,4,1,1)+0.1)
+      setMargins (4)
       panel21(data)
-      op <- par (mar=c(2,4,1,1)+0.1)
       panel22(data)
-      op <- par (mar=c(5,4,1,1)+0.1)
+      setMargins (5)
       panel23(data)
       AddFooter()
       if (!is.na(Seq) && (Seq == 2)) {return()}
     }
     layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,6))
-    op <- par (mar=c(2,4,1,1)+0.1)
+    setMargins (4)
     panel31(data)
     panel32(data)
-    op <- par (mar=c(5,4,1,1)+0.1)
+    setMargins (5)
     panel33(data)
     AddFooter ()
   }

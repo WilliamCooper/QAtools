@@ -10,6 +10,39 @@ while (exists('panel4ylim')) {rm(panel4ylim, inherits=TRUE)}
 # Size of the data-review plot window:
 WHeight <- 680 
 WWidth <- 1200
+
+# This function is used to define consistent margins for multiple-panel
+# plots. The meaning of 'panel' is:
+#     1 - only one panel in this plot.
+#     2 - this is one of a series of panels, but not the last, shiny display.
+#     3 - this is the last in a series of panels, shiny display.
+#     4 - one of a series, savePDF
+#     5 - last of a series, savePDF
+# The outer margin (oma) is included for the plot footer.
+# The two-line margin below the panel (cases 2 and 3) clips
+# the abscissa title "Time", so using this sequence gives
+# stacked panels where the abscissa title appears only with
+# the bottom panel but all panels have abscissa labels.
+setMargins <- function(panel = 1) {
+  switch (panel,
+    op <- par (mar = c(5, 5, 1, 1) + 0.1, oma = c(1.1, 0, 0, 0)), 
+    op <- par (mar = c(2, 5, 1, 1) + 0.1),
+    op <- par (mar = c(5, 5, 1, 1) + 0.1, oma = c(1.1, 0, 0, 0)),
+    op <- par (mar = c(2, 5, 1, 1) + 0.1, oma = c(1.1, 0, 0, 0)),
+    op <- par (mar = c(5, 5, 1, 1) + 0.1)
+    )
+}
+
+# The next function is used to set ordinate limits including "brush" changes:
+YLMF <- function (panel, defaultRange) {
+  s <- sprintf ('panel%dylim', panel)
+  if (exists(s)) {
+    return (get (s, inherits = TRUE))
+  } else {
+    return (defaultRange)
+  }
+}
+
 ## for these plots, disable "brush":
 noBrush <- c(1, 4, 6, 26, 28, 29, 30, 31, 32, 
   33, 34, 35, 36, 37, 38, 39, 40, 45)
@@ -1362,7 +1395,7 @@ SeekManeuvers <- function (Data) {
 
 seeManual <- function () {
   if (suppressWarnings(library(rstudio, logical.return=TRUE))) {
-    rstudio::viewer ('DataReviewManual.pdf', height='maximize')
+    rstudio::viewer ('./QAtoolsUserGuide.pdf', height='maximize')
   }
 }
 
