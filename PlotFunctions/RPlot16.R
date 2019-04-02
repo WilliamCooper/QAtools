@@ -29,7 +29,7 @@ RPlot16 <- function (data, Seq=NA, panl=1) {
         ylab="DBARU/P", 
         legend.position="topright")
     }
-    title ("1-min filter", cex.main=0.75)
+    title ("1-min filter", cex.main = cexmain)
   }
   
   panel12 <- function (data) {
@@ -48,7 +48,7 @@ RPlot16 <- function (data, Seq=NA, panl=1) {
         ylim = YLMF (2, c(0, 30)), 
         ylab="DBAR", 
         legend.position="topright")
-      title ("1-min filter", cex.main=0.75) 
+      title ("1-min filter", cex.main = cexmain) 
     }
   }
   
@@ -75,7 +75,7 @@ RPlot16 <- function (data, Seq=NA, panl=1) {
       ylim = YLMF (1, c(0,2)),
       ylab="PLWCy", 
       legend.position="topright")
-    title ("1-min filter", cex.main=0.75)
+    title ("1-min filter", cex.main = cexmain)
   }
   
   panel22 <- function (data) {

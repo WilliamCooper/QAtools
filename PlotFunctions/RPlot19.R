@@ -29,9 +29,9 @@ RPlot19 <- function (data, Seq=NA, panl=1) {
           ylab="ad. pot. temperatures", 
           ylim = YLMF (2, range (as.matrix (data[, vp]), finite=TRUE)),
           legend.position = "top")
-        title (sprintf("mean difference THETAE-TP2=%.2f THETAQ-TQ2=%.2f", 
+        title (sprintf("mean difference vs recalculated: THETAP-TP2=%.2f THETAQ-TQ2=%.2f", 
           mean(data$THETAP-data$TP2, na.rm=TRUE),
-          mean(data$THETAQ-data$TQ2, na.rm=TRUE)), cex.main=0.7)
+          mean(data$THETAQ-data$TQ2, na.rm=TRUE)), cex.main = cexmain)
       }
     } else {
       if (max (data$THETAE, na.rm=TRUE) < Inf) {
@@ -40,7 +40,7 @@ RPlot19 <- function (data, Seq=NA, panl=1) {
           legend.position = "top", 
           ylim = YLMF (2, range (as.matrix (data[, vp]), finite=TRUE)))
         title (sprintf("mean difference THETAE-TP2=%.2f", 
-          mean(data$THETAP-data$TP2, na.rm=TRUE)), cex.main=0.7)
+          mean(data$THETAP-data$TP2, na.rm=TRUE)), cex.main = cexmain)
       }
     }
   }

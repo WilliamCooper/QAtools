@@ -7,15 +7,12 @@ RPlot5 <- function (data, Seq=NA, panl=1) {
   ## DEW POINTS - plot 5
   panel11 <- function (data) {
     DP <- c(VRPlot[[5]][grepl ('^DP', VRPlot[[5]])], 'ATX')
-    # if (exists('panel1ylim')) {ylm <- panel1ylim}
-    # else {ylm <- c(-90, 30)}
     plotWAC (data[, c("Time", DP)], 
       ylab=expression (paste ("dew point  DPy  [", degree, "C]")), 
       lty=c(1,1,2,1), lwd=c(2,1.5,1,3), legend.position='bottom', 
-      col=c('blue', 'red', 'darkgreen', 'black'), ylim = YLMF (1, c(-90, 30)))
-    labl <- DP
-    labl <- sub("DP_", "", labl)
-    titl <- "Mean diff "
+      col=c('blue', 'red', 'forestgreen', 'black'), ylim = YLMF (1, c(-90, 30)))
+    labl <- sub("DP_", "", DP)
+    titl <- "Mean diff vs DPXC: "
     ## assume DPXC is always present:
     for (dp in DP) {
       if (dp == 'ATX') {next}
@@ -23,7 +20,18 @@ RPlot5 <- function (data, Seq=NA, panl=1) {
       titl <- sprintf("%s%s-%s: %.2f; ", titl, dpl, 'DPXC',
         mean(data[, dp] - data$DPXC, na.rm=TRUE))
     }
-    title(titl, cex.main=0.8)   
+    title(titl, cex.main = cexmain)   
+  }
+  
+  panel12 <- function (data) {
+    # Plot the differences:
+    DP <- c(VRPlot[[5]][grepl ('^DP', VRPlot[[5]])])
+    DF <- data[, c('Time', DP[-1])] # use first in list as reference
+    DF <- DF - data[, DP[1]]
+    plotWAC(DF, ylab=expression(paste (Delta,' [', degree, ']')), 
+      ylim = YLMF (2, c(-5, 5)))
+    hline (-1, col = 'darkorange'); hline (1, col = 'darkorange')
+    title (sprintf ('differences vs %s', DP[1]), cex.main = cexmain)
   }
   
   ## DEW POINT DIFFERENCES - plot 6
@@ -67,7 +75,7 @@ RPlot5 <- function (data, Seq=NA, panl=1) {
     }
     legend ('bottomright', legend=DPL, col=colr,
       text.col=colr, pt.cex=c(1., 0.5, 0.5, 0.5))
-    title("dashed orange lines: +/-5C error bands", cex.main=0.8)
+    title("dashed orange lines: +/-5C error bands", cex.main = cexmain)
   }
   
   ## DP CAVITY PRESSURES - plot 7a
@@ -111,19 +119,23 @@ RPlot5 <- function (data, Seq=NA, panl=1) {
       }
     }
     if (length(CAVP) < 1) {return(0)}
+    CAVP <- unique (CAVP)
     # DP cavity pressures and VCSEL laser intensity:
-    # if (exists ('panel1ylim')) {ylm <- panel1ylim}
-    # else {ylm <- range(as.matrix (data[, CAVP]), finite = TRUE)}
-    # if (Trace) {print (sprintf ('ylm is %e %e', ylm[1], ylm[2]))}
     plotWAC (data[, c("Time", CAVP, "PSXC")], 
       lwd=c(1,1,2,2,1), lty=c(1,1,2,2,1), ylab='CAVP [hPa]',
       legend.position='topleft', 
       ylim = YLMF(1, range(as.matrix (data[, CAVP]), finite = TRUE)))
     # pulling legend out of plotWAC to increase font size
     # legend('bottomright',c("CAVP_DPR", "CAVP_DPL", "PSXC"),col=c("blue","darkgreen","red"),text.col=c("blue","darkgreen","red"),lty=c(1,2,1),lwd=c(2,1,1),cex=0.75)
-    title (sprintf ("mean above PSXC: %.1f (DPL) and %.1f (DPR)", 
-      mean (data$CAVP_DPL - data$PSXC, na.rm=TRUE),
-      mean (data$CAVP_DPR - data$PSXC, na.rm=TRUE)), cex.main=0.75)
+    if ('CAVP_DPL' %in% names (data)) {
+      title (sprintf ("mean above PSXC: %.1f (DPL) and %.1f (DPR)", 
+        mean (data$CAVP_DPL - data$PSXC, na.rm=TRUE),
+        mean (data$CAVP_DPR - data$PSXC, na.rm=TRUE)), cex.main = cexmain)
+    } else if ('CAVP_DPB' %in% names (data)) {
+      title (sprintf ("mean above PSXC: %.1f (DPB) and %.1f (DPT)", 
+        mean (data$CAVP_DPB - data$PSXC, na.rm=TRUE),
+        mean (data$CAVP_DPT - data$PSXC, na.rm=TRUE)), cex.main = cexmain)
+    }
   }
   
   ## VCSEL LASER INTENSITY - plot 7b
@@ -164,7 +176,7 @@ RPlot5 <- function (data, Seq=NA, panl=1) {
     lines (data$Time, MurphyKoop (data$ATX, data$PSXC), col='cyan', lty=2)
     # pulling legend out of plotWAC to increase font size
     # legend('bottomright',c("EW@ATX","EW_DPL", "EW_DPR", "EW_VXL"),col=c("cyan","blue","darkgreen","red"),text.col=c("cyan","blue","darkgreen","red"),lty=c(2,1,1,1),lwd=c(2,1,1,1))
-    title ("cyan line: equilibrium vapor pressure at ATX", cex.main = 0.8)
+    title ("cyan line: equilibrium vapor pressure at ATX", cex.main = cexmain)
   }
   
   ## MIXING RATIOS - plot 8b
@@ -213,13 +225,18 @@ RPlot5 <- function (data, Seq=NA, panl=1) {
   if (shinyDisplay) { # code here for the shiny app
 
     nseq <- (Seq-1) + panl
+    if (Seq > 1)  {nseq <- nseq + 1}
     if (Seq == 4) {nseq <- nseq + 1}
     switch(nseq, 
       {
-        setMargins (1)
+        setMargins (2)
         panel11 (data)
-        AddFooter ()
       }, 
+      {
+        setMargins (3)
+        panel12 (data)
+        AddFooter ()
+      },
       {
         setMargins (1)
         panel21 (data)
@@ -258,14 +275,17 @@ RPlot5 <- function (data, Seq=NA, panl=1) {
     ##################################################### 
   } else { # This section is not interactive; it is here for DataReview.R
     # reset in case multi-panel format was used for the previous plot
-    op <- par(mfrow = c(1, 1))
     if (is.na(Seq) || Seq == 1) {
-      setMargins (1)
+      layout(matrix(1:2, ncol = 1), widths = c(5,5.5))
+      setMargins (4)
       panel11 (data)
+      setMargins (5)
+      panel12 (data)
       AddFooter ()
       if (!is.na(Seq) && (Seq == 1)) {return()}
     }
     if (is.na(Seq) || Seq == 2) {
+      op <- par (mfrow = c(1,1))
       setMargins (1)
       panel21 (data)
       AddFooter ()

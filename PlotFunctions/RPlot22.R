@@ -49,7 +49,7 @@ RPlot22 <- function (data, Seq=NA, panl=1) {
           plot (CellLimits, c(1.e-4, data[j, nm]), type='S', ylim=c(1.e-2,1.e2), 
             xlab="Diameter [um]", log="y", col='blue', lwd=2)
           title(sprintf("Time=%s", strftime (data$Time[j], format="%H:%M:%S", tz='UTC')), 
-            cex.main=.75)
+            cex.main = cexmain)
           legend ("topright", legend=c("1DC"), col='blue', 
             lwd=c(2,1), cex=0.75) 
           if (length (nm1) > 1) {

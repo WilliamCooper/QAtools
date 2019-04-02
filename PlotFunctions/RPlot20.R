@@ -86,7 +86,7 @@ RPlot20 <- function (data, Seq=NA, panl=1) {
               col=c('blue', 'forestgreen'), lty=c(1,2), lwd=c(2,1))
           }
           title(sprintf("Time=%s CONCD=%.1f", strftime (data$Time[j], format="%H:%M:%S", tz='UTC'), CDPtot), 
-            cex.main=1)
+            cex.main = cexmain)
           legend ("topright", legend=c("CDP"), col='black', 
             lwd=c(2,1), cex=0.75) 
           if (kount%%6==0)   AddFooter ()

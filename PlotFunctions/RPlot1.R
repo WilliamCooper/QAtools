@@ -21,12 +21,12 @@ RPlot1 <- function (data, Flight=NA, Seq=NA, panl=1) {
     {
       title (sprintf("%s %d-%d",
         strftime(data$Time[i], format="20%y-%m-%d", tz='UTC'), 
-        SE[1], SE[2]), cex=0.75, font.main=1)
+        SE[1], SE[2]), cex = cexmain, font.main=1)
     } else
     {
       title (sprintf("%s %s %d-%d", Flight,
         strftime(data$Time[i], format="20%y-%m-%d", tz='UTC'), 
-        SE[1], SE[2]), cex=0.75, font.main=1)
+        SE[1], SE[2]), cex = cexmain, font.main=1)
     }
   }
   
@@ -60,14 +60,15 @@ RPlot1 <- function (data, Flight=NA, Seq=NA, panl=1) {
   panel22 <- function (data) {
     if ('THDG' %in% names(data)) {
       plotWAC(data[,c("Time",'THDG')],ylab=expression("THDG ["*degree*"]"))
-      title('Heading')
+      title('Heading', cex.main = cexmain)
     }
   }
   
   panel23 <- function (data) 
     if ('GGQUAL' %in% names(data)) {
       plotWAC(data[,c("Time", "GGQUAL")])
-      title('GPS Precision , 5 = Terra Star Corrected, 2 = Receiving, 1 = Standard GPS, 0 = No FIX')
+      title('GPS Precision , 5 = Terra Star Corrected, 2 = Receiving, 1 = Standard GPS, 0 = No FIX',
+        cex.main = cexmain)
     }
   
   ####################################################
@@ -104,7 +105,7 @@ RPlot1 <- function (data, Flight=NA, Seq=NA, panl=1) {
     layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,4))
     op <- par (mar=c(2,5,1,4.5)+0.1)
     panel21 (data)
-    par(cex.lab=2, cex.main=2)
+    # par(cex.lab=2, cex.main=2)
     panel22 (data)
     op <- par (mar=c(5,5,1,4.5)+0.1)
     panel23 (data)

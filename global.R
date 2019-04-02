@@ -10,6 +10,7 @@ while (exists('panel4ylim')) {rm(panel4ylim, inherits=TRUE)}
 # Size of the data-review plot window:
 WHeight <- 680 
 WWidth <- 1200
+cexmain <- 1  # standard size of the title text.
 
 # This function is used to define consistent margins for multiple-panel
 # plots. The meaning of 'panel' is:
@@ -1134,8 +1135,8 @@ psq <- c(1,1, 1,2, 3,1, 4,1, 5,1, 5,2, 5,3, 5,4, 6,1, 7,1, 7,2,  #11
   20,1, 20,2, 20,3, 20,4, 21,1, 21,2, 21,3, 21,4, #36
   22,1, 22,2, 22,3, 22,4, 23,1, 23,2, #42
   24,1, 25,1, 26,1, 27,1, 28,1, 29,1, 30,1) #49
-dpan <- c(1, 3, 1, 1, 1, 1, 2, 3, 1, 2, 2, #11
-  1, 3, 2, 3, 2, 4, 3, 3, 4, 2, 2,        #22
+dpan <- c(1, 3, 2, 1, 2, 1, 2, 3, 3, 3, 3, #11
+  2, 3, 2, 3, 2, 4, 3, 3, 4, 2, 2,        #22
   3, 3, 3, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  # 40
   4, 1, 2, 1, 1, 1, 1, 1, 1)  #49
 PlotTypes <- c(      
@@ -1145,7 +1146,7 @@ PlotTypes <- c(
   'humidity' = 5,
   'static pressure' = 9,
   'dynamic pressure' = 10,
-  'airspeed' = 11,
+  'airspeed, Mach' = 11,
   'total pressure' = 12,
   'wind' = 13,
   'angles, radome' = 17,

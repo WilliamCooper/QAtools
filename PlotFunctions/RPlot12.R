@@ -4,7 +4,9 @@ RPlot12 <- function (data, Seq=NA, panl=1, ...) {
   # For a call from savePDF this will be FALSE.
   shinyDisplay <- any(grepl('renderPlot', sys.calls()))
   
-  panel11 <- function(data) {
+  
+  line.types <- c(1, 2, 1, 1)
+  panel11 <- function(data) {  # plot 18a
     PITCH <- VRPlot[[12]]
     PITCH <- PITCH[which("PITCH" == substr(PITCH, 1, 5))]
     DF <- data[, c("Time", PITCH)]
@@ -14,12 +16,10 @@ RPlot12 <- function (data, Seq=NA, panl=1, ...) {
     }
     if ("PITCH_IRS3" %in% names(data)) {
       DF$PITCH_IRS3 <- DF$PITCH_IRS3 - pitch_offset
-      DF$DifferenceX50 <- (DF$PITCH - DF$PITCH_IRS3) * 50
+      DF$Difference3X50 <- (DF$PITCH - DF$PITCH_IRS3) * 50
     }
-    line.colors=c('blue', 'darkorange', 'red', 'skyblue')
-    line.types <- c(1, 9, 1, 2)
     plotWAC (DF, ylab="PITCH [deg.]",
-      col=line.colors, lty=line.types, 
+      lty=line.types, 
       ylim = YLMF (1, c(-10, 10)))
     axis (4, at=c(-2.5,0,2.5), labels=c("-0.05", "0", "0.05"), col='red', col.axis='red')
     hline (-2.5, 'red'); hline (2.5, 'red')
@@ -27,10 +27,10 @@ RPlot12 <- function (data, Seq=NA, panl=1, ...) {
       box.col='red', text.col='red', cex=0.5)
     title( sprintf ("mean difference: %.2f +/- %.2f after offset %.2f", 
       mean (DF$DifferenceX50/50, na.rm=TRUE),
-      sd   (DF$DifferenceX50/50, na.rm=TRUE), pitch_offset))
+      sd   (DF$DifferenceX50/50, na.rm=TRUE), pitch_offset), cex.main = cexmain)
   }
   
-  panel12 <- function(data) {
+  panel12 <- function(data) {  # plot 18b
     ROLL <- VRPlot[[12]]
     ROLL <- ROLL[which("ROLL" == substr(ROLL, 1, 4))]
     DF <- data[, c("Time", ROLL)]
@@ -40,11 +40,9 @@ RPlot12 <- function (data, Seq=NA, panl=1, ...) {
     }
     if ("ROLL_IRS3" %in% names (data)) {
       DF$ROLL_IRS3 <- DF$ROLL_IRS3 - roll_offset
-      DF$DifferenceX50 <- (DF$ROLL - DF$ROLL_IRS3) * 50
+      DF$Difference3X50 <- (DF$ROLL - DF$ROLL_IRS3) * 50
     }
-    line.colors=c('blue', 'darkorange', 'red', 'skyblue')
-    line.types <- c(1, 9, 1, 2)
-    plotWAC (DF, ylab="ROLL [deg.]", col=line.colors, lty=line.types,
+    plotWAC (DF, ylab="ROLL [deg.]", lty=line.types,
       ylim = YLMF (2, range (as.matrix (DF[, ROLL]), finite=TRUE)))
     axis (4, at=c(-2.5,0,2.5), labels=c(NA, "+/-0.05", NA), col='red', col.axis='red')
     hline (-2.5, 'red'); hline (2.5, 'red')
@@ -52,10 +50,10 @@ RPlot12 <- function (data, Seq=NA, panl=1, ...) {
       box.col='red', text.col='red', cex=0.5)
     title( sprintf ("mean difference: %.2f sd %.2f after offset %.2f", 
       mean (DF$DifferenceX50/50, na.rm=TRUE),
-      sd   (DF$DifferenceX50/50, na.rm=TRUE), roll_offset))
+      sd   (DF$DifferenceX50/50, na.rm=TRUE), roll_offset), cex.main = cexmain)
   }
   
-  panel13 <- function(data) {
+  panel13 <- function(data) {  # plot 18c
     THDG <- VRPlot[[12]]
     THDG <- THDG[which("THDG" == substr(THDG, 1, 4))]
     DF <- data[, c("Time", THDG)]
@@ -73,14 +71,12 @@ RPlot12 <- function (data, Seq=NA, panl=1, ...) {
       DF$THDG_IRS3[t] <- DF$THDG_IRS3[t] + 360
       t <- !is.na(DF$THDG_IRS3) & !is.na(DF$THDG) & (DF$THDG - DF$THDG_IRS3 < -180)
       DF$THDG_IRS3[t] <- DF$THDG_IRS3[t] - 360
-      DF$DifferenceX500 <- (DF$THDG - DF$THDG_IRS3) * 500 + 180
+      DF$Difference3X500 <- (DF$THDG - DF$THDG_IRS3) * 500 + 180
     }
-    line.colors=c('blue', 'darkorange', 'red', 'skyblue')
-    line.types <- c(1, 9, 1, 2)
     plotWAC (DF, 
       ylim = YLMF (3, c(-60,390)), 
       ylab="THDG [deg.]",
-      col=line.colors, lty=line.types)
+      lty=line.types)
     axis (4, at=c(180-25, 180, 180+25), labels=c(NA, "+/-0.05", NA), col='red', col.axis='red')
     hline (180-25, 'red'); hline (180+25, 'red')
     #hline (180-125, 'green', lwd=2)
@@ -90,7 +86,8 @@ RPlot12 <- function (data, Seq=NA, panl=1, ...) {
       box.col='red', text.col='red', cex=0.5)
     title( sprintf ("mean difference, THDG-THDG_IRS2: %.2f sd: %.2f after offset %.2f (but beware wrap-around)", 
       mean ((DF$DifferenceX500-180)/500, na.rm=TRUE),
-      sd   ((DF$DifferenceX500-180)/500, na.rm=TRUE), thdg_offset))
+      sd   ((DF$DifferenceX500-180)/500, na.rm=TRUE), thdg_offset),
+      cex.main = cexmain)
   }
   
   
@@ -99,14 +96,17 @@ RPlot12 <- function (data, Seq=NA, panl=1, ...) {
     switch(panl,
       {
         setMargins (2)
+        op <- par(oma = c(1.1, 0, 0, 2))
         panel11 (data)
       },
       {
         setMargins (2)
+        op <- par(oma = c(1.1, 0, 0, 2))
         panel12 (data)
       },
       {
         setMargins (3)
+        op <- par(oma = c(1.1, 0, 0, 2))
         panel13 (data)
         AddFooter ()
       }
@@ -114,14 +114,9 @@ RPlot12 <- function (data, Seq=NA, panl=1, ...) {
     
     #########################################################
   } else {
-    ## variables can include PITCH, ROLL, THDG from IRUs
-    ## apply project-dependent offsets:
-    #   pitch_offset <- 0.37
-    #   roll_offset <- -0.26
-    #   thdg_offset <- -0.35
-    # pitch_offset <- roll_offset <- thdg_offset <- 0
-    layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,6))
+    layout(matrix(1:3, ncol = 1), heights = c(5,5,6))
     setMargins (4)
+    op <- par(oma = c(1.1, 0, 0, 2))
     panel11 (data)
     panel12 (data)
     setMargins (5)

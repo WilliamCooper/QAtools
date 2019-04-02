@@ -6,7 +6,6 @@ RPlot23 <- function (data, Seq=NA, panl=1) {
   shinyDisplay <- any(grepl('renderPlot', sys.calls()))
   
   panel11 <- function (data) {
-    par(cex.lab=1, cex.main=1)
     # plot CO2
     if ("CO2C_PIC2401" %in% names(data)) {
       if ("CO2_PIC2401" %in% names(data)) {
@@ -76,7 +75,8 @@ RPlot23 <- function (data, Seq=NA, panl=1) {
           ylab="ppb", 
           ylim = YLMF (3, ylm),
           lty=c(1,1), lwd=c(2))
-      title(paste('Carbon Monoxide and Fast Ozone (if available, scaled',toString(round(SF,2)),')'))
+      title(paste('Carbon Monoxide and Fast Ozone (if available, scaled',
+        toString(round(SF,2)),')'))
     }
   }
   

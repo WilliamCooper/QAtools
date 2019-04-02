@@ -4,7 +4,7 @@ RPlot14 <- function(data, Seq=NA, panl=1, ...) {
   shinyDisplay <- any(grepl('renderPlot', sys.calls()))
   
   panel11 <- function(data) {
-    par(cex.lab=1, cex.main=1)
+    # par(cex.lab=1, cex.main=1)
     
     # Panel 1: RSTB}
     ylb <- expression (paste ("[", degree, "C]")) 

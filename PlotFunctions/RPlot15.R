@@ -41,7 +41,7 @@ RPlot15 <- function(data, Seq=NA, panl=1) {
           logxy='y', 
           ylim = YLMF (1, c(1, 1.e5)), 
           ylab=expression (paste ("CONCy [cm"^"-3"*"]")))
-        title ("1-min filter", cex.main=0.75)
+        title ("1-min filter", cex.main = cexmain)
       } else {
         plot (0,0, xlim=c(data$Time[1], data$Time[nrow(data)]), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
         text (data$Time[1], 0.8, 'no particle measurements', adj=0.5)
@@ -73,7 +73,7 @@ RPlot15 <- function(data, Seq=NA, panl=1) {
         logxy='y', 
         ylim = YLMF (2, c(1.e-4, 1e4)),  
         ylab=expression(paste("CONCy [cm"^"-3"*"]")))
-      title ("1-min filter", cex.main=0.75)
+      title ("1-min filter", cex.main = cexmain)
     } 
   }
   
@@ -94,7 +94,7 @@ RPlot15 <- function(data, Seq=NA, panl=1) {
     hline (0.82, 'blue'); hline (1, 'darkgreen'); hline(0.5, 'red'); hline (1.5, 'red')
     legend ("topleft", legend=c("dashed red: limits for FCNC, XICNC, PFLWC", 
       "dashed blue-green: expected values for corresponding flows"), text.col=c('red', 'blue'), cex=0.55)
-    title ("USHF is USHFLW_RWOOU/10", cex.main=0.75)
+    title ("USHF is USHFLW_RWOOU/10", cex.main = cexmain)
   }
   
   panel22 <- function (data) {
@@ -107,7 +107,7 @@ RPlot15 <- function(data, Seq=NA, panl=1) {
       ylim = YLMF (2, c(0, 10)))
     hline (2.10, 'blue'); hline (1.90, 'darkgreen'); hline(6, 'red'); hline (9.95, 'red')
     title ("dashed-blue: lower limit for UREF; dashed-green: upper limit for USCAT", 
-      cex.main=0.65)
+      cex.main = cexmain)
   }
   
   

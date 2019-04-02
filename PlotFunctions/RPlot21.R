@@ -68,7 +68,7 @@ RPlot21 <- function (data, Seq=NA, panl=1) {
             col=c('blue', 'forestgreen'), lty=c(1,2), lwd=c(2,1))
         }
         title(sprintf("size distribution, Time=%s", strftime (data$Time[j], format="%H:%M:%S", tz='UTC')), 
-          cex.main=.75)
+          cex.main = cexmain)
         if (length (nm2) > 0) {
           legend ("topright", legend=c("UHSAS", "PCASP"), col=c('blue', 'magenta'), 
             lwd=c(2,1), cex=0.75) 
