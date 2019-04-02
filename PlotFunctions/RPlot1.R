@@ -36,18 +36,22 @@ RPlot1 <- function (data, Flight=NA, Seq=NA, panl=1) {
     DF$PALTF <- data[, 'PALT']/0.3048
     DF$PA2 <- data$PSXC
     DF$PA2[!is.na(DF$PA2)] <- PressureAltitude (DF$PA2[!is.na(DF$PA2)]) / 0.3048
-    ## Dual axes interfere with brush action, so don't use ordinate brush for this plot:
-    # ifelse (exists ('panel1ylim'),
-    #   plotWAC(DF[, c("Time", "GGALTF", "PALTF", "PA2")], ylab="Altitude [ft]", ylim=panel1ylim),
-    #   plotWAC(DF[, c("Time", "GGALTF", "PALTF", "PA2")], ylab="Altitude [ft]"))
-    plotWAC(DF[, c("Time", "GGALTF", "PALTF", "PA2")], ylab="Altitude [ft]")
-    #axis(4,at=axTicks(2),labels=round(axTicks(2)*0.3048)) ## this adds a metric axis on right side but at even foot intervals
-    axis(4, labels = NA, tck = 0.02,col='white',lwd=0,lwd.ticks=3) # erase the foot ticks plotWAC puts on right axis
-    par(new=TRUE)
-    plot(data$Time,data[, 'GGALT'], axes=FALSE, bty='n', xlab='', ylab='',
-      type='n')
-    axis(4,tck=0.02) ## this adds a metric axis on the right side at km intervals
-    mtext('Altitude [m]',4,3)
+    # Get the altitude range:
+    ylm <- range (as.matrix (DF[, -1]), finite = TRUE)
+    plotWAC(DF, 
+      ylim = YLMF (1, ylm),
+      ylab="Altitude [ft]")
+    ylmm <- ceiling (ylm * 0.3048 / 1000) *  1000
+    at4 <- seq (ylmm[1], ylmm[2], by=1000)
+    at4l <- format (at4/1000, 0)
+    axis (4, at = at4 / 0.3048, labels = at4l,
+      col.axis = 'red', col = 'red', col.ticks = 'red') ## this adds a metric axis on right side
+    # axis(4, labels = NA, tck = 0.02,col='white',lwd=0,lwd.ticks=3) # erase the foot ticks plotWAC puts on right axis
+    # par(new=TRUE)
+    #plot(data$Time,data[, 'GGALT'], axes=FALSE, bty='n', xlab='', ylab='',
+    #  type='n')
+    # axis(4,tck=0.02) ## this adds a metric axis on the right side at km intervals
+    mtext('Altitude [km]', 4, 2, col = 'red')
     DF <- DF[!is.na(data$TASX) & (data$TASX > 110), ]
     ## This isn't needed any more; it was an old check that pressure altitude was OK.
     ## It's always OK now.
@@ -59,7 +63,9 @@ RPlot1 <- function (data, Flight=NA, Seq=NA, panl=1) {
   
   panel22 <- function (data) {
     if ('THDG' %in% names(data)) {
-      plotWAC(data[,c("Time",'THDG')],ylab=expression("THDG ["*degree*"]"))
+      plotWAC(data[,c("Time",'THDG')],
+        ylim = YLMF (2, c(0,360)),
+        ylab=expression("THDG ["*degree*"]"))
       title('Heading', cex.main = cexmain)
     }
   }
