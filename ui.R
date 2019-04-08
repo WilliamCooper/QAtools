@@ -654,6 +654,7 @@ ui <- fluidPage (
           )))),
     tabPanel ('Review',
       # titlePanel (tags$h1 ('Data Review')),
+      # On some PCs, must use Fn F4
       tags$script(HTML("$(function() {
                                             $(document).keyup(function(e) {
                                             if (e.which == 115) {
@@ -742,7 +743,6 @@ ui <- fluidPage (
                 resetOnNew=TRUE), inline=TRUE)
             )
           ),
-
           tabPanel ('stats', dataTableOutput ('stats')),
           tabPanel ('histograms', plotOutput (outputId='hist')),
           tabPanel ('soundings', plotOutput (outputId='barWvsZ')),

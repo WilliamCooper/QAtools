@@ -286,7 +286,12 @@ dataDYM <- function(ProjDir, ProjectPP, Flight, VL, START, END) {
 
 dataDCR <- function(ProjDir, ProjectPP, Flight, VL, START, END) {
   fname <- sprintf ('%s%s/%s%s.nc', DataDirectory (), ProjDir, ProjectPP, Flight)
-  if (Trace) {print (sprintf ('in dataDCR, file name to load is %s %d %d', fname, START, END))}
+  if (Trace) {
+    print (sprintf ('in dataDCR, file name to load is %s %d %d', fname, START, END))
+  }
+  if (!file.exists(fname)) {
+    return (NA)
+  }
   if (fname != fnameDCR || START != STARTDCR || END != ENDDCR) {
     DCR <- getNetCDF (fname, VL, Start=START, End=END)
     if (Trace) {print (sprintf (' called getNetCDF, nrows in file is %d', nrow(DCR)))}
