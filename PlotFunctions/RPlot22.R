@@ -1,5 +1,5 @@
 ### plot 22: 2DC size distributions
-RPlot22 <- function (data, Seq=NA) {
+RPlot22 <- function (data, Seq=NA, panl=1) {
   ## needs C1DC_LWOI; references fname from calling environment
   if (is.na (VRPlot$PV22) || (length(VRPlot$PV22) < 1)) {
     plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
@@ -49,7 +49,7 @@ RPlot22 <- function (data, Seq=NA) {
           plot (CellLimits, c(1.e-4, data[j, nm]), type='S', ylim=c(1.e-2,1.e2), 
             xlab="Diameter [um]", log="y", col='blue', lwd=2)
           title(sprintf("Time=%s", strftime (data$Time[j], format="%H:%M:%S", tz='UTC')), 
-            cex.main=.75)
+            cex.main = cexmain)
           legend ("topright", legend=c("1DC"), col='blue', 
             lwd=c(2,1), cex=0.75) 
           if (length (nm1) > 1) {
