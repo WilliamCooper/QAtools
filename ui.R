@@ -43,205 +43,205 @@ ui <- fluidPage (
             tabPanel ('...')
           )
         ),
-        tabPanel ('R sessions (tutorial)',
-          tabsetPanel (id='whichTab', type='pills',
-            tabPanel ('TOC',
-              includeHTML('../RSessions/RSessions/TOC/TOC.html')),
-            tabPanel ('Getting Started',
-              tabsetPanel (id='S1tab', type='pills',
-                tabPanel ('Getting Started',
-                  includeHTML('../RSessions/RSessions/Session1/Session1a.html')),
-                tabPanel ('RStudio Tour',
-                  includeHTML('../RSessions/RSessions/Session1/Session1b.html')),
-                tabPanel ('Some Examples',
-                  includeHTML('../RSessions/RSessions/Session1/Session1c.html'),
-                  tabsetPanel (id='S1ex', type='pills',
-                    tabPanel ('simple plot',
-                      includeHTML ('../RSessions/RSessions/Session1/E1Code.html'),
-                      sidebarLayout(
-                        sidebarPanel(
-                          selectInput (inputId='S1Var', label='variable to plot', 
-                            choices=c('Temperature'='ATX',
-                              'Wind Speed'='WSC',
-                              'Pressure'='PSXC'))
-                        ),
-                        mainPanel(
-                          plotOutput ('S1E1Plot')
-                        )
-                      )),
-                    tabPanel ('sounding',
-                      includeHTML ('../RSessions/RSessions/Session1/E2Code.html'),
-                      plotOutput ('S1E2Plot', width="50%")),
-                    tabPanel ('stats',
-                      includeHTML ('../RSessions/RSessions/Session1/E3Code.html'),
-                      dataTableOutput ('S1Stats')),
-                    tabPanel ('recovery factor',
-                      includeHTML ('../RSessions/RSessions/Session1/E4Code.html'))
-                  )
-                ),
-                tabPanel ('Text-with-Code',
-                  includeHTML ('../RSessions/RSessions/Session1/Session1d.html')),
-                tabPanel ('Getting Ranadu',
-                  includeHTML ('../RSessions/RSessions/Session1/Session1e.html')))),
-            tabPanel ('Objects and the data.frame',
-              tabsetPanel (id='S2tab', type='pills',
-                tabPanel ('Vectors and Matrices',
-                  includeHTML('../RSessions/RSessions/Session2/Session2a.html'),
-                  htmlOutput('txtS2a'),
-                  radioButtons ('selS2a', label=NULL, choices=c(
-                    'select a button below'=1,
-                    'a <- 1:12; print(a)'=2,
-                    'dim(a) <- c(3,4); print(a)'=3,
-                    'print (t(a))'=4
-                  ), width='400px')
-                ),
-                tabPanel ('The data.frame',
-                  includeHTML('../RSessions/RSessions/Session2/Session2b.html')),
-                tabPanel ('Addressing and Subsetting data.frames',
-                  includeHTML('../RSessions/RSessions/Session2/Session2c1.html'),
-                  radioButtons ('selS2c1', label=NULL, choices=c(
-                    'select a button below'=1,
-                    'Data$ATX[5]'=2, 
-                    'Data[5, 2]'=3,
-                    'Data[5, ]'=4, 
-                    'Data[5, "ATX"]'=5, 
-                    'Data$ATX'=6,
-                    'attach(Data); ATX[5]'=7,
-                    'with(Data, print(ATX[5])'=8
-                  ), width='800px'),
-                  htmlOutput ('txtS2c1'),
-                  includeHTML('../RSessions/RSessions/Session2/Session2c2.html'),
-                  actionButton ('XS2a', label='See an answer')
-                ),
-                tabPanel ('Some Basic Operations',
-                  includeHTML ('../RSessions/RSessions/Session2/Session2d.html')))),
-            tabPanel ('Basics',
-              tabsetPanel (id='S3tab', type='pills',
-                tabPanel ('R as a Calculator',
-                  fluidRow (
-                    column (3, numericInput ('S3aframe', label='frame #',
-                      2, min=1, max=3, step=1)),
-                    column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
-                      'use the up/down arrow keys to step through the frames.'))),
-                  imageOutput('RS3apng')
-                ),
-                tabPanel ('Basic Operators and Precedence',
-                  fluidRow (
-                    column (3, numericInput ('S3bframe', label='frame #',4,
-                      min=4, max=12, step=1)),
-                    column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
-                      'use the up/down arrow keys to step through the frames.'))),
-                  imageOutput('RS3bpng')
-                ),
-                tabPanel ('Vectorized Operations',
-                  fluidRow (
-                    column (3, numericInput ('S3cframe', label='frame #',13,
-                      min=13, max=16, step=1)),
-                    column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
-                      'use the up/down arrow keys to step through the frames.'))),
-                  imageOutput('RS3cpng')
-                ),
-                tabPanel ('Using Variables',
-                  fluidRow (
-                    column (3, numericInput ('S3dframe', label='frame #',17,
-                      min=17, max=21, step=1)),
-                    column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
-                      'use the up/down arrow keys to step through the frames.'))),
-                  imageOutput('RS3dpng')
-                )
-              )
-            ),
-            tabPanel ('R packages',
-              tabsetPanel (id='S4tab', type='pills',
-                tabPanel ('All',
-                  fluidRow (
-                    column (3, numericInput ('S4frame', label='frame #',2,
-                      min=1, max=11, step=1)),
-                    column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
-                      'use the up/down arrow keys to step through the frames.'))),
-                  imageOutput('RS4png')
-                ))),
-            tabPanel ('Plotting',
-              tabsetPanel (id='S5tab', type='pills',
-                tabPanel ('All',
-                  fluidRow (
-                    column (3, numericInput ('S5frame', label='frame #',2,
-                      min=1, max=15, step=1)),
-                    column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
-                      'use the up/down arrow keys to step through the frames.'))),
-                  imageOutput('RS5png')
-                ),
-                tabPanel ('Base Graphics',
-                  fluidRow (
-                    column (3, numericInput ('S5aframe', label='frame #',3,
-                      min=3, max=9, step=1)),
-                    column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
-                      'use the up/down arrow keys to step through the frames.'))),
-                  imageOutput('RS5apng')
-                ),
-                tabPanel ('plotWAC',
-                  fluidRow (
-                    column (3, numericInput ('S5bframe', label='frame #',8,
-                      min=8, max=9, step=1)),
-                    column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
-                      'use the up/down arrow keys to step through the frames.'))),
-                  imageOutput('RS5bpng')
-                ),
-                tabPanel ('ggplot',
-                  fluidRow (
-                    column (3, numericInput ('S5cframe', label='frame #',10,
-                      min=10, max=15, step=1)),
-                    column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
-                      'use the up/down arrow keys to step through the frames.'))),
-                  imageOutput('RS5cpng')
-                )
-              )
-            ),
-            tabPanel ('Fitting',
-              tabsetPanel (id='S6tab', type='pills',
-                tabPanel ('All',
-                  fluidRow (
-                    column (3, numericInput ('S6frame', label='frame #',2,
-                      min=1, max=21, step=1)),
-                    column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
-                      'use the up/down arrow keys to step through the frames.'))),
-                  imageOutput('RS6png')
-                ))
-            ),
-            tabPanel ('Reproducible Research',
-              tabsetPanel (id='S7tab', type='pills',
-                tabPanel ('All',
-                  fluidRow (
-                    column (3, numericInput ('S7frame', label='frame #',2,
-                      min=1, max=13, step=1)),
-                    column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
-                      'use the up/down arrow keys to step through the frames.'))),
-                  imageOutput('RS7png')
-                ))
-            ),
-            tabPanel ('Data Review',
-              tabsetPanel (id='S8tab', type='pills',
-                tabPanel ('All',
-                  fluidRow (
-                    column (3, numericInput ('S8frame', label='frame #',2,
-                      min=1, max=13, step=1)),
-                    column (4, helpText ('Suggestion: Click cursor in "frame #" entry box',
-                      'use the up/down arrow keys to step through the frames.'))),
-                  imageOutput('RS8png')
-                ))
-            ),
-            tabPanel ('Shiny apps',
-              tabsetPanel (id='S9tab', type='pills',
-                tabPanel ('All',
-                  fluidRow (
-                    column (6, helpText ('Suggestion: Use fit-to-page button, bottom right'))),
-                  tags$iframe(style="height:800px; width:100%; scrolling=yes", 
-                    src="Session9.pdf")
-                  # imageOutput('RS9png')
-                ))
-            )
-          )
-        ),
+        # tabPanel ('R sessions (tutorial)',
+        #   tabsetPanel (id='whichTab', type='pills',
+        #     tabPanel ('TOC',
+        #       includeHTML('../RSessions/RSessions/TOC/TOC.html')),
+        #     tabPanel ('Getting Started',
+        #       tabsetPanel (id='S1tab', type='pills',
+        #         tabPanel ('Getting Started',
+        #           includeHTML('../RSessions/RSessions/Session1/Session1a.html')),
+        #         tabPanel ('RStudio Tour',
+        #           includeHTML('../RSessions/RSessions/Session1/Session1b.html')),
+        #         tabPanel ('Some Examples',
+        #           includeHTML('../RSessions/RSessions/Session1/Session1c.html'),
+        #           tabsetPanel (id='S1ex', type='pills',
+        #             tabPanel ('simple plot',
+        #               includeHTML ('../RSessions/RSessions/Session1/E1Code.html'),
+        #               sidebarLayout(
+        #                 sidebarPanel(
+        #                   selectInput (inputId='S1Var', label='variable to plot', 
+        #                     choices=c('Temperature'='ATX',
+        #                       'Wind Speed'='WSC',
+        #                       'Pressure'='PSXC'))
+        #                 ),
+        #                 mainPanel(
+        #                   plotOutput ('S1E1Plot')
+        #                 )
+        #               )),
+        #             tabPanel ('sounding',
+        #               includeHTML ('../RSessions/RSessions/Session1/E2Code.html'),
+        #               plotOutput ('S1E2Plot', width="50%")),
+        #             tabPanel ('stats',
+        #               includeHTML ('../RSessions/RSessions/Session1/E3Code.html'),
+        #               dataTableOutput ('S1Stats')),
+        #             tabPanel ('recovery factor',
+        #               includeHTML ('../RSessions/RSessions/Session1/E4Code.html'))
+        #           )
+        #         ),
+        #         tabPanel ('Text-with-Code',
+        #           includeHTML ('../RSessions/RSessions/Session1/Session1d.html')),
+        #         tabPanel ('Getting Ranadu',
+        #           includeHTML ('../RSessions/RSessions/Session1/Session1e.html')))),
+        #     tabPanel ('Objects and the data.frame',
+        #       tabsetPanel (id='S2tab', type='pills',
+        #         tabPanel ('Vectors and Matrices',
+        #           includeHTML('../RSessions/RSessions/Session2/Session2a.html'),
+        #           htmlOutput('txtS2a'),
+        #           radioButtons ('selS2a', label=NULL, choices=c(
+        #             'select a button below'=1,
+        #             'a <- 1:12; print(a)'=2,
+        #             'dim(a) <- c(3,4); print(a)'=3,
+        #             'print (t(a))'=4
+        #           ), width='400px')
+        #         ),
+        #         tabPanel ('The data.frame',
+        #           includeHTML('../RSessions/RSessions/Session2/Session2b.html')),
+        #         tabPanel ('Addressing and Subsetting data.frames',
+        #           includeHTML('../RSessions/RSessions/Session2/Session2c1.html'),
+        #           radioButtons ('selS2c1', label=NULL, choices=c(
+        #             'select a button below'=1,
+        #             'Data$ATX[5]'=2, 
+        #             'Data[5, 2]'=3,
+        #             'Data[5, ]'=4, 
+        #             'Data[5, "ATX"]'=5, 
+        #             'Data$ATX'=6,
+        #             'attach(Data); ATX[5]'=7,
+        #             'with(Data, print(ATX[5])'=8
+        #           ), width='800px'),
+        #           htmlOutput ('txtS2c1'),
+        #           includeHTML('../RSessions/RSessions/Session2/Session2c2.html'),
+        #           actionButton ('XS2a', label='See an answer')
+        #         ),
+        #         tabPanel ('Some Basic Operations',
+        #           includeHTML ('../RSessions/RSessions/Session2/Session2d.html')))),
+        #     tabPanel ('Basics',
+        #       tabsetPanel (id='S3tab', type='pills',
+        #         tabPanel ('R as a Calculator',
+        #           fluidRow (
+        #             column (3, numericInput ('S3aframe', label='frame #',
+        #               2, min=1, max=3, step=1)),
+        #             column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
+        #               'use the up/down arrow keys to step through the frames.'))),
+        #           imageOutput('RS3apng')
+        #         ),
+        #         tabPanel ('Basic Operators and Precedence',
+        #           fluidRow (
+        #             column (3, numericInput ('S3bframe', label='frame #',4,
+        #               min=4, max=12, step=1)),
+        #             column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
+        #               'use the up/down arrow keys to step through the frames.'))),
+        #           imageOutput('RS3bpng')
+        #         ),
+        #         tabPanel ('Vectorized Operations',
+        #           fluidRow (
+        #             column (3, numericInput ('S3cframe', label='frame #',13,
+        #               min=13, max=16, step=1)),
+        #             column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
+        #               'use the up/down arrow keys to step through the frames.'))),
+        #           imageOutput('RS3cpng')
+        #         ),
+        #         tabPanel ('Using Variables',
+        #           fluidRow (
+        #             column (3, numericInput ('S3dframe', label='frame #',17,
+        #               min=17, max=21, step=1)),
+        #             column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
+        #               'use the up/down arrow keys to step through the frames.'))),
+        #           imageOutput('RS3dpng')
+        #         )
+        #       )
+        #     ),
+        #     tabPanel ('R packages',
+        #       tabsetPanel (id='S4tab', type='pills',
+        #         tabPanel ('All',
+        #           fluidRow (
+        #             column (3, numericInput ('S4frame', label='frame #',2,
+        #               min=1, max=11, step=1)),
+        #             column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
+        #               'use the up/down arrow keys to step through the frames.'))),
+        #           imageOutput('RS4png')
+        #         ))),
+        #     tabPanel ('Plotting',
+        #       tabsetPanel (id='S5tab', type='pills',
+        #         tabPanel ('All',
+        #           fluidRow (
+        #             column (3, numericInput ('S5frame', label='frame #',2,
+        #               min=1, max=15, step=1)),
+        #             column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
+        #               'use the up/down arrow keys to step through the frames.'))),
+        #           imageOutput('RS5png')
+        #         ),
+        #         tabPanel ('Base Graphics',
+        #           fluidRow (
+        #             column (3, numericInput ('S5aframe', label='frame #',3,
+        #               min=3, max=9, step=1)),
+        #             column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
+        #               'use the up/down arrow keys to step through the frames.'))),
+        #           imageOutput('RS5apng')
+        #         ),
+        #         tabPanel ('plotWAC',
+        #           fluidRow (
+        #             column (3, numericInput ('S5bframe', label='frame #',8,
+        #               min=8, max=9, step=1)),
+        #             column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
+        #               'use the up/down arrow keys to step through the frames.'))),
+        #           imageOutput('RS5bpng')
+        #         ),
+        #         tabPanel ('ggplot',
+        #           fluidRow (
+        #             column (3, numericInput ('S5cframe', label='frame #',10,
+        #               min=10, max=15, step=1)),
+        #             column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
+        #               'use the up/down arrow keys to step through the frames.'))),
+        #           imageOutput('RS5cpng')
+        #         )
+        #       )
+        #     ),
+        #     tabPanel ('Fitting',
+        #       tabsetPanel (id='S6tab', type='pills',
+        #         tabPanel ('All',
+        #           fluidRow (
+        #             column (3, numericInput ('S6frame', label='frame #',2,
+        #               min=1, max=21, step=1)),
+        #             column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
+        #               'use the up/down arrow keys to step through the frames.'))),
+        #           imageOutput('RS6png')
+        #         ))
+        #     ),
+        #     tabPanel ('Reproducible Research',
+        #       tabsetPanel (id='S7tab', type='pills',
+        #         tabPanel ('All',
+        #           fluidRow (
+        #             column (3, numericInput ('S7frame', label='frame #',2,
+        #               min=1, max=13, step=1)),
+        #             column (4, helpText ('Suggestion: Click cursor in "frame #" entry box, then',
+        #               'use the up/down arrow keys to step through the frames.'))),
+        #           imageOutput('RS7png')
+        #         ))
+        #     ),
+        #     tabPanel ('Data Review',
+        #       tabsetPanel (id='S8tab', type='pills',
+        #         tabPanel ('All',
+        #           fluidRow (
+        #             column (3, numericInput ('S8frame', label='frame #',2,
+        #               min=1, max=13, step=1)),
+        #             column (4, helpText ('Suggestion: Click cursor in "frame #" entry box',
+        #               'use the up/down arrow keys to step through the frames.'))),
+        #           imageOutput('RS8png')
+        #         ))
+        #     ),
+        #     tabPanel ('Shiny apps',
+        #       tabsetPanel (id='S9tab', type='pills',
+        #         tabPanel ('All',
+        #           fluidRow (
+        #             column (6, helpText ('Suggestion: Use fit-to-page button, bottom right'))),
+        #           tags$iframe(style="height:800px; width:100%; scrolling=yes", 
+        #             src="Session9.pdf")
+        #           # imageOutput('RS9png')
+        #         ))
+        #     )
+        #   )
+        # ),
         tabPanel ('Cal Exercise',
           tabsetPanel (id='whichCE', type='pills',
             tabPanel ('the exercise',
