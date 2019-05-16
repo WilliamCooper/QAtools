@@ -193,16 +193,21 @@ server <- function(input, output, session) {
   
   
   output$ui2 <- renderUI ({
-    #     print (sprintf ('entered ui2 with plot %d', input$plot))
-    #     print (chp[[input$plot]]);print (slp[[input$plot]])
-    if (Trace) {print (sprintf ('entered ui2 with plot %d', input$plot))}
-    if (input$addVar != 'add var') {
-      chp[[input$plot]] <<- c(chp[[input$plot]],input$addVar)
+    # Trace <- TRUE
+    # #     print (sprintf ('entered ui2 with plot %d', input$plot))
+    # #     print (chp[[input$plot]]);print (slp[[input$plot]])
+    # if (Trace) {print (sprintf ('entered ui2 with plot %d, addVar=%s', 
+    #   input$plot, input$addVar))}
+    if (!grepl('add var', input$addVar)) {
+      chp[[input$plot]] <<- c(chp[[input$plot]], input$addVar)
     }
     PVar <<- slp[[input$plot]]
+    # if (Trace) {print (slp[[input$plot]])}
     updateSelectInput (session, 'addVar', selected='add var')
     selectInput ('PlotVar', label='variables', selectize=FALSE, multiple=TRUE,
-      choices=chp[[input$plot]], selected=PVar, size=10)
+      choices=c('ctl-click to add/delete', chp[[input$plot]]), selected=PVar, size=10)
+    # if (Trace) {print ('returning from ui2')}
+    # Trace <- FALSE
   })
   
   ################ OBSERVERS ########################
@@ -2421,8 +2426,11 @@ server <- function(input, output, session) {
     kount <- 0
     for (nm in names (Ds)) {
       if (nm == 'Time') {next}
+      if (all(is.na(Ds[ ,nm]))) {next}
+      if (!(nm %in% input$PlotVar)) {next}
       kount <- kount + 1
       if (kount > 6) {break}
+      if (Trace) {print (sprintf ('variable is %s', nm))}
       hist (Ds[ ,nm], freq=FALSE, breaks=50, xlab=nm, 
         ylab='probability density', main=NA)
     }
@@ -2443,11 +2451,15 @@ server <- function(input, output, session) {
     for (nm in names (Ds)) {
       if (nm == 'Time') {next}
       if (nm == 'GGALT') {next}
+      if (all(is.na(Ds[ ,nm]))) {next}
+      if (!(nm %in% input$PlotVar)) {next}
       kount <- kount + 1
       if (kount > 6) {break}
       DB <- data.frame ('Z1'=Ds[, nm])
-      DB[Ds$GGALT > 1000, 'Z1'] <- NA
-      for (j in 2:15) {
+      # DB[Ds$GGALT < 1000, 'Z1'] <- NA
+      jm <- 15
+      if (grepl('130', FI$Platform)) {jm <- 10}
+      for (j in 2:jm) {
         zmax <- j*1000
         zmin <- zmax-1000
         V <- sprintf ('Z%d', j)

@@ -96,10 +96,15 @@ loadVRPlot <- function (Project, Production = FALSE, Flight, psq) {
     FI$Variables)
   im <- im[!is.na(im)]
   HSKP <- FI$Variables[im]
+  VAC <- c(FI$Variables[grepl('Monoxide', FI$LongNames)])
+  VAC <- c(VAC, FI$Variables[grepl('PIC', FI$Variables)])
+  VAC <- c(VAC, FI$Variables[grepl('ARI', FI$Variables)])
+  VAC <- c(VAC, FI$Variables[grepl('Aerolaser', FI$LongNames)])
+  VAC <- c(VAC, VRPlot[[23]])
   im <- match(c("CORAW_AL", "FO3_ACD", "COFLOW_AL", "INLETP_AL"),
     FI$Variables)
   im <- im[!is.na(im)]
-  CHEM <- FI$Variables[im]
+  CHEM <- unique(c(VAC, FI$Variables[im]))
   im <- pmatch (c ("USHFLW_", "USMPFLW_", "UREF_", "USCAT_"),
     FI$Variables)
   im <- im[!is.na(im)]
