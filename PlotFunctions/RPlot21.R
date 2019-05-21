@@ -30,6 +30,11 @@ RPlot21 <- function (data, Seq=NA, panl=1) {
   # print (sprintf ("start time in RPlot21 is %d and jstart is %d\n",
   #                 StartTime, jstart))
   CV <- nms[grep ('CONCU_', nms)][1]
+  if (is.na(CV)) {
+	          plot(c(-1,1), c(-1,1), type='n')
+        text (0,0,labels='no data meeting concentration test for this period')
+	return()
+  }
   iw <- which(data[, CV] > plotTest)  ## get list of indices where CONCU > PlotTest
   if (length(nm1) > 0) {
     nm <- nm1[1]

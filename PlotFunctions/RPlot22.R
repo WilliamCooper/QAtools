@@ -24,6 +24,11 @@ RPlot22 <- function (data, Seq=NA, panl=1) {
   #                 StartTime, jstart))
   op <- par (mar=c(2,2,1,1)+0.1,oma=c(1.1,0,0,0))
   CV <- nms[grep ('CONC1DC_', nms)][1]
+  if (is.na(CV)) {
+	     plot(c(-1,1), c(-1,1), type='n')
+        text (0,0,labels='no data meeting concentration test for this period')
+	return()
+  }
   iw <- which(data[, CV] > 0.1)  ## get list of indices where CONC1DC > 0.1
   if (length(nm1) > 0) {
     nm <- nm1[1]

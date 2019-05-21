@@ -12,6 +12,7 @@ loadVRPlot <- function (Project, Production = FALSE, Flight, psq) {
     }
     names(VRPlot) <- nm
   }
+  
   if (grepl ('HIPPO', Project)) {
     if (grepl ('raf_data', DataDir)) {
       ProjectDir <- 'HIPPO/old_nimbus'
@@ -179,5 +180,9 @@ loadVRPlot <- function (Project, Production = FALSE, Flight, psq) {
   }
   slp <<- slp
   PVar <<- slp[[1]]
+  if (Trace) {
+    print ('VRPlot returned from loadVRPlot.R:')
+    print(VRPlot)
+  }
   return (VRPlot)
 }
