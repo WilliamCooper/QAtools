@@ -27,6 +27,8 @@ savePDF <- function(Data, inp) {
   ## transfer the attributes to DataV (for now, main use is CDP sizes)
   DataV <- transferAttributes (DataV, Data)  
   for (np in 1:30) {
+    # Skip plots if VRPlot[[]] is missing
+    if (length(VRPlot[[np]]) < 2 && (is.na(VRPlot[[np]][1]) || (VRPlot[[np]][1] == ''))) {next}
     if (file.exists (sprintf ("./PlotFunctions/RPlot%d.R", np))) {
       sourceFile <- sprintf ('RPlot%d', np)
       if (!exists (sourceFile)) {

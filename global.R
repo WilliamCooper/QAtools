@@ -74,7 +74,7 @@ minT <- as.POSIXct(0, origin='2012-05-29', tz='UTC')
 maxT <- as.POSIXct(3600*8, origin='2012-05-29', tz='UTC')
 step <- 60
 
-PJ <- c('WECAN', 'SOCRATES', 'WECAN-TEST', 'ECLIPSE', 'ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
+PJ <- c('ECLIPSE2019', 'WECAN', 'SOCRATES', 'WECAN-TEST', 'ECLIPSE', 'ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
   'DEEPWAVE', 'CONTRAST', 'SPRITE-II', 'MPEX', 'DC3', 'HEFT10', 'IDEAS-4',
   'TORERO', 'HIPPO-5', 'HIPPO-4', 'HIPPO-3', 'HIPPO-2', 'DC3-TEST',
   'HIPPO-1','PREDICT', 'START08', 'PACDEX', 'TREX', 'WINTER', 'NOMADSS')
@@ -1407,7 +1407,7 @@ seeManual <- function () {
 
 ## get VRPlot and chp/shp:
 ## load a starting-point version
-Project <- 'WECAN'
+Project <- 'ECLIPSE2019'
 source('loadVRPlot.R')
 
 load ('CalibrationExercise/CalData.Rdata')
