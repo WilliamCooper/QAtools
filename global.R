@@ -467,6 +467,8 @@ ProjectSeekManeuvers <- function (inp) {
       newDF <- rbind (Maneuvers, newDF)
     }
     Maneuvers <<- Maneuvers <- newDF
+    file.copy('Maneuvers.Rdata', sprintf('Maneuvers.backup%s', gsub(' ', '', date())))
+    save(Maneuvers, file='Maneuvers.Rdata')
     return (1)
   }
   
@@ -960,10 +962,13 @@ qualifyData <- function(D) {
   D$DTAS <- SmoothInterp(D$DTAS, .Length=301)
   GVSPD <- SmoothInterp (c(0, diff(D$GGALT)), .Length=5)
   
-  r <- (abs(GVSPD) > 1) | (D$TASX < 90) | (abs(D$DTAS) > 0.1) | (abs(D$ROLL) > 5) | (D$QCXC < 60)
+  r <- (abs(GVSPD) > 1) | (D$TASX < 90) | (abs(D$DTAS) > 0.1) | (abs(D$ROLL) > 5) | 
+    (D$QCXC < 60)
   r[is.na(r)] <- TRUE
-  D$PSXC[r] <- NA; D$PS_A[r] <- NA
-  D$QCRC[r] <- NA; D$QC_A[r] <- NA
+  # D$PSXC[r] <- NA; D$PS_A[r] <- NA
+  # D$QCRC[r] <- NA; D$QC_A[r] <- NA
+  # D$AT_A[r] <- NA; D$ATX[r] <- NA
+  D <- D[r == FALSE, ]
   return (D)
 }
 

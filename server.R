@@ -354,6 +354,8 @@ server <- function(input, output, session) {
     }
     if (!exists('Maneuvers')) {
       load ('Maneuvers.Rdata')
+      Maneuvers$Start <- as.integer(Maneuvers$Start)
+      Maneuvers$End   <- as.integer(Maneuvers$End)
       Maneuvers <<- Maneuvers
     }
     
@@ -591,7 +593,7 @@ server <- function(input, output, session) {
         }
       }
       if (Trace) {print (sprintf ('fnamePP3=%s', fnamePP))}
-      FI <- DataFileInfo (fnamePP)
+      FI <- DataFileInfo (fnamePP, LLrange=FALSE)
       VT <- c(ATVARS[ATVARS %in% FI$Variables])
       updateSelectInput (session, inputId='ATsel', selected='ATX')
       updateSelectInput (session, inputId='ATsc', choices=VT)
@@ -3277,7 +3279,7 @@ server <- function(input, output, session) {
       Data$PSFIT <- with(Data, cf[1] + PS_A * (cf[2] + cf[4] * PS_A) + cf[3] * QC_A)
       bs <- with(Data, binStats(data.frame(PSXC-PSFIT, PSXC), bins=10))
       g <- ggplot(data=bs)
-      g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma, 
+      g <- g + geom_errorbarh (aes (y=xc, xmin=ybar-sigma, 
         xmax=ybar+sigma), na.rm=TRUE) 
       xlow <- floor(min (bs$ybar-bs$sigma, na.rm=TRUE))
       xhigh <- ceiling(max (bs$ybar+bs$sigma, na.rm=TRUE))
@@ -3297,7 +3299,8 @@ server <- function(input, output, session) {
   output$QCplot <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
-    fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
+    fnamePP <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), ProjectPPDir, 
+      input$ProjectPP, input$typeFlightPP, input$FlightPP)
     if (!file.exists (fnamePP)) {
       fnamePP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
     }
@@ -3320,7 +3323,11 @@ server <- function(input, output, session) {
     if (input$AllPP) {
       Data <- DataPP
     } else {
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      if (input$typeFlightPP == 'tf') {
+        Data <- DataPP[DataPP$RF == input$FlightPP+50, ]
+      } else {
+        Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      }
     }
     
     cfq <- c(2.7809637e+00, 9.7968460e-01, -6.7437126e-03, 4.8584555e-06)
@@ -3356,7 +3363,8 @@ server <- function(input, output, session) {
   output$QCSplot <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
-    fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), input$ProjectPP, input$ProjectPP, input$FlightPP)
+    fnamePP <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), input$ProjectPP, 
+      input$ProjectPP, input$typeFlightPP, input$FlightPP)
     if (!file.exists (fnamePP)) {
       fnamePP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
     }
@@ -3377,7 +3385,11 @@ server <- function(input, output, session) {
     if (input$AllPP) {
       Data <- DataPP
     } else {
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      if (input$typeFlightPP == 'tf') {
+        Data <- DataPP[DataPP$RF == input$FlightPP+50, ]
+      } else {
+        Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      }
     }
     
     cfq <- c(2.7809637e+00, 9.7968460e-01, -6.7437126e-03, 4.8584555e-06)
@@ -3405,7 +3417,7 @@ server <- function(input, output, session) {
       Data$QCFIT <- with(Data, cfq[1] + PS_A * (cfq[3] + cfq[4] * PS_A) + cfq[2] * QC_A)
       bs <- with(Data, binStats(data.frame(QCXC-QCFIT, QCXC), bins=10))
       g <- ggplot(data=bs)
-      g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma, 
+      g <- g + geom_errorbarh (aes (y=xc, xmin=ybar-sigma, 
         xmax=ybar+sigma), na.rm=TRUE) 
       xlow <- floor(min (bs$ybar-bs$sigma, na.rm=TRUE))
       xhigh <- ceiling(max (bs$ybar+bs$sigma, na.rm=TRUE))
@@ -3422,7 +3434,8 @@ server <- function(input, output, session) {
   output$PSHeq <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
-    fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), input$ProjectPP, input$ProjectPP, input$FlightPP)
+    fname <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), input$ProjectPP, 
+      input$ProjectPP, input$typeFlightPP, input$FlightPP)
     if (checkBad(sprintf ('%srf%02d', input$ProjectPP, input$FlightPP))) {
       print ('bad flight -- skipping')
       return()
@@ -3491,7 +3504,8 @@ server <- function(input, output, session) {
   output$ATplot <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
-    fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
+    fnamePP <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), ProjectPPDir, 
+      input$ProjectPP, input$typeFlightPP, input$FlightPP)
     if (!file.exists (fnamePP)) {
       fnamePP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
     }
@@ -3509,7 +3523,11 @@ server <- function(input, output, session) {
     if (input$AllPP) {
       Data <- DataPP
     } else {
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      if (input$typeFlightPP == 'tf') {
+        Data <- DataPP[DataPP$RF == input$FlightPP+50, ]
+      } else {
+        Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      }
     }
     
     cfA <- c(0.28178716560, 1.01636832046, -0.00012560891)  ## const, AT_A, AT_A^2
@@ -3536,7 +3554,8 @@ server <- function(input, output, session) {
   output$ATSplot <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
-    fnamPP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), input$ProjectPP, input$ProjectPP, input$FlightPP)
+    fnamPP <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), input$ProjectPP, 
+      input$ProjectPP, input$typeFlightPP, input$FlightPP)
     if (!file.exists (fnamPP)) {
       fnamPP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), input$ProjectPP, input$ProjectPP, input$FlightPP)
     }
@@ -3554,7 +3573,11 @@ server <- function(input, output, session) {
     if (input$AllPP) {
       Data <- DataPP
     } else {
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      if (input$typeFlightPP == 'tf') {
+        Data <- DataPP[DataPP$RF == input$FlightPP+50, ]
+      } else {
+        Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      }
     }
     
     cfA <- c(0.28178716560, 1.01636832046, -0.00012560891)  ## const, AT_A, AT_A^2
@@ -3566,7 +3589,7 @@ server <- function(input, output, session) {
     }
     bs <- with(Data, binStats(data.frame(ATX-ATFIT, PSXC), bins=10))
     g <- ggplot(data=bs)
-    g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma, 
+    g <- g + geom_errorbarh (aes (y=xc, xmin=ybar-sigma, 
       xmax=ybar+sigma), na.rm=TRUE) 
     xlow <- floor(min (bs$ybar-bs$sigma, na.rm=TRUE))
     xhigh <- ceiling(max (bs$ybar+bs$sigma, na.rm=TRUE))
@@ -3610,6 +3633,7 @@ server <- function(input, output, session) {
       load (RdataFile)
     } else {
       DataPP <- makeDataFile (input$ProjectPP, 'ALL', VL)
+      DataPP <- qualifyData (DataPP)
       save (DataPP, file=RdataFile)
     }
     ch <- c('ATX', sort (TCN[which(TCN %in% names(DataPP))]))
@@ -3658,7 +3682,11 @@ server <- function(input, output, session) {
     if (input$AllPP) {
       Data <- DataPP
     } else {
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      if (input$typeFlightPP == 'tf') {
+        Data <- DataPP[DataPP$RF == input$FlightPP + 50, ]
+      } else {
+        Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      }
     }
     
     Data$ATX <- Data[, ATsel]
@@ -3712,7 +3740,7 @@ server <- function(input, output, session) {
     
     bs$sigma[bs$nb > 1] <- bs$sigma[bs$nb > 1] / sqrt(bs$nb [bs$nb > 1])
     g <- ggplot(data=bs)
-    g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma, 
+    g <- g + geom_errorbarh (aes (y=xc, xmin=ybar-sigma, 
       xmax=ybar+sigma), na.rm=TRUE) 
     xlow <- floor(min (bs$ybar-bs$sigma, na.rm=TRUE))
     xhigh <- ceiling(max (bs$ybar+bs$sigma, na.rm=TRUE))
@@ -3730,32 +3758,40 @@ server <- function(input, output, session) {
     print (g)
   })
   
-  output$INSpitch <- renderPlot ({
-    VL <- c('PITCH', 'PITCH_IRS2', 'ROLL', 'ROLL_IRS2', 'THDG', 'THDG_IRS2', 'TASX')
-    RdataFile <- sprintf ('Data/dataINS%s.Rdata', input$ProjectPP)
-    if (file.exists (RdataFile)) {
-      load (RdataFile)
-    } else {
-      DataPP <- makeDataFile (input$ProjectPP, 'ALL', VL)
-      save (DataPP, file=RdataFile)
-    }
-    if (input$AllPP) {
-      Data <- DataPP
-    } else {
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
-    }
-    g <- ggplot(data=Data) + geom_histogram (aes(PITCH-PITCH_IRS2, ..density..), fill='blue', binwidth=0.01)
-    g <- g + ggtitle(sprintf ('mean %.2f +/- %.2f', mean(Data$PITCH-Data$PITCH_IRS2, na.rm=TRUE),
-      sd(Data$PITCH-Data$PITCH_IRS2, na.rm=TRUE)))
-    g + theme_WAC() + theme (plot.title=element_text(size=14))
-  })
+  ## This was duplicated below, so now commented.
+  # output$INSpitch <- renderPlot ({
+  #   VL <- c('PITCH', 'PITCH_IRS2', 'ROLL', 'ROLL_IRS2', 'THDG', 'THDG_IRS2', 'TASX')
+  #   RdataFile <- sprintf ('Data/dataINS%s.Rdata', input$ProjectPP)
+  #   if (file.exists (RdataFile)) {
+  #     load (RdataFile)
+  #   } else {
+  #     DataPP <- makeDataFile (input$ProjectPP, 'ALL', VL)
+  #     # DataPP <- qualifyData (DataPP)
+  #     save (DataPP, file=RdataFile)
+  #   }
+  #   if (input$AllPP) {
+  #     Data <- DataPP
+  #   } else {
+  #     if (input$typeFlightPP == 'tf') {
+  #       Data <- DataPP[DataPP$RF == input$FlightPP+50, ]
+  #     } else {
+  #       Data <- DataPP[DataPP$RF == input$FlightPP, ]
+  #     }
+  #   }
+  #   Data$PITCH <- SmoothInterp(Data$Pitch, .Length=0)
+  #   Data$PITCH_IRS2 <- SmoothInterp(Data$Pitch_IRS2, .Length=0)
+  #   g <- ggplot(data=Data) + geom_histogram (aes(PITCH-PITCH_IRS2, ..density..), fill='blue', binwidth=0.01)
+  #   g <- g + ggtitle(sprintf ('mean %.2f +/- %.2f', mean(Data$PITCH-Data$PITCH_IRS2, na.rm=TRUE),
+  #     sd(Data$PITCH-Data$PITCH_IRS2, na.rm=TRUE)))
+  #   g + theme_WAC() + theme (plot.title=element_text(size=14))
+  # })
   
   output$ATcmpr <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
     ATsc <- input$ATsc
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
-    fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjectPPDir, 
-      input$ProjectPP, input$FlightPP)
+    fnamePP <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), ProjectPPDir, 
+      input$ProjectPP, input$typeFlightPP, input$FlightPP)
     if (!file.exists (fnamePP)) {
       fnamePP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), ProjectPPDir, 
         input$ProjectPP, input$FlightPP)
@@ -3763,12 +3799,15 @@ server <- function(input, output, session) {
     # VL <- standardVariables (c('PS_A', 'QC_A', 'TAS_A',
     #                            'RTX', 'PALT', 'ROLL', 'QCF', 'QCR'))
     VL <- c('ATX', 'EWX', 'GGALT', 'LATC', 'MACHX', 'PALT', 'PSXC',
-      'QCF', 'QCR', 'ROLL', 'TASX')
+      'QCF', 'QCR', 'ROLL', 'TASX', 'QCXC')
     ## add temperatures:
     TCN <- c('ATH1', 'ATH2', 'ATH3', 'ATH4', 'ATF1', 'ATF2', 'AT_A', 'AT_A2', 
       'ATFH1', 'ATFH2', 'ATHR1', 'ATHR2', 'ATHL1', 'ATHL2')
     if (Trace) {print (sprintf ('fnamePP2=%s', fnamePP))}
-    FI <- DataFileInfo (fnamePP)
+    FI <- DataFileInfo (fnamePP, LLrange=FALSE)
+    # update the ATsc selection (needed only first time; later, include skip) 
+    VT <- c(ATVARS[ATVARS %in% FI$Variables])
+    updateSelectInput (session, inputId='ATsc', choices=VT, selected=input$ATsc)
     
     VL <- c(VL, TCN[which(TCN %in% FI$Variables)])
     
@@ -3777,6 +3816,7 @@ server <- function(input, output, session) {
       load (RdataFile)
     } else {
       DataPP <- makeDataFile (input$ProjectPP, 'ALL', VL)
+      DataPP <- qualifyData (DataPP)
       save (DataPP, file=RdataFile)
     }
     ch <- c('ATX', sort (TCN[which(TCN %in% names(DataPP))]))
@@ -3784,10 +3824,15 @@ server <- function(input, output, session) {
     if (input$AllPP) {
       Data <- DataPP
     } else {
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      if (input$typeFlightPP == 'tf') {
+        Data <- DataPP[DataPP$RF == input$FlightPP+50, ]
+      } else {
+        Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      }
     }
+    DataPP <<- Data  # Save for troubleshooting examination
     ATsc <- input$ATsc
-    print (c('Tvars=', ATsc))
+    if (Trace) {print (c('Tvars=', ATsc))}
     if (length(ATsc) < 2) {return(' ')}
     ## do each vs first, up to three:
     DBS1 <- data.frame(Data[, ATsc[1]] - Data[, ATsc[2]], Data$ATX)
@@ -3795,7 +3840,7 @@ server <- function(input, output, session) {
     # plotWAC(bs$ybar, bs$xc, xlab='DT')
     
     g <- ggplot(data=bs1)
-    g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma,
+    g <- g + geom_errorbarh (aes (y=xc, xmin=ybar-sigma,
       xmax=ybar+sigma), na.rm=TRUE)
     g <- g + geom_point (aes (x=bs1$ybar, y=bs1$xc), size=3, colour='blue', na.rm=TRUE)
     g <- g + geom_label (aes (x=3.9, y=bs1$xc, label=sprintf('%d', bs1$nb)))
@@ -3803,14 +3848,14 @@ server <- function(input, output, session) {
     if (length(ATsc) > 2) {
       DBS2 <- data.frame(Data[, ATsc[1]] - Data[, ATsc[3]], Data$ATX)
       bs2 <- binStats (DBS2, bins=15)
-      g <- g + geom_errorbarh (data=bs2, aes (y=xc, x=ybar, xmin=ybar-sigma,
+      g <- g + geom_errorbarh (data=bs2, aes (y=xc, xmin=ybar-sigma,
         xmax=ybar+sigma), na.rm=TRUE)
       g <- g + geom_point (data=bs2, aes (x=bs2$ybar, y=bs2$xc), size=3, colour='forestgreen', na.rm=TRUE)
     }
     if (length(ATsc) > 3) {
       DBS3 <- data.frame(Data[, ATsc[1]] - Data[, ATsc[4]], Data$ATX)
       bs3 <- binStats (DBS3, bins=15)    
-      g <- g + geom_errorbarh (data=bs3, aes (y=xc, x=ybar, xmin=ybar-sigma,
+      g <- g + geom_errorbarh (data=bs3, aes (y=xc, xmin=ybar-sigma,
         xmax=ybar+sigma), na.rm=TRUE)
       g <- g + geom_point (data=bs3, aes(x=bs3$ybar, y=bs3$xc), size=3, colour='darkorange', na.rm=TRUE)
     }
@@ -3840,7 +3885,11 @@ server <- function(input, output, session) {
     if (input$AllPP) {
       Data <- DataPP
     } else {
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      if (input$typeFlightPP == 'tf') {
+        Data <- DataPP[DataPP$RF == input$FlightPP+50, ]  
+      } else {
+        Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      }
     }
     g <- ggplot(data=Data) + geom_histogram (aes(PITCH-PITCH_IRS2, ..density..), fill='blue', binwidth=0.01)
     g <- g + ggtitle(sprintf ('mean %.2f +/- %.2f', mean(Data$PITCH-Data$PITCH_IRS2, na.rm=TRUE),
@@ -3860,7 +3909,11 @@ server <- function(input, output, session) {
     if (input$AllPP) {
       Data <- DataPP
     } else {
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      if (input$typeFlightPP == 'tf') {
+        Data <- DataPP[DataPP$RF == input$FlightPP+50, ]
+      } else {
+        Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      }
     }
     g <- ggplot(data=Data) + geom_histogram (aes(ROLL-ROLL_IRS2, ..density..), fill='blue', binwidth=0.01)
     g <- g + ggtitle(sprintf ('mean %.2f +/- %.2f', mean(Data$ROLL-Data$ROLL_IRS2, na.rm=TRUE),
@@ -3880,7 +3933,11 @@ server <- function(input, output, session) {
     if (input$AllPP) {
       Data <- DataPP
     } else {
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      if (input$typeFlightPP == 'tf') {
+        Data <- DataPP[DataPP$RF == input$FlightPP+50, ]  
+      } else {
+        Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      }
     }
     Data$DTHDG <- Data$THDG - Data$THDG_IRS2
     
