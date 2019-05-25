@@ -2,7 +2,7 @@
 
 # Start with a sample netCDF file.
 # Specify the new project here; 'WECAN' should be changed to the new project.
-NewProject <- 'ECLIPSE2019'
+NewProject <- 'OTREC-TEST'
 Flight <- 'tf01'  # Specify the model netCDF file
 fname <- sprintf ('%s%s/%s%s.nc', Ranadu::DataDirectory(),
                   NewProject, NewProject, Flight)
@@ -152,8 +152,15 @@ VRX[[6]] <- VRX[[6]][-which(grepl('^CAVP', VRX[[6]]) |
                             grepl('PCAB', VRX[[6]]))]
 VRX[[6]] <- VRX[[6]][-which(grepl('PSXC', VRX[[6]]))]
 # also omit pressures in the aerosol ducts:
-if (grepl('DUMPP', VRX[[6]])) {
+if (any(grepl('DUMPP', VRX[[6]]))) {
   VRX[[6]] <- VRX[[6]][-which(grepl('DUMPP', VRX[[6]]))]
+}
+# These have incorrect Measurands to subtract them:
+if ('QCTF' %in% VRX[[6]]) {
+  VRX[[6]] <- VRX[[6]][-which('QCTF' == VRX[[6]])]
+}
+if ('QCTFC' %in% VRX[[6]]) {
+  VRX[[6]] <- VRX[[6]][-which('QCTFC' == VRX[[6]])]
 }
 
 # for RPlot7.R:
