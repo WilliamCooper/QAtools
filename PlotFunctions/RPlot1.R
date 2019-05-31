@@ -72,8 +72,8 @@ RPlot1 <- function (data, Flight=NA, Seq=NA, panl=1) {
   
   panel23 <- function (data) 
     if ('GGQUAL' %in% names(data)) {
-      plotWAC(data[,c("Time", "GGQUAL")])
-      title('GPS Precision , 5 = Terra Star Corrected, 2 = Receiving, 1 = Standard GPS, 0 = No FIX',
+      plotWAC(data[,c("Time", "GGQUAL")], ylim=c(0,10))
+      title('GPS Quality: 5 = TerraStar corrected, 2 = TerraStar converging, 9 = WAAS, 1 = Standard GPS, 0 = No FIX',
         cex.main = cexmain)
     }
   

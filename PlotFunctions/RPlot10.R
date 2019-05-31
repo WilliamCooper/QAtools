@@ -77,7 +77,7 @@ RPlot10 <- function (data,
     DF <- data[, c("Time", "GGQUAL")]
     plotWAC(DF, ylim = c(0, 10))
     title(
-      'GPS Precision , 5 = Terra Star Corrected, 2 = Receiving, 1 = Standard GPS, 0 = No FIX',
+      'GPS Quality: 5 = TerraStar corrected, 2 = TerraStar converging, 9 = WAAS, 1 = Standard GPS, 0 = No FIX',
       cex.main = cexmain
     )
   }
