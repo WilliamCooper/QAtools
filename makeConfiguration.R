@@ -2,8 +2,8 @@
 
 # Start with a sample netCDF file.
 # Specify the new project here; 'WECAN' should be changed to the new project.
-NewProject <- 'WECAN'
-Flight <- 'rf05'  # Specify the model netCDF file
+NewProject <- 'OTREC-TEST'
+Flight <- 'tf01'  # Specify the model netCDF file
 fname <- sprintf ('%s%s/%s%s.nc', Ranadu::DataDirectory(),
                   NewProject, NewProject, Flight)
 FI <- Ranadu::DataFileInfo (fname)
@@ -19,6 +19,8 @@ PJC130 <- c('WECAN',
   'NOMADSS',
   'FRAPPE')
 PJGV  <- c(
+  'ECLIPSE2019',
+  'OTREC-TEST',
   'SOCRATES',
   'ECLIPSE',
   'ARISTO2017',
@@ -58,14 +60,18 @@ rm('VRX')
 rm('VRPlot')
 for (Project in PJ) {
   if (Project == NewProject) {next}  # when testing, don't use existing config.
-  source ('./Configuration.R')
+  source ('./Configuration.R')  # Must do this repeatedly because VRPlot is loaded
+                                # to match Project.
   if (exists ('VRX')) {
     for (i in 1:length(VRPlot)) {
-      VRX[[i]] <- unique (c(VRPlot[[i]], VRX[[i]]))
+      if (!is.na(VRPlot[[i]][1])) {
+        VRX[[i]] <- unique (c(VRPlot[[i]], VRX[[i]]))
+      }
     }
   } else {
     VRX <- VRPlot
   }
+  if ('ATX' %in% VRX[[23]]) {print (sprintf('project %s', Project))}
 }
 # eliminate NAs
 for (i in 1:length(VRX)) {
@@ -147,6 +153,17 @@ VRX[[6]] <- unique(c(firstPR, VRX[[6]], FI$Measurands$air_pressure))
 VRX[[6]] <- VRX[[6]][-which(grepl('^CAVP', VRX[[6]]) |
                             grepl('PCAB', VRX[[6]]))]
 VRX[[6]] <- VRX[[6]][-which(grepl('PSXC', VRX[[6]]))]
+# also omit pressures in the aerosol ducts:
+if (any(grepl('DUMPP', VRX[[6]]))) {
+  VRX[[6]] <- VRX[[6]][-which(grepl('DUMPP', VRX[[6]]))]
+}
+# These have incorrect Measurands to subtract them:
+if ('QCTF' %in% VRX[[6]]) {
+  VRX[[6]] <- VRX[[6]][-which('QCTF' == VRX[[6]])]
+}
+if ('QCTFC' %in% VRX[[6]]) {
+  VRX[[6]] <- VRX[[6]][-which('QCTFC' == VRX[[6]])]
+}
 
 # for RPlot7.R:
 # add Mach numbers (eventually using standard_name instead)
@@ -171,11 +188,23 @@ VRX[[7]] <-
 if ('QCXC' %in% VRX[[7]]) { # Remove QCXC if present
   VRX[[7]] <- VRX[[7]][-which(grepl('QCXC', VRX[[7]]))]
 }
+# QCTF and QCTFC don't have the right measurand name yet, so add them:
+if ('QCTF' %in% FI$Variables) {
+  VRX[[7]] <- c(VRX[[7]], 'QCTF')
+}
+if ('QCTFC' %in% FI$Variables) {
+  VRX[[7]] <- c(VRX[[7]], 'QCTFC')
+}
+VRX[[7]] <- unique (VRX[[7]])  # in case the measurand is corrected someday
 
 # for RPlot8.R
 # These are ambient-dynamic pairs to add for total pressures:
-VRX[[8]] <- unique(c(VRX[[8]], 'PSF', 'QCF', 'PS_A', 'QC_A',
+if (grepl ('677', FI$Platform)) {
+  VRX[[8]] <- unique(c(VRX[[8]], 'PSF', 'QCF', 'PS_A', 'QC_A', 'PSTF', 'QCTF'))
+} else {
+  VRX[[8]] <- unique(c(VRX[[8]], 'PSF', 'QCF', 'PS_A', 'QC_A',
   'PSFD', 'QCF', 'PSFRD', 'QCFR'))
+}
 
 # RPlot9.R: (wind)
 VRX[[9]] <- unique (

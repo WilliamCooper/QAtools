@@ -74,14 +74,14 @@ minT <- as.POSIXct(0, origin='2012-05-29', tz='UTC')
 maxT <- as.POSIXct(3600*8, origin='2012-05-29', tz='UTC')
 step <- 60
 
-PJ <- c('WECAN', 'SOCRATES', 'WECAN-TEST', 'ECLIPSE', 'ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
-  'DEEPWAVE', 'CONTRAST', 'SPRITE-II', 'MPEX', 'DC3', 'HEFT10', 'IDEAS-4',
+PJ <- c('ECLIPSE2019', 'OTREC-TEST', 'WECAN', 'SOCRATES', 'WECAN-TEST', 'ECLIPSE', 'ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
+  'DEEPWAVE', 'CONTRAST', 'SPRITE-II', 'MPEX', 'DC3', 'HEFT10', 'IDEAS-4', 'FRAPPE',
   'TORERO', 'HIPPO-5', 'HIPPO-4', 'HIPPO-3', 'HIPPO-2', 'DC3-TEST',
   'HIPPO-1','PREDICT', 'START08', 'PACDEX', 'TREX', 'WINTER', 'NOMADSS')
 Cradeg <- pi/180
 Project <- PJ[1]
 ProjectPP <- PJ[1]
-ProjectKF <- PJ[1]
+ProjectKF <- PJ[3]
 Flight <- 1
 FlightKF <- 1
 ProjectKP <- PJ[1]
@@ -275,6 +275,9 @@ dataDPM <- function(ProjDir, ProjectPP, Flight, VL, START, END) {
 dataDYM <- function(ProjDir, ProjectPP, Flight, VL, START, END) {
   fname <- sprintf ('%s%s/%s%s.nc', DataDirectory (), ProjDir, ProjectPP, Flight)
   if (fname != fnameDYM || START != STARTDYM || END != ENDDYM) {
+    if (Trace) {print (sprintf ('in dataDYM, file is %s, Start=%d, End=%d', fname, START, END))}
+    if (Trace) {print (VL)}
+    VL <<- VL
     DYM <- getNetCDF (fname, VL, Start=START, End=END)
     DYM <<- DYM
     fnameDYM <<- fname
@@ -286,7 +289,21 @@ dataDYM <- function(ProjDir, ProjectPP, Flight, VL, START, END) {
 
 dataDCR <- function(ProjDir, ProjectPP, Flight, VL, START, END) {
   fname <- sprintf ('%s%s/%s%s.nc', DataDirectory (), ProjDir, ProjectPP, Flight)
-  if (Trace) {print (sprintf ('in dataDCR, file name to load is %s %d %d', fname, START, END))}
+  if (Trace) {
+    print (sprintf ('in dataDCR, file name to load is %s %d %d', fname, START, END))
+  }
+  if (!file.exists(fname)) {
+    return (NA)
+  }
+  FI <- DataFileInfo (fname, LLrange = FALSE)
+  if ('GGVSPD' %in% FI$Variables) {
+  } else {
+    if ('GVSPD' %in% FI$Variables) {
+      VL[which(VL == 'GGVSPD')] <- 'GVSPD'
+    } else if ('GGVSPD_NVTL' %in% FI$Variables) {
+      VL[which(VL == 'GGVSPD')] <- 'GGVSPD_NVTL'
+    }
+  }
   if (fname != fnameDCR || START != STARTDCR || END != ENDDCR) {
     DCR <- getNetCDF (fname, VL, Start=START, End=END)
     if (Trace) {print (sprintf (' called getNetCDF, nrows in file is %d', nrow(DCR)))}
@@ -462,6 +479,8 @@ ProjectSeekManeuvers <- function (inp) {
       newDF <- rbind (Maneuvers, newDF)
     }
     Maneuvers <<- Maneuvers <- newDF
+    file.copy('Maneuvers.Rdata', sprintf('Maneuvers.backup%s', gsub(' ', '', date())))
+    save(Maneuvers, file='Maneuvers.Rdata')
     return (1)
   }
   
@@ -955,10 +974,13 @@ qualifyData <- function(D) {
   D$DTAS <- SmoothInterp(D$DTAS, .Length=301)
   GVSPD <- SmoothInterp (c(0, diff(D$GGALT)), .Length=5)
   
-  r <- (abs(GVSPD) > 1) | (D$TASX < 90) | (abs(D$DTAS) > 0.1) | (abs(D$ROLL) > 5) | (D$QCXC < 60)
+  r <- (abs(GVSPD) > 1) | (D$TASX < 90) | (abs(D$DTAS) > 0.1) | (abs(D$ROLL) > 5) | 
+    (D$QCXC < 60)
   r[is.na(r)] <- TRUE
-  D$PSXC[r] <- NA; D$PS_A[r] <- NA
-  D$QCRC[r] <- NA; D$QC_A[r] <- NA
+  # D$PSXC[r] <- NA; D$PS_A[r] <- NA
+  # D$QCRC[r] <- NA; D$QC_A[r] <- NA
+  # D$AT_A[r] <- NA; D$ATX[r] <- NA
+  D <- D[r == FALSE, ]
   return (D)
 }
 
@@ -1402,7 +1424,7 @@ seeManual <- function () {
 
 ## get VRPlot and chp/shp:
 ## load a starting-point version
-Project <- 'WECAN'
+Project <- 'ECLIPSE2019'
 source('loadVRPlot.R')
 
 load ('CalibrationExercise/CalData.Rdata')

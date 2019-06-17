@@ -29,8 +29,9 @@ RPlot6 <- function (data, Seq=NA, panl=1, ...) {
     # Plot the differences:
     P <- VRPlot[[6]]
     PC <- P[c (which (grepl('C$', P)), which (grepl('_A', P)))]
-    DF <- data[, c('Time', PC[-1])] # use first in list as reference
-    DF <- DF - data[, PC[1]]
+    PCD <- PC[-1]
+    DF <- data[, c('Time', PCD)] # use first in list as reference
+    DF[, PCD] <- DF[, PCD] - data[, PC[1]]
     plotWAC(DF, ylab=expression(paste (Delta,' [hPa]')), 
       lwd = c(2.5, 2, 1.5, 1),
       ylim = YLMF (2, c(-5, 5)))
@@ -46,7 +47,7 @@ RPlot6 <- function (data, Seq=NA, panl=1, ...) {
     if ('PSX' %in% P) {P <- P[-which ('PSX' == P)]}
     DF <- data[, c('Time', P)] # use PSXC as reference if present; else skip
     if ('PSXC' %in% names (data)) {
-      DF <- DF - data$PSXC
+      DF[, P] <- DF[, P] - data$PSXC
       plotWAC(DF, ylab=expression(paste (Delta,' [hPa]')), 
         lwd = c(2.5, 2, 1.5, 1),
         ylim = YLMF (3, c(-10, 10)))

@@ -63,8 +63,9 @@ RPlot7 <- function (data, Seq=NA, panl=1) {
     ## corrected QCs only
     QC <- VRPlot[[7]][grepl ('^QC', VRPlot[[7]])]
     QC <- QC[grepl ('QC_A', QC) | grepl ('C$', QC)]
-    DF <- data[, c('Time', QC[-1])] # use first in list as reference
-    DF <- DF - data[, QC[1]]
+    QCD <- QC[-1]
+    DF <- data[, c('Time', QCD)] # use first in list as reference
+    DF[, QCD] <- DF[, QCD] - data[, QC[1]]
     plotWAC(DF, ylab=expression(paste (Delta,' [hPa]')), 
       lwd = c(2.5, 2, 1.5, 1),
       ylim = YLMF (2, c(-5, 5)))
@@ -79,7 +80,7 @@ RPlot7 <- function (data, Seq=NA, panl=1) {
     Q <- Q[!(Q %in% QC)]
     DF <- data[, c('Time', Q)] # use QCXC as reference if present; else skip
     if ('QCXC' %in% names (data)) {
-      DF <- DF - data$QCXC
+      DF[, Q] <- DF[, Q] - data$QCXC
       plotWAC(DF, ylab=expression(paste (Delta,' [hPa]')), 
         lwd = c(2.5, 2, 1.5, 1),
         ylim = YLMF (3, c(-10, 10)))
@@ -116,8 +117,9 @@ RPlot7 <- function (data, Seq=NA, panl=1) {
   panel22 <- function (data) { # differences, TAS
     TAS <- VRPlot[[7]]
     TAS <- TAS[which("TAS" == substr(TAS, 1, 3))]
-    DF <- data[, c('Time', TAS[-1])] # use first in list as reference
-    DF <- DF - data[, TAS[1]]
+    TASD <- TAS[-1]
+    DF <- data[, c('Time', TASD)] # use first in list as reference
+    DF[, TASD] <- DF[, TASD] - data[, TAS[1]]
     plotWAC(DF, ylab=expression(paste (Delta,' [m/s]')), 
       lwd = c(2.5, 2, 1.5, 1),
       ylim = YLMF (2, c(-2, 2)))

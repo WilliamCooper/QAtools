@@ -193,16 +193,21 @@ server <- function(input, output, session) {
   
   
   output$ui2 <- renderUI ({
-    #     print (sprintf ('entered ui2 with plot %d', input$plot))
-    #     print (chp[[input$plot]]);print (slp[[input$plot]])
-    if (Trace) {print (sprintf ('entered ui2 with plot %d', input$plot))}
-    if (input$addVar != 'add var') {
-      chp[[input$plot]] <<- c(chp[[input$plot]],input$addVar)
+    # Trace <- TRUE
+    # #     print (sprintf ('entered ui2 with plot %d', input$plot))
+    # #     print (chp[[input$plot]]);print (slp[[input$plot]])
+    # if (Trace) {print (sprintf ('entered ui2 with plot %d, addVar=%s', 
+    #   input$plot, input$addVar))}
+    if (!grepl('add var', input$addVar)) {
+      chp[[input$plot]] <<- c(chp[[input$plot]], input$addVar)
     }
     PVar <<- slp[[input$plot]]
+    # if (Trace) {print (slp[[input$plot]])}
     updateSelectInput (session, 'addVar', selected='add var')
     selectInput ('PlotVar', label='variables', selectize=FALSE, multiple=TRUE,
-      choices=chp[[input$plot]], selected=PVar, size=10)
+      choices=c('ctl-click to add/delete', chp[[input$plot]]), selected=PVar, size=10)
+    # if (Trace) {print ('returning from ui2')}
+    # Trace <- FALSE
   })
   
   ################ OBSERVERS ########################
@@ -211,7 +216,7 @@ server <- function(input, output, session) {
     input$plot  ## for dependence
     # Set Rplot appropriately:
     Rp <- min (which(input$plot < as.integer (PlotTypes))[1] - 1, 
-               length (PlotTypes))
+      length (PlotTypes))
     if (Trace) {
       print (sprintf ('entered Plot observer, plot=%d, Rp=%d',
         input$plot, Rp))
@@ -231,7 +236,7 @@ server <- function(input, output, session) {
     reac$newdisplay <- TRUE
   })
   obsPlot <- observe (exprPlot, quoted=TRUE)
-
+  
   exprProject <- quote ({
     if (input$Project != Project) {
       Project <<- input$Project
@@ -261,7 +266,7 @@ server <- function(input, output, session) {
       print (sprintf ('PlotVar: plot is %d', np))
       print (sprintf ('length of input$PlotVar is %d', length (input$PlotVar)))
     }
-    if (length (input$PlotVar) < 1) {return()}
+    if (length (input$PlotVar) < 1 || input$PlotVar == '') {return()}
     PVar <- input$PlotVar
     if (Trace) {
       print (sprintf ('PlotVar observer: ncol(data) is %d', ncol(data())))
@@ -349,6 +354,8 @@ server <- function(input, output, session) {
     }
     if (!exists('Maneuvers')) {
       load ('Maneuvers.Rdata')
+      Maneuvers$Start <- as.integer(Maneuvers$Start)
+      Maneuvers$End   <- as.integer(Maneuvers$End)
       Maneuvers <<- Maneuvers
     }
     
@@ -526,17 +533,19 @@ server <- function(input, output, session) {
         START <- AddT (as.integer (CR$Start[item]), -120)
         END <- AddT (as.integer (CR$End[item]), 120)
         DCR <<- dataDCR(ProjDir, input$ProjectPP, CR$Flight[item], VL, START, END)
-        minT <- DCR$Time[1]; maxT <- DCR$Time[nrow(DCR)]
-        setT1 <- DCR$Time[getIndex(DCR, CR$Start[item])]
-        setT2 <- DCR$Time[getIndex(DCR, CR$End[item])]
-        # mint <- as.POSIXlt (minT, tz='UTC'); maxT <- as.POSIXlt (maxT, tz='UTC')
-        updateSliderInput (session, 'sliderCR', min=minT, max=maxT, value=c(setT1, setT2))
-        if (Trace) {
-          print ( sprintf ('updating CR time slider, limits are %s %s setting is %s %s', 
-            minT, maxT, setT1, setT2))
+        if (!is.na(DCR)[1]) {
+          minT <- DCR$Time[1]; maxT <- DCR$Time[nrow(DCR)]
+          setT1 <- DCR$Time[getIndex(DCR, CR$Start[item])]
+          setT2 <- DCR$Time[getIndex(DCR, CR$End[item])]
+          # mint <- as.POSIXlt (minT, tz='UTC'); maxT <- as.POSIXlt (maxT, tz='UTC')
+          updateSliderInput (session, 'sliderCR', min=minT, max=maxT, value=c(setT1, setT2))
+          if (Trace) {
+            print ( sprintf ('updating CR time slider, limits are %s %s setting is %s %s', 
+              minT, maxT, setT1, setT2))
+          }
+          # print (str(DCR))
+          countCR <<- 1
         }
-        # print (str(DCR))
-        countCR <<- 1
       }
     }
   }, priority=5)
@@ -584,7 +593,7 @@ server <- function(input, output, session) {
         }
       }
       if (Trace) {print (sprintf ('fnamePP3=%s', fnamePP))}
-      FI <- DataFileInfo (fnamePP)
+      FI <- DataFileInfo (fnamePP, LLrange=FALSE)
       VT <- c(ATVARS[ATVARS %in% FI$Variables])
       updateSelectInput (session, inputId='ATsel', selected='ATX')
       updateSelectInput (session, inputId='ATsc', choices=VT)
@@ -1365,7 +1374,7 @@ server <- function(input, output, session) {
     if (Trace) {
       tic('VRP observer')
       print (sprintf ('entered VRP, Project=%s %s',
-      input$Project, Project))
+        input$Project, Project))
     }
     if (input$Project != Project) {
       Project <<- Project <- input$Project
@@ -1842,6 +1851,9 @@ server <- function(input, output, session) {
       VarList <- c(VarList, quickPlotVar)
     }
     VarList <- unique (VarList)
+    if ('' %in% VarList) {
+      VarList <- VarList[-which(VarList == '')]
+    }
     VarList <- VarList[!is.na(VarList)]
     VarList <<- VarList  ## just saving for outside-app use
     ## these would be needed for translation to new cal coefficients
@@ -2074,27 +2086,34 @@ server <- function(input, output, session) {
         mtext(paste(FigFooter,'generated by ', CallingFunction,
           FigDatestr),1,outer=T,cex=0.75)
       }
-      # Only generate the first panel here:
-      # source the plot routine if needed:
-      sourceFile <- sprintf ('RPlot%d', psq[1, input$plot])
-      if (!exists (sourceFile)) {
-        source(sprintf ('PlotFunctions/%s.R', sourceFile))
-      }
-      if (input$limits) {
-        DataV <- transferAttributes(DataV, DataVa)
-        eval(parse(text=sprintf("RPlot%d(DataV, Seq=%d, panl=1)",
-          psq[1, input$plot], psq[2, input$plot])))
+      # If the associated VRPlot has no non-blank variables, skip:
+      nvpl <- psq[1, input$plot]
+      if (length(VRPlot[[nvpl]]) < 2 && length(VRPlot[[nvpl]][1]) < 2) {
+        plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+        text (0.5, 0.8, 'There are no variables for this panel.')
       } else {
-        Data <- transferAttributes(Data, DataVa)
-        # DataVc <<- Data
-        eval(parse(text=sprintf("RPlot%d(Data, Seq=%d, panl=1)",
-          psq[1, input$plot], psq[2, input$plot])))
+        # Only generate the first panel here:
+        # source the plot routine if needed:
+        sourceFile <- sprintf ('RPlot%d', psq[1, input$plot])
+        if (!exists (sourceFile)) {
+          source(sprintf ('PlotFunctions/%s.R', sourceFile))
+        }
+        if (input$limits) {
+          DataV <- transferAttributes(DataV, DataVa)
+          eval(parse(text=sprintf("RPlot%d(DataV, Seq=%d, panl=1)",
+            psq[1, input$plot], psq[2, input$plot])))
+        } else {
+          Data <- transferAttributes(Data, DataVa)
+          # DataVc <<- Data
+          eval(parse(text=sprintf("RPlot%d(Data, Seq=%d, panl=1)",
+            psq[1, input$plot], psq[2, input$plot])))
+        }
+        if (Trace) {print (sprintf ('have called RPlot%d.R', input$plot))}
+        # }
+        #       si <- input$plot
+        #       updateSelectInput (session, 'Rplot', selected=st[si])
+        if (Trace) {print ('finished display')}
       }
-      if (Trace) {print (sprintf ('have called RPlot%d.R', input$plot))}
-      # }
-      #       si <- input$plot
-      #       updateSelectInput (session, 'Rplot', selected=st[si])
-      if (Trace) {print ('finished display')}
     }
     if (Trace) {toc()}
   }, width=WWidth, height=function() WHeight / dpan[input$plot] # , width=920, height = plotHeight # 1200
@@ -2149,38 +2168,44 @@ server <- function(input, output, session) {
         reac#newdata <- TRUE
         return()
       }
-      ## see global.R functions:
-      DataV <- limitData (Data, input)
-      ndv <- names (DataV)
-      ## guard against inf. VCSEL limits
-      if (('DP_VXL' %in% ndv) && all(is.na(DataV$DP_VXL))) {
-        DataV$DP_VXL <- rep(0, nrow(DataV))
-      }
-      if (('DP_DPR' %in% ndv) && all(is.na(DataV$DP_DPR))) {
-        DataV$DP_DPR <- rep(0, nrow(DataV))
-      }
-      if (('DP_DPL' %in% ndv) && all(is.na(DataV$DP_DPL))) {
-        DataV$DP_DPL <- rep(0, nrow(DataV))
-      }
-      DataV$DPXC[!is.na(DataV$DPXC) & (DataV$DPXC < -1000)] <- NA
-      if (dpan[input$plot] > 1) {
-        # source the plot routine if needed:
-        sourceFile <- sprintf ('RPlot%d', psq[1, input$plot])
-        if (!exists (sourceFile)) {
-          source(sprintf ('PlotFunctions/%s.R', sourceFile))
+      nvpl <- psq[1, input$plot]
+      if (length(VRPlot[[nvpl]]) < 2 && length(VRPlot[[nvpl]][1]) < 2) {
+        plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+        text (0.5, 0.8, 'There are no variables for this panel.')
+      } else {
+        ## see global.R functions:
+        DataV <- limitData (Data, input)
+        ndv <- names (DataV)
+        ## guard against inf. VCSEL limits
+        if (('DP_VXL' %in% ndv) && all(is.na(DataV$DP_VXL))) {
+          DataV$DP_VXL <- rep(0, nrow(DataV))
         }
-        if (input$limits) {
-          DataV <- transferAttributes(DataV, DataVa)
-          eval(parse(text=sprintf("RPlot%d(DataV, Seq=%d, panl=2)",
-            psq[1, input$plot], psq[2, input$plot])))
-        } else {
-          Data <- transferAttributes(Data, DataVa)
-          # DataVc <<- Data
-          eval(parse(text=sprintf("RPlot%d(Data, Seq=%d, panl=2)",
-            psq[1, input$plot], psq[2, input$plot])))
+        if (('DP_DPR' %in% ndv) && all(is.na(DataV$DP_DPR))) {
+          DataV$DP_DPR <- rep(0, nrow(DataV))
         }
+        if (('DP_DPL' %in% ndv) && all(is.na(DataV$DP_DPL))) {
+          DataV$DP_DPL <- rep(0, nrow(DataV))
+        }
+        DataV$DPXC[!is.na(DataV$DPXC) & (DataV$DPXC < -1000)] <- NA
+        if (dpan[input$plot] > 1) {
+          # source the plot routine if needed:
+          sourceFile <- sprintf ('RPlot%d', psq[1, input$plot])
+          if (!exists (sourceFile)) {
+            source(sprintf ('PlotFunctions/%s.R', sourceFile))
+          }
+          if (input$limits) {
+            DataV <- transferAttributes(DataV, DataVa)
+            eval(parse(text=sprintf("RPlot%d(DataV, Seq=%d, panl=2)",
+              psq[1, input$plot], psq[2, input$plot])))
+          } else {
+            Data <- transferAttributes(Data, DataVa)
+            # DataVc <<- Data
+            eval(parse(text=sprintf("RPlot%d(Data, Seq=%d, panl=2)",
+              psq[1, input$plot], psq[2, input$plot])))
+          }
+        }
+        if (Trace) {print ('finished display2')}
       }
-      if (Trace) {print ('finished display2')}
     }
   }, width=WWidth, height=function() {
     if (dpan[input$plot] < 2) {
@@ -2241,38 +2266,44 @@ server <- function(input, output, session) {
         reac#newdata <- TRUE
         return()
       }
-      ## see global.R functions:
-      DataV <- limitData (Data, input)
-      ndv <- names (DataV)
-      ## guard against inf. VCSEL limits
-      if (('DP_VXL' %in% ndv) && all(is.na(DataV$DP_VXL))) {
-        DataV$DP_VXL <- rep(0, nrow(DataV))
-      }
-      if (('DP_DPR' %in% ndv) && all(is.na(DataV$DP_DPR))) {
-        DataV$DP_DPR <- rep(0, nrow(DataV))
-      }
-      if (('DP_DPL' %in% ndv) && all(is.na(DataV$DP_DPL))) {
-        DataV$DP_DPL <- rep(0, nrow(DataV))
-      }
-      DataV$DPXC[!is.na(DataV$DPXC) & (DataV$DPXC < -1000)] <- NA
-      if (dpan[input$plot] > 2) {
-        # source the plot routine if needed:
-        sourceFile <- sprintf ('RPlot%d', psq[1, input$plot])
-        if (!exists (sourceFile)) {
-          source(sprintf ('PlotFunctions/%s.R', sourceFile))
+      nvpl <- psq[1, input$plot]
+      if (length(VRPlot[[nvpl]]) < 2 && length(VRPlot[[nvpl]][1]) < 2) {
+        plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+        text (0.5, 0.8, 'There are no variables for this panel.')
+      } else {
+        ## see global.R functions:
+        DataV <- limitData (Data, input)
+        ndv <- names (DataV)
+        ## guard against inf. VCSEL limits
+        if (('DP_VXL' %in% ndv) && all(is.na(DataV$DP_VXL))) {
+          DataV$DP_VXL <- rep(0, nrow(DataV))
         }
-        if (input$limits) {
-          DataV <- transferAttributes(DataV, DataVa)
-          eval(parse(text=sprintf("RPlot%d(DataV, Seq=%d, panl=3)",
-            psq[1, input$plot], psq[2, input$plot])))
-        } else {
-          Data <- transferAttributes(Data, DataVa)
-          # DataVc <<- Data
-          eval(parse(text=sprintf("RPlot%d(Data, Seq=%d, panl=3)",
-            psq[1, input$plot], psq[2, input$plot])))
+        if (('DP_DPR' %in% ndv) && all(is.na(DataV$DP_DPR))) {
+          DataV$DP_DPR <- rep(0, nrow(DataV))
         }
+        if (('DP_DPL' %in% ndv) && all(is.na(DataV$DP_DPL))) {
+          DataV$DP_DPL <- rep(0, nrow(DataV))
+        }
+        DataV$DPXC[!is.na(DataV$DPXC) & (DataV$DPXC < -1000)] <- NA
+        if (dpan[input$plot] > 2) {
+          # source the plot routine if needed:
+          sourceFile <- sprintf ('RPlot%d', psq[1, input$plot])
+          if (!exists (sourceFile)) {
+            source(sprintf ('PlotFunctions/%s.R', sourceFile))
+          }
+          if (input$limits) {
+            DataV <- transferAttributes(DataV, DataVa)
+            eval(parse(text=sprintf("RPlot%d(DataV, Seq=%d, panl=3)",
+              psq[1, input$plot], psq[2, input$plot])))
+          } else {
+            Data <- transferAttributes(Data, DataVa)
+            # DataVc <<- Data
+            eval(parse(text=sprintf("RPlot%d(Data, Seq=%d, panl=3)",
+              psq[1, input$plot], psq[2, input$plot])))
+          }
+        }
+        if (Trace) {print ('finished display3')}
       }
-      if (Trace) {print ('finished display3')}
     }
   }, width=WWidth, height=function() {
     if (dpan[input$plot] < 3) {
@@ -2333,38 +2364,44 @@ server <- function(input, output, session) {
         reac#newdata <- TRUE
         return()
       }
-      ## see global.R functions:
-      DataV <- limitData (Data, input)
-      ndv <- names (DataV)
-      ## guard against inf. VCSEL limits
-      if (('DP_VXL' %in% ndv) && all(is.na(DataV$DP_VXL))) {
-        DataV$DP_VXL <- rep(0, nrow(DataV))
-      }
-      if (('DP_DPR' %in% ndv) && all(is.na(DataV$DP_DPR))) {
-        DataV$DP_DPR <- rep(0, nrow(DataV))
-      }
-      if (('DP_DPL' %in% ndv) && all(is.na(DataV$DP_DPL))) {
-        DataV$DP_DPL <- rep(0, nrow(DataV))
-      }
-      DataV$DPXC[!is.na(DataV$DPXC) & (DataV$DPXC < -1000)] <- NA
-      if (dpan[input$plot] > 3) {
-        # source the plot routine if needed:
-        sourceFile <- sprintf ('RPlot%d', psq[1, input$plot])
-        if (!exists (sourceFile)) {
-          source(sprintf ('PlotFunctions/%s.R', sourceFile))
+      nvpl <- psq[1, input$plot]
+      if (length(VRPlot[[nvpl]]) < 2 && length(VRPlot[[nvpl]][1]) < 2) {
+        plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+        text (0.5, 0.8, 'There are no variables for this panel.')
+      } else {
+        ## see global.R functions:
+        DataV <- limitData (Data, input)
+        ndv <- names (DataV)
+        ## guard against inf. VCSEL limits
+        if (('DP_VXL' %in% ndv) && all(is.na(DataV$DP_VXL))) {
+          DataV$DP_VXL <- rep(0, nrow(DataV))
         }
-        if (input$limits) {
-          DataV <- transferAttributes(DataV, DataVa)
-          eval(parse(text=sprintf("RPlot%d(DataV, Seq=%d, panl=4)",
-            psq[1, input$plot], psq[2, input$plot])))
-        } else {
-          Data <- transferAttributes(Data, DataVa)
-          # DataVc <<- Data
-          eval(parse(text=sprintf("RPlot%d(Data, Seq=%d, panl=4)",
-            psq[1, input$plot], psq[2, input$plot])))
+        if (('DP_DPR' %in% ndv) && all(is.na(DataV$DP_DPR))) {
+          DataV$DP_DPR <- rep(0, nrow(DataV))
         }
+        if (('DP_DPL' %in% ndv) && all(is.na(DataV$DP_DPL))) {
+          DataV$DP_DPL <- rep(0, nrow(DataV))
+        }
+        DataV$DPXC[!is.na(DataV$DPXC) & (DataV$DPXC < -1000)] <- NA
+        if (dpan[input$plot] > 3) {
+          # source the plot routine if needed:
+          sourceFile <- sprintf ('RPlot%d', psq[1, input$plot])
+          if (!exists (sourceFile)) {
+            source(sprintf ('PlotFunctions/%s.R', sourceFile))
+          }
+          if (input$limits) {
+            DataV <- transferAttributes(DataV, DataVa)
+            eval(parse(text=sprintf("RPlot%d(DataV, Seq=%d, panl=4)",
+              psq[1, input$plot], psq[2, input$plot])))
+          } else {
+            Data <- transferAttributes(Data, DataVa)
+            # DataVc <<- Data
+            eval(parse(text=sprintf("RPlot%d(Data, Seq=%d, panl=4)",
+              psq[1, input$plot], psq[2, input$plot])))
+          }
+        }
+        if (Trace) {print ('finished display2')}
       }
-      if (Trace) {print ('finished display2')}
     }
   }, width=WWidth, height=function() {
     if (dpan[input$plot] < 4) {
@@ -2374,7 +2411,7 @@ server <- function(input, output, session) {
     }
   }
   ) 
-
+  
   output$stats <- renderDataTable ({
     if (Trace) {print ('entered stats')}
     input$times
@@ -2419,8 +2456,11 @@ server <- function(input, output, session) {
     kount <- 0
     for (nm in names (Ds)) {
       if (nm == 'Time') {next}
+      if (all(is.na(Ds[ ,nm]))) {next}
+      if (!(nm %in% input$PlotVar)) {next}
       kount <- kount + 1
       if (kount > 6) {break}
+      if (Trace) {print (sprintf ('variable is %s', nm))}
       hist (Ds[ ,nm], freq=FALSE, breaks=50, xlab=nm, 
         ylab='probability density', main=NA)
     }
@@ -2441,11 +2481,15 @@ server <- function(input, output, session) {
     for (nm in names (Ds)) {
       if (nm == 'Time') {next}
       if (nm == 'GGALT') {next}
+      if (all(is.na(Ds[ ,nm]))) {next}
+      if (!(nm %in% input$PlotVar)) {next}
       kount <- kount + 1
       if (kount > 6) {break}
       DB <- data.frame ('Z1'=Ds[, nm])
       DB[Ds$GGALT > 1000, 'Z1'] <- NA
-      for (j in 2:15) {
+      jm <- 15
+      if (grepl('130', FI$Platform)) {jm <- 10}
+      for (j in 2:jm) {
         zmax <- j*1000
         zmin <- zmax-1000
         V <- sprintf ('Z%d', j)
@@ -3235,7 +3279,7 @@ server <- function(input, output, session) {
       Data$PSFIT <- with(Data, cf[1] + PS_A * (cf[2] + cf[4] * PS_A) + cf[3] * QC_A)
       bs <- with(Data, binStats(data.frame(PSXC-PSFIT, PSXC), bins=10))
       g <- ggplot(data=bs)
-      g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma, 
+      g <- g + geom_errorbarh (aes (y=xc, xmin=ybar-sigma, 
         xmax=ybar+sigma), na.rm=TRUE) 
       xlow <- floor(min (bs$ybar-bs$sigma, na.rm=TRUE))
       xhigh <- ceiling(max (bs$ybar+bs$sigma, na.rm=TRUE))
@@ -3255,7 +3299,8 @@ server <- function(input, output, session) {
   output$QCplot <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
-    fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
+    fnamePP <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), ProjectPPDir, 
+      input$ProjectPP, input$typeFlightPP, input$FlightPP)
     if (!file.exists (fnamePP)) {
       fnamePP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
     }
@@ -3278,7 +3323,11 @@ server <- function(input, output, session) {
     if (input$AllPP) {
       Data <- DataPP
     } else {
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      if (input$typeFlightPP == 'tf') {
+        Data <- DataPP[DataPP$RF == input$FlightPP+50, ]
+      } else {
+        Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      }
     }
     
     cfq <- c(2.7809637e+00, 9.7968460e-01, -6.7437126e-03, 4.8584555e-06)
@@ -3314,7 +3363,8 @@ server <- function(input, output, session) {
   output$QCSplot <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
-    fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), input$ProjectPP, input$ProjectPP, input$FlightPP)
+    fnamePP <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), input$ProjectPP, 
+      input$ProjectPP, input$typeFlightPP, input$FlightPP)
     if (!file.exists (fnamePP)) {
       fnamePP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
     }
@@ -3335,7 +3385,11 @@ server <- function(input, output, session) {
     if (input$AllPP) {
       Data <- DataPP
     } else {
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      if (input$typeFlightPP == 'tf') {
+        Data <- DataPP[DataPP$RF == input$FlightPP+50, ]
+      } else {
+        Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      }
     }
     
     cfq <- c(2.7809637e+00, 9.7968460e-01, -6.7437126e-03, 4.8584555e-06)
@@ -3363,7 +3417,7 @@ server <- function(input, output, session) {
       Data$QCFIT <- with(Data, cfq[1] + PS_A * (cfq[3] + cfq[4] * PS_A) + cfq[2] * QC_A)
       bs <- with(Data, binStats(data.frame(QCXC-QCFIT, QCXC), bins=10))
       g <- ggplot(data=bs)
-      g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma, 
+      g <- g + geom_errorbarh (aes (y=xc, xmin=ybar-sigma, 
         xmax=ybar+sigma), na.rm=TRUE) 
       xlow <- floor(min (bs$ybar-bs$sigma, na.rm=TRUE))
       xhigh <- ceiling(max (bs$ybar+bs$sigma, na.rm=TRUE))
@@ -3380,7 +3434,8 @@ server <- function(input, output, session) {
   output$PSHeq <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
-    fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), input$ProjectPP, input$ProjectPP, input$FlightPP)
+    fname <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), input$ProjectPP, 
+      input$ProjectPP, input$typeFlightPP, input$FlightPP)
     if (checkBad(sprintf ('%srf%02d', input$ProjectPP, input$FlightPP))) {
       print ('bad flight -- skipping')
       return()
@@ -3449,7 +3504,8 @@ server <- function(input, output, session) {
   output$ATplot <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
-    fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
+    fnamePP <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), ProjectPPDir, 
+      input$ProjectPP, input$typeFlightPP, input$FlightPP)
     if (!file.exists (fnamePP)) {
       fnamePP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
     }
@@ -3467,7 +3523,11 @@ server <- function(input, output, session) {
     if (input$AllPP) {
       Data <- DataPP
     } else {
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      if (input$typeFlightPP == 'tf') {
+        Data <- DataPP[DataPP$RF == input$FlightPP+50, ]
+      } else {
+        Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      }
     }
     
     cfA <- c(0.28178716560, 1.01636832046, -0.00012560891)  ## const, AT_A, AT_A^2
@@ -3494,7 +3554,8 @@ server <- function(input, output, session) {
   output$ATSplot <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
-    fnamPP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), input$ProjectPP, input$ProjectPP, input$FlightPP)
+    fnamPP <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), input$ProjectPP, 
+      input$ProjectPP, input$typeFlightPP, input$FlightPP)
     if (!file.exists (fnamPP)) {
       fnamPP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), input$ProjectPP, input$ProjectPP, input$FlightPP)
     }
@@ -3512,7 +3573,11 @@ server <- function(input, output, session) {
     if (input$AllPP) {
       Data <- DataPP
     } else {
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      if (input$typeFlightPP == 'tf') {
+        Data <- DataPP[DataPP$RF == input$FlightPP+50, ]
+      } else {
+        Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      }
     }
     
     cfA <- c(0.28178716560, 1.01636832046, -0.00012560891)  ## const, AT_A, AT_A^2
@@ -3524,7 +3589,7 @@ server <- function(input, output, session) {
     }
     bs <- with(Data, binStats(data.frame(ATX-ATFIT, PSXC), bins=10))
     g <- ggplot(data=bs)
-    g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma, 
+    g <- g + geom_errorbarh (aes (y=xc, xmin=ybar-sigma, 
       xmax=ybar+sigma), na.rm=TRUE) 
     xlow <- floor(min (bs$ybar-bs$sigma, na.rm=TRUE))
     xhigh <- ceiling(max (bs$ybar+bs$sigma, na.rm=TRUE))
@@ -3568,6 +3633,7 @@ server <- function(input, output, session) {
       load (RdataFile)
     } else {
       DataPP <- makeDataFile (input$ProjectPP, 'ALL', VL)
+      DataPP <- qualifyData (DataPP)
       save (DataPP, file=RdataFile)
     }
     ch <- c('ATX', sort (TCN[which(TCN %in% names(DataPP))]))
@@ -3616,7 +3682,11 @@ server <- function(input, output, session) {
     if (input$AllPP) {
       Data <- DataPP
     } else {
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      if (input$typeFlightPP == 'tf') {
+        Data <- DataPP[DataPP$RF == input$FlightPP + 50, ]
+      } else {
+        Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      }
     }
     
     Data$ATX <- Data[, ATsel]
@@ -3670,7 +3740,7 @@ server <- function(input, output, session) {
     
     bs$sigma[bs$nb > 1] <- bs$sigma[bs$nb > 1] / sqrt(bs$nb [bs$nb > 1])
     g <- ggplot(data=bs)
-    g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma, 
+    g <- g + geom_errorbarh (aes (y=xc, xmin=ybar-sigma, 
       xmax=ybar+sigma), na.rm=TRUE) 
     xlow <- floor(min (bs$ybar-bs$sigma, na.rm=TRUE))
     xhigh <- ceiling(max (bs$ybar+bs$sigma, na.rm=TRUE))
@@ -3688,32 +3758,40 @@ server <- function(input, output, session) {
     print (g)
   })
   
-  output$INSpitch <- renderPlot ({
-    VL <- c('PITCH', 'PITCH_IRS2', 'ROLL', 'ROLL_IRS2', 'THDG', 'THDG_IRS2', 'TASX')
-    RdataFile <- sprintf ('Data/dataINS%s.Rdata', input$ProjectPP)
-    if (file.exists (RdataFile)) {
-      load (RdataFile)
-    } else {
-      DataPP <- makeDataFile (input$ProjectPP, 'ALL', VL)
-      save (DataPP, file=RdataFile)
-    }
-    if (input$AllPP) {
-      Data <- DataPP
-    } else {
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
-    }
-    g <- ggplot(data=Data) + geom_histogram (aes(PITCH-PITCH_IRS2, ..density..), fill='blue', binwidth=0.01)
-    g <- g + ggtitle(sprintf ('mean %.2f +/- %.2f', mean(Data$PITCH-Data$PITCH_IRS2, na.rm=TRUE),
-      sd(Data$PITCH-Data$PITCH_IRS2, na.rm=TRUE)))
-    g + theme_WAC() + theme (plot.title=element_text(size=14))
-  })
+  ## This was duplicated below, so now commented.
+  # output$INSpitch <- renderPlot ({
+  #   VL <- c('PITCH', 'PITCH_IRS2', 'ROLL', 'ROLL_IRS2', 'THDG', 'THDG_IRS2', 'TASX')
+  #   RdataFile <- sprintf ('Data/dataINS%s.Rdata', input$ProjectPP)
+  #   if (file.exists (RdataFile)) {
+  #     load (RdataFile)
+  #   } else {
+  #     DataPP <- makeDataFile (input$ProjectPP, 'ALL', VL)
+  #     # DataPP <- qualifyData (DataPP)
+  #     save (DataPP, file=RdataFile)
+  #   }
+  #   if (input$AllPP) {
+  #     Data <- DataPP
+  #   } else {
+  #     if (input$typeFlightPP == 'tf') {
+  #       Data <- DataPP[DataPP$RF == input$FlightPP+50, ]
+  #     } else {
+  #       Data <- DataPP[DataPP$RF == input$FlightPP, ]
+  #     }
+  #   }
+  #   Data$PITCH <- SmoothInterp(Data$Pitch, .Length=0)
+  #   Data$PITCH_IRS2 <- SmoothInterp(Data$Pitch_IRS2, .Length=0)
+  #   g <- ggplot(data=Data) + geom_histogram (aes(PITCH-PITCH_IRS2, ..density..), fill='blue', binwidth=0.01)
+  #   g <- g + ggtitle(sprintf ('mean %.2f +/- %.2f', mean(Data$PITCH-Data$PITCH_IRS2, na.rm=TRUE),
+  #     sd(Data$PITCH-Data$PITCH_IRS2, na.rm=TRUE)))
+  #   g + theme_WAC() + theme (plot.title=element_text(size=14))
+  # })
   
   output$ATcmpr <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
     ATsc <- input$ATsc
     if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
-    fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjectPPDir, 
-      input$ProjectPP, input$FlightPP)
+    fnamePP <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), ProjectPPDir, 
+      input$ProjectPP, input$typeFlightPP, input$FlightPP)
     if (!file.exists (fnamePP)) {
       fnamePP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), ProjectPPDir, 
         input$ProjectPP, input$FlightPP)
@@ -3721,12 +3799,15 @@ server <- function(input, output, session) {
     # VL <- standardVariables (c('PS_A', 'QC_A', 'TAS_A',
     #                            'RTX', 'PALT', 'ROLL', 'QCF', 'QCR'))
     VL <- c('ATX', 'EWX', 'GGALT', 'LATC', 'MACHX', 'PALT', 'PSXC',
-      'QCF', 'QCR', 'ROLL', 'TASX')
+      'QCF', 'QCR', 'ROLL', 'TASX', 'QCXC')
     ## add temperatures:
     TCN <- c('ATH1', 'ATH2', 'ATH3', 'ATH4', 'ATF1', 'ATF2', 'AT_A', 'AT_A2', 
       'ATFH1', 'ATFH2', 'ATHR1', 'ATHR2', 'ATHL1', 'ATHL2')
     if (Trace) {print (sprintf ('fnamePP2=%s', fnamePP))}
-    FI <- DataFileInfo (fnamePP)
+    FI <- DataFileInfo (fnamePP, LLrange=FALSE)
+    # update the ATsc selection (needed only first time; later, include skip) 
+    VT <- c(ATVARS[ATVARS %in% FI$Variables])
+    updateSelectInput (session, inputId='ATsc', choices=VT, selected=input$ATsc)
     
     VL <- c(VL, TCN[which(TCN %in% FI$Variables)])
     
@@ -3735,6 +3816,7 @@ server <- function(input, output, session) {
       load (RdataFile)
     } else {
       DataPP <- makeDataFile (input$ProjectPP, 'ALL', VL)
+      DataPP <- qualifyData (DataPP)
       save (DataPP, file=RdataFile)
     }
     ch <- c('ATX', sort (TCN[which(TCN %in% names(DataPP))]))
@@ -3742,10 +3824,15 @@ server <- function(input, output, session) {
     if (input$AllPP) {
       Data <- DataPP
     } else {
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      if (input$typeFlightPP == 'tf') {
+        Data <- DataPP[DataPP$RF == input$FlightPP+50, ]
+      } else {
+        Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      }
     }
+    DataPP <<- Data  # Save for troubleshooting examination
     ATsc <- input$ATsc
-    print (c('Tvars=', ATsc))
+    if (Trace) {print (c('Tvars=', ATsc))}
     if (length(ATsc) < 2) {return(' ')}
     ## do each vs first, up to three:
     DBS1 <- data.frame(Data[, ATsc[1]] - Data[, ATsc[2]], Data$ATX)
@@ -3753,7 +3840,7 @@ server <- function(input, output, session) {
     # plotWAC(bs$ybar, bs$xc, xlab='DT')
     
     g <- ggplot(data=bs1)
-    g <- g + geom_errorbarh (aes (y=xc, x=ybar, xmin=ybar-sigma,
+    g <- g + geom_errorbarh (aes (y=xc, xmin=ybar-sigma,
       xmax=ybar+sigma), na.rm=TRUE)
     g <- g + geom_point (aes (x=bs1$ybar, y=bs1$xc), size=3, colour='blue', na.rm=TRUE)
     g <- g + geom_label (aes (x=3.9, y=bs1$xc, label=sprintf('%d', bs1$nb)))
@@ -3761,14 +3848,14 @@ server <- function(input, output, session) {
     if (length(ATsc) > 2) {
       DBS2 <- data.frame(Data[, ATsc[1]] - Data[, ATsc[3]], Data$ATX)
       bs2 <- binStats (DBS2, bins=15)
-      g <- g + geom_errorbarh (data=bs2, aes (y=xc, x=ybar, xmin=ybar-sigma,
+      g <- g + geom_errorbarh (data=bs2, aes (y=xc, xmin=ybar-sigma,
         xmax=ybar+sigma), na.rm=TRUE)
       g <- g + geom_point (data=bs2, aes (x=bs2$ybar, y=bs2$xc), size=3, colour='forestgreen', na.rm=TRUE)
     }
     if (length(ATsc) > 3) {
       DBS3 <- data.frame(Data[, ATsc[1]] - Data[, ATsc[4]], Data$ATX)
       bs3 <- binStats (DBS3, bins=15)    
-      g <- g + geom_errorbarh (data=bs3, aes (y=xc, x=ybar, xmin=ybar-sigma,
+      g <- g + geom_errorbarh (data=bs3, aes (y=xc, xmin=ybar-sigma,
         xmax=ybar+sigma), na.rm=TRUE)
       g <- g + geom_point (data=bs3, aes(x=bs3$ybar, y=bs3$xc), size=3, colour='darkorange', na.rm=TRUE)
     }
@@ -3798,7 +3885,11 @@ server <- function(input, output, session) {
     if (input$AllPP) {
       Data <- DataPP
     } else {
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      if (input$typeFlightPP == 'tf') {
+        Data <- DataPP[DataPP$RF == input$FlightPP+50, ]  
+      } else {
+        Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      }
     }
     g <- ggplot(data=Data) + geom_histogram (aes(PITCH-PITCH_IRS2, ..density..), fill='blue', binwidth=0.01)
     g <- g + ggtitle(sprintf ('mean %.2f +/- %.2f', mean(Data$PITCH-Data$PITCH_IRS2, na.rm=TRUE),
@@ -3818,7 +3909,11 @@ server <- function(input, output, session) {
     if (input$AllPP) {
       Data <- DataPP
     } else {
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      if (input$typeFlightPP == 'tf') {
+        Data <- DataPP[DataPP$RF == input$FlightPP+50, ]
+      } else {
+        Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      }
     }
     g <- ggplot(data=Data) + geom_histogram (aes(ROLL-ROLL_IRS2, ..density..), fill='blue', binwidth=0.01)
     g <- g + ggtitle(sprintf ('mean %.2f +/- %.2f', mean(Data$ROLL-Data$ROLL_IRS2, na.rm=TRUE),
@@ -3838,7 +3933,11 @@ server <- function(input, output, session) {
     if (input$AllPP) {
       Data <- DataPP
     } else {
-      Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      if (input$typeFlightPP == 'tf') {
+        Data <- DataPP[DataPP$RF == input$FlightPP+50, ]  
+      } else {
+        Data <- DataPP[DataPP$RF == input$FlightPP, ]
+      }
     }
     Data$DTHDG <- Data$THDG - Data$THDG_IRS2
     
@@ -3856,22 +3955,24 @@ server <- function(input, output, session) {
   })
   
   output$plotCR <- renderPlot ({
-    print (sprintf ('entry to plotCR, selCR is %s', input$selCR))
-    if (input$selCR == 'none') {
+    if (Trace) {print (sprintf ('entry to plotCR, selCR is %s', input$selCR))}
+    if (input$selCR == 'none' || is.na(DCR)[1]) {
       plot (0.5, 0.5, type='n')
-      title ('no maneuver for this selection')
+      title ('No maneuver for this selection, or data file missing.')
     } else {
       item <- as.integer (input$selCR)
       if (countCR == 1) {
         minT <<- DCR$Time[1]; maxT <<- DCR$Time[nrow(DCR)]
-        print (item); print (minT); print (maxT)
+        if (Trace) {print (item); print (minT); print (maxT)}
         if (Trace) {print (sprintf ('in plotCR, item/minT/maxT=%d %s %s', item, minT, maxT))}
         # mint <- as.POSIXlt (minT, tz='UTC'); maxT <- as.POSIXlt (maxT, tz='UTC')
         r1CR <<- getIndex(DCR, CR$Start[item]); r2CR <<- getIndex(DCR, CR$End[item])
         selT1 <- DCR$Time[getIndex(DCR, CR$Start[item])]
         selT2 <- DCR$Time[getIndex(DCR, CR$End[item])]
         updateSliderInput (session, 'sliderCR', min=minT, max=maxT, value=c(selT1, selT2))
-        print (c('updating time slider, limits are:', formatTime(minT), formatTime(maxT)))
+        if (Trace) {
+          print (sprintf ('updating time slider, limits are %s to %s', formatTime(minT), formatTime(maxT)))
+        }
         # r3CR <<- getIndex(DCR, CR$Other1[item]); r4CR <<- getIndex (DCR, CR$Other2[item])
         # if (Trace) {print(sprintf('countCR section r4CR is %d', r4CR))}
         countCR <<- countCR + 1
