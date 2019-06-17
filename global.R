@@ -75,13 +75,13 @@ maxT <- as.POSIXct(3600*8, origin='2012-05-29', tz='UTC')
 step <- 60
 
 PJ <- c('ECLIPSE2019', 'OTREC-TEST', 'WECAN', 'SOCRATES', 'WECAN-TEST', 'ECLIPSE', 'ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
-  'DEEPWAVE', 'CONTRAST', 'SPRITE-II', 'MPEX', 'DC3', 'HEFT10', 'IDEAS-4',
+  'DEEPWAVE', 'CONTRAST', 'SPRITE-II', 'MPEX', 'DC3', 'HEFT10', 'IDEAS-4', 'FRAPPE',
   'TORERO', 'HIPPO-5', 'HIPPO-4', 'HIPPO-3', 'HIPPO-2', 'DC3-TEST',
   'HIPPO-1','PREDICT', 'START08', 'PACDEX', 'TREX', 'WINTER', 'NOMADSS')
 Cradeg <- pi/180
 Project <- PJ[1]
 ProjectPP <- PJ[1]
-ProjectKF <- PJ[1]
+ProjectKF <- PJ[3]
 Flight <- 1
 FlightKF <- 1
 ProjectKP <- PJ[1]
@@ -275,6 +275,9 @@ dataDPM <- function(ProjDir, ProjectPP, Flight, VL, START, END) {
 dataDYM <- function(ProjDir, ProjectPP, Flight, VL, START, END) {
   fname <- sprintf ('%s%s/%s%s.nc', DataDirectory (), ProjDir, ProjectPP, Flight)
   if (fname != fnameDYM || START != STARTDYM || END != ENDDYM) {
+    if (Trace) {print (sprintf ('in dataDYM, file is %s, Start=%d, End=%d', fname, START, END))}
+    if (Trace) {print (VL)}
+    VL <<- VL
     DYM <- getNetCDF (fname, VL, Start=START, End=END)
     DYM <<- DYM
     fnameDYM <<- fname
@@ -291,6 +294,15 @@ dataDCR <- function(ProjDir, ProjectPP, Flight, VL, START, END) {
   }
   if (!file.exists(fname)) {
     return (NA)
+  }
+  FI <- DataFileInfo (fname, LLrange = FALSE)
+  if ('GGVSPD' %in% FI$Variables) {
+  } else {
+    if ('GVSPD' %in% FI$Variables) {
+      VL[which(VL == 'GGVSPD')] <- 'GVSPD'
+    } else if ('GGVSPD_NVTL' %in% FI$Variables) {
+      VL[which(VL == 'GGVSPD')] <- 'GGVSPD_NVTL'
+    }
   }
   if (fname != fnameDCR || START != STARTDCR || END != ENDDCR) {
     DCR <- getNetCDF (fname, VL, Start=START, End=END)
