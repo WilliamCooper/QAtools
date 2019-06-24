@@ -1,22 +1,17 @@
 
-## variables needed in input data.frame for all additions:
-## "ACINS", "PSXC", "ATX", "GGLAT", "GGALT", "PSTF, "QCTF",
-## "PSXC", "TASX", "ATTACK", "SSLIP", "GGVEW", "GGVNS", "EWX", "GGVSPD", 
-## "VEW", "VNS", "THDG", "ROLL", "PITCH", "ADIFR", "QCF", "PSF", "ADIF_GP",
-## "BDIF_GP", "QC_GP", "PS_GP", "CROLL_GP", "CPITCH_GP", "CTHDG_GP" 
-## Recommended variables in data.frame (to provide comparison variables also):
-VR <- c("ACINS", "ADIF_GP", "ADIFR", "AKRD", "ATTACK", "ATX", "BDIF_GP",
-  "CPITCH_GP", "CROLL_GP", "CTHDG_GP", "CVEW_GP", "CVNS_GP",  
-  "CVSPD_GP", "EWX",  "GGALT",  "GGLAT", "GGVEW", "GGVNS",  "GGVSPD",
-  "PITCH",  "PS_GP",  "PSF",  "PSTF", "PSXC", "QC_GP",  "QCF",
-  "QCTF", "ROLL", "SSLIP",  "TASX", "THDG", "UXC",  "VEW",  "VNS",
-  "VYC",  "WDC",  "WIC",  "WSC" )
+
 ## construct function to add variables to a data.frame:
-AddWind <- function (DF, Rate=1, addAKY=TRUE, addGP=TRUE, addTC=TRUE, addROC=TRUE) {
+AddWind <- function (DF, Rate=1, addAKY=TRUE, addGP=FALSE, addTC=FALSE, addROC=TRUE) {
   if (!is.null(attr(DF, 'Rate'))) {Rate <- attr (DF, 'Rate')}
   requiredVar <- c('PSXC', 'TASX', 'ATTACK', 'SSLIP', 'GGVEW', 'GGVNS', 'EWX',
     'GGVSPD', 'VEW', 'VNS', 'THDG', 'ROLL', 'PITCH')
-  if (addAKY) {requiredVar <- c(requiredVar, 'ADIFR', 'QCF', 'PSF')}
+  if (addAKY) {
+    if (grepl('130', FI_Y$Platform)) {
+      requiredVar <- c(requiredVar, 'ADIFR', 'QCF', 'QCFR', 'PSFRD')
+    } else {
+      requiredVar <- c(requiredVar, 'ADIFR', 'QCF', 'PSF')
+    }
+  }
   if (addGP) {requiredVar <- c(requiredVar, 'ADIF_GP', 'BDIF_GP', 'QC_GP',
     'PS_GP', 'CROLL_GP', 'CPITCH_GP', 'CTHDG_GP',
     'CVSPD_GP', 'CVEW_GP', 'CVNS_GP')}
@@ -43,7 +38,11 @@ AddWind <- function (DF, Rate=1, addAKY=TRUE, addGP=TRUE, addTC=TRUE, addROC=TRU
     D$QR[is.infinite(D$QR)] <- NA
     V <- 'M'
     FV <- c(FV, V)
-    D[, V] <- MachNumber (D$PSF, D$QCF)
+    if (grepl ('130', FI_Y$Platform)) {
+      D[, V] <- MachNumber (D$PSFRD, D$QCFR)
+    } else {
+      D[, V] <- MachNumber (D$PSF, D$QCF)  # GV case
+    }
     V <- 'QCF'
     FV <- c(FV, V)
     D[, V] <- D$QCF
@@ -131,8 +130,13 @@ AddWind <- function (DF, Rate=1, addAKY=TRUE, addGP=TRUE, addTC=TRUE, addROC=TRU
     rm (DPDT, g, WPPRIME, WPSTAR, DIF)
   }
   if (addAKY) {
-    cff <- 21.481
-    cfs <- c(4.5110727, 19.8409482, -0.0018806)
+    if (grepl ('130', FI_Y$Platform)) {
+      cff <- 10.3123
+      cfs <- c(5.6885, 14.0452, -0.00461)  # These are the WECAN coeff.; see WindInWECAN for other proj.
+    } else {
+      cff <- 21.481
+      cfs <- c(4.5110727, 19.8409482, -0.0018806)
+    }
     DF$AKY <- cff * D$QRF + cfs[1] + cfs[2] * D$QRS + cfs[3] * D$QCFS
     DW <- D
     DW$ATTACK <- DF$AKY
