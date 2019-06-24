@@ -2787,8 +2787,7 @@ server <- function(input, output, session) {
       ProjectWIF <<- input$ProjectWIF
     }
   })
-  
-  obsProjectHOT <- observe (exprProjectHOT, quoted=TRUE)
+  obsProjectWIF <- observe (exprProjectWIF, quoted=TRUE)
   
   exprFlightHOT <- quote ({
     if (input$FlightHOT != FlightHOT) {
@@ -2903,18 +2902,18 @@ server <- function(input, output, session) {
     if (file.exists (fname)) {
       VRWIF <- c('WIY', 'WIF', 'WIC', 'WIG', 'AKRD', 'AKY', 'WDC', 'WDG', 'WDTC', 'WSC', 'WSG', 'WSTC', 'ROC', 'GGVSPD')
       ## eliminate any not in file
-      FI <- DataFileInfo(fname, LLrange=FALSE)
-      iw <- which (VRWIF %in% FI$Variables)
+      iw <- which (VRWIF %in% DataFileInfo(fname, LLrange=FALSE)$Variables)
       VRWIF <- VRWIF[iw]
-      print (VRWIF)
+      # print (VRWIF)
       D <- getNetCDF (fname, standardVariables (VRWIF))
       iw <- which(D$TASX > 70)
       D <- D[iw[1]:iw[length(iw)], ]
       PV <- sort (input$choicesWIF)
+      if (Trace) {print (sprintf ('PlotWIF: fname=%s, viewPlotWIC=%s, PV=%s', fname, input$viewPlotWIF, PV))}
       if (length (PV) > 0) {
         clr <- c('blue', 'forestgreen', 'red', 'magenta', 'black', 'darkorange', 'cyan')
-        if (grepl ('time ',input$viewPlotWIF)) {
-          plotWAC(data.frame (D$Time, D[, PV]))
+        if (grepl ('time', input$viewPlotWIF)) {
+          plotWAC(D[ , c('Time', PV)])
         } else {
           i <- 1
           cls <- vector ()

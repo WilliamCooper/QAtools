@@ -96,12 +96,28 @@ if (Flight == 'All') {
 ## add variables needed to recalculate wind
 # VarList <- c(VarList, "TASX", "ATTACK", "SSLIP", "GGVEW", "GGVNS", "VEW", "VNS", "THDG")
 ## Recommended variables in data.frame (to provide comparison variables also):
-VR <- c("ACINS", "ADIF_GP", "ADIFR", "AKRD", "ATTACK", "ATX", "BDIF_GP",
-  "CPITCH_GP", "CROLL_GP", "CTHDG_GP", "CVEW_GP", "CVNS_GP",  
-  "CVSPD_GP", "EWX",  "GGALT",  "GGLAT", "GGVEW", "GGVNS",  "GGVSPD",
-  "PITCH",  "PS_GP",  "PSF",  "PSTF", "PSXC", "QC_GP",  "QCF",
-  "QCTF", "ROLL", "SSLIP",  "TASX", "THDG", "UXC",  "VEW",  "VNS",
-  "VYC",  "WDC",  "WIC",  "WSC" )
+FI_Y <<- DataFileInfo (sprintf ("%s%s/%s", Directory, Project, files.ALL[1]), LLrange = FALSE)
+if (grepl ('130', FI_Y$Platform)) {
+  VR <- c("ACINS", "ADIFR", "AKRD", "ATTACK", "ATX",
+    "EWX",  "GGALT",  "GGLAT", "GGVEW", "GGVNS",  "GGVSPD",
+    "PITCH",  "PSFRD", "PSXC", "QCFR", "QCF",
+    "ROLL", "SSLIP",  "TASX", "THDG", "UXC",  "VEW",  "VNS",
+    "VYC",  "WDC",  "WIC",  "WSC" )
+} else {
+  VR <- c("ACINS", "ADIFR", "AKRD", "ATTACK", "ATX",
+    "EWX",  "GGALT",  "GGLAT", "GGVEW", "GGVNS",  "GGVSPD",
+    "PITCH",  "PSF", "PSXC", "QCF",
+    "ROLL", "SSLIP",  "TASX", "THDG", "UXC",  "VEW",  "VNS",
+    "VYC",  "WDC",  "WIC",  "WSC" )
+}
+if (addGP) { # This is undeveloped for the C-130 as yet; left here as placeholder, will fail.
+  VR <- c(VR, 'ADIF_GP', 'BDIF_GP', 'CPITCH_GP', 'CROLL_GP', 'CTHDG_GP', 
+    'CVEW_GP', 'GVNS_GP', 'CVSPD_GP', 'PS_GP', 'QC_GP')
+}
+if (addTC) { # Also not developed for the C-130
+  VR <- c(VR, 'PSTF', 'QCTF')
+}
+VR <<- VR  # Save it for debug purposes
 VarList <- VR
 for (file.name in files.ALL) {
   if (file.name == 'ORCASrf12.nc') {next}  ## this file is bad
@@ -140,7 +156,7 @@ for (file.name in files.ALL) {
   print (sprintf ('flight is %s', file.name))
   D <- getNetCDF (fname, VarList)
   netCDFfile <- nc_open (fnew, write=TRUE)
-  Rate <- 1
+  Rate <- 1  # Although QAtools isn't intended for 25-Hz files, it can add wind variables to them.
   Dimensions <- attr (D, "Dimensions")
   Dim <- Dimensions[["Time"]]
   if ("sps25" %in% names (Dimensions)) {
@@ -158,7 +174,7 @@ for (file.name in files.ALL) {
   print (sort(names(Data)))
   CutoffFreq <- 600
   if (addAKY) {
-    d <- zoo::na.approx (as.vector(Data$WIY), maxgap=100*Rate, na.rm = FALSE)
+    d <- zoo::na.approx (as.vector(Data$WIY), maxgap=100*Rate, na.rm = FALSE, rule=2)
     d[is.na(d)] <- 0
     Data$WIF <- Data$WIY - signal::filtfilt( signal::butter (3, 2/(CutoffFreq*Rate)), d)
   }
@@ -181,8 +197,10 @@ for (file.name in files.ALL) {
   DATT <- Data  ## save to ensure that attributes are preserved
   
   ## variables to add to the netCDF file:
-  VarNew <- c('AKY', 'WIY', 'WIF', 'AK_GP', 'SS_GP', 'WIG', 'WDG', 'WSG', 'TASG', 'UXG', 'VYG', 'ROC', 'TASTC', 'WDTC', 'WSTC', 'WITC', 'UXTC', 'VYTC')
-  VarOld <- c('AKRD', 'WIC', 'WIC', 'AKRD', 'SSRD', 'WIC', 'WDC', 'WSC', 'TASX', 'UXC', 'VYC', 'GGVSPD', 'TASX', 'WDC', 'WSC', 'WIC', 'UXC', 'VYC') 
+  VarNew <- c('AKY', 'WIY', 'WIF', 'AK_GP', 'SS_GP', 'WIG', 'WDG', 'WSG', 'TASG', 'UXG', 'VYG', 
+    'ROC', 'TASTC', 'WDTC', 'WSTC', 'WITC', 'UXTC', 'VYTC')
+  VarOld <- c('AKRD', 'WIC', 'WIC', 'AKRD', 'SSRD', 'WIC', 'WDC', 'WSC', 'TASX', 'UXC', 'VYC', 
+    'GGVSPD', 'TASX', 'WDC', 'WSC', 'WIC', 'UXC', 'VYC') 
   VarUnits <- c('degrees', 'm/s', 'm/s', 'degrees', 'degrees', 'm/s', 'm/s', 'm/s', 'm/s', 'm/s', 'm/s', 'm/s', 'm/s', 'degrees', 'm/s', 'm/s', 'm/s', 'm/s')
   VarStdName <- c('angle-of-attack, CF', 'vertical wind, CF', 'vertical wind, filtered', 'angle-of-attack, GP', 'sideslip angle, GP', 
     'vertical wind, GP', 'wind direction, GP', 'wind speed, GP', 'true airspeed, GP', 'wind longitudinal component, GP', 
