@@ -483,7 +483,7 @@ ui <- fluidPage (
                     timeFormat='%T',
                     timezone='+0000'
                   ),
-                  sliderInput('sliderPitchPM', label='PITCH delay [ms]', min=-300, max=100,
+                  sliderInput('sliderPitchPM', label='PITCH delay [ms]', min=-300, max=300,
                     step=10, value=0),
                   sliderInput('sliderROCPM', label='ROC delay [ms]', min=-200, max=200,
                     step=10, value=0)
