@@ -89,6 +89,7 @@ require(magrittr)
 
 @
 
+
 This ran on 19 Aug 2019, when there were three test flights, one ferry flight, and
 six research flights in the OTREC netCDF-file directory on /scr/raf\_data/OTREC.
 
@@ -107,6 +108,7 @@ meanSD <- function (.d, V, VL, mod360 = FALSE) {
     sdv <-  sd(difv, na.rm = TRUE)
     # print (sprintf ('Variables %s and %s: mean difference %.2f std dev %.2f', 
     #  VV[1], VV[j], mn, sdv))
+
     offset <- c(offset, -mn)
   }
   return(offset)
