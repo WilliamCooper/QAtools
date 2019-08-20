@@ -2924,7 +2924,8 @@ server <- function(input, output, session) {
             names(cls[i]) <- PV[i]
             i <- i + 1
           }
-          g <- g + scale_colour_manual ('', labels=PV, breaks=PV, values=cls)+theme_WAC()+theme(legend.position=c(0.7,0.95))
+          g <- g + scale_colour_manual ('', labels=PV, breaks=PV, values=cls)+theme_WAC() + 
+            theme(legend.position=c(0.7,0.95))
           print(g)
         }
       } else {
