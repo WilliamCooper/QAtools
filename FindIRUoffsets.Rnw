@@ -1,0 +1,160 @@
+%% LyX 2.3.3 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[12pt,english]{article}
+\usepackage{mathptmx}
+\usepackage[T1]{fontenc}
+\usepackage[letterpaper]{geometry}
+\geometry{verbose,tmargin=3.54cm,bmargin=2.54cm,lmargin=2.54cm,rmargin=2.54cm,headheight=1cm,headsep=2cm,footskip=0.5cm}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\setlength{\parskip}{\medskipamount}
+\setlength{\parindent}{0pt}
+\usepackage{color}
+
+\makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+%% Because html converters don't know tabularnewline
+\providecommand{\tabularnewline}{\\}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\input colordvi
+\usepackage{color}
+\fancyhead{}
+\fancyfoot[CE,CO]{}
+\newtoks{\addressee} \global\addressee={}
+\newdimen\longindent \longindent=3.5truein
+\fancyhead[L]{Memo to: \the\addressee \\ \datetoday \\ Page \thepage \hfill}
+\renewcommand{\headrulewidth}{0.0pt}
+\newenvironment{lyxlist}[1]
+{\begin{list}{}
+{\settowidth{\labelwidth}{#1}
+\setlength{\leftmargin}{\labelwidth}
+\addtolength{\leftmargin}{\labelsep}
+\renewcommand{\makelabel}[1]{##1\hfil}}}
+{\end{list}}
+\newcommand{\datetoday}{\number\day\space
+     \ifcase\month\or January\or February\or March\or April\or May\or
+     June\or July\or August\or September\or October\or November\or
+     December\fi
+     \space\number\year}
+\newcommand{\EOLmemo}{\null \vskip-1.5truein
+{\raggedright \textsf{\textsc{\large \textcolor{blue}{Earth Observing Laboratory}}}}\par
+{\raggedright \textsf{\textsl{\textcolor{blue}{Memorandum:}}}} \par \vskip6pt
+{\color{blue}{\hrule}}\par
+\vskip0.3truein \leftline{\hskip \longindent \datetoday} \vskip0.2truein
+\thispagestyle{empty}}
+\newcommand{\attachm}[1]{\begin{lyxlist}{Attachments:00}
+\item [Attachments:] {#1}
+\end{lyxlist}}
+\newcommand{\cc}[1]{\begin{lyxlist}{Attachments:00}
+\item [cc:] {#1}
+\end{lyxlist}}
+\newcommand{\attach}[1]{\begin{lyxlist}{Attachments:00}
+\item [Attachment:] {#1}
+\end{lyxlist}}
+%usage: \encl{A\\B\\C} or \cc{ma,e1\\name2\\name3}
+
+\makeatother
+
+\usepackage{babel}
+\begin{document}
+\EOLmemo 
+
+\global\addressee={OTREC QA File}  % >>change "File" to the "To:" name desired
+
+\begin{tabular}{ll}
+\textsf{\textsc{\textcolor{blue}{To:}}} & \the\addressee\tabularnewline
+\textsf{\textsc{\textcolor{blue}{From:}}} & Al Cooper\tabularnewline
+\textsf{\textsc{\textcolor{blue}{Subject:}}} & revised pitch/roll/heading offsets for OTREC\tabularnewline
+\end{tabular}
+
+\bigskip
+
+Here are suggested new offsets for the IRU comparisons. For the record,
+the R code generating these offsets, also saved in ``FindIRUoffsets.Rnw'',
+is listed below:
+
+<<initialization,echo=FALSE,include=FALSE>>=
+
+
+library(knitr)
+opts_chunk$set(echo=FALSE, include=FALSE, fig.lp="fig:")
+opts_chunk$set(fig.width=6, fig.height=5, fig.align="center", digits=4)
+require(Ranadu, quietly = TRUE, warn.conflicts=FALSE)
+require(tidyverse)
+require(magrittr)
+
+@
+
+This ran when there were three test flights, one ferry flight, and
+six research flights in the OTREC netCDF-file directory on /scr/raf\_data/OTREC.
+
+<<findOffsets, include = TRUE, echo = TRUE>>=
+
+meanSD <- function (.d, V, VL, mod360 = FALSE) {
+  VV <- VarList[which(grepl(V, VL))]
+  offset <- vector()
+  for (j in (2):length(VV)) {
+    difv <- .d[, VV[1]] - .d[, VV[j]]
+    if (mod360) {
+      difv[difv < -180] <- difv[difv < -180] + 360
+      difv[difv > 180] <- difv[difv > 180] - 360
+    }
+    mn <- mean(difv, na.rm = TRUE)
+    sdv <-  sd(difv, na.rm = TRUE)
+    # print (sprintf ('Variables %s and %s: mean difference %.2f std dev %.2f', 
+      VV[1], VV[j], mn, sdv))
+    offset <- c(offset, -mn)
+  }
+  return(offset)
+}
+
+VarList <-  standardVariables(c('PITCH', 'PITCH_IRS2', 'PITCH_IRS3', 
+  'ROLL', 'ROLL_IRS2', 'ROLL_IRS3', 
+  'THDG', 'THDG_IRS2', 'THDG_IRS3', 
+  'ACINS', 'ACINS_IRS2', 'ACINS_IRS3', 
+  'VSPD', 'VSPD_IRS2', 'VSPD_IRS3', 
+  'ALT', 'ALT_IRS2', 'ALT_IRS3'))
+Data <- getProjectData('OTREC', VarList, .Test=TRUE, .Ferry=TRUE) %>%
+        filter(TASX > 90)
+pitch_offset <- meanSD(Data, 'PITCH', VarList)
+roll_offset <- meanSD(Data, 'ROLL', VarList)
+thdg_offset <- meanSD(Data, 'THDG', VarList, mod360 = TRUE)
+
+@
+
+The offsets are then as listed below:
+
+<<printOffsets, include=TRUE>>=
+
+
+print (sprintf ('pitch_offset = c(%.2f, %.2f)', 
+  pitch_offset[1], pitch_offset[2]))
+print (sprintf ('roll_offset = c(%.2f, %.2f)', 
+  roll_offset[1], roll_offset[2]))
+print (sprintf ('thdg_offset = c(%.2f, %.2f)', 
+  thdg_offset[1], thdg_offset[2]))
+
+@
+
+These should be placed in the Configuration.R file at the top of the
+OTREC section. In addition, because there are two offsets here while
+all previous projects used a single offset, I suggest updating RPlot12.R
+as in my https://github.com/WilliamCooper/QAtools repository.
+
+For OTREC, the IRU comparisons often show jumps in the PITCH-PITCH\_IRS2
+variable (cyan line in the plot) that correlate with periods when
+the roll indicates that the aircraft is turning. This suggests that
+the IRS2 is not aligned on the same axis as IRS1, resulting is a mixing
+together of pitch and roll when the aircraft turns. This problem does
+not occur with the PITCH-PITCH\_IRS3 comparison, so those two must
+be better installed on the aircraft centerline axis.
+\begin{center}
+\textsf{\textcolor{blue}{-- End of Memo --}}
+\par\end{center}
+
+
+\end{document}
