@@ -90,7 +90,7 @@ require(magrittr)
 @
 
 
-This ran on 19 Aug 2019, when there were three test flights, one ferry flight, and
+This ran on 18 Aug 2019, when there were three test flights, one ferry flight, and
 six research flights in the OTREC netCDF-file directory on /scr/raf\_data/OTREC.
 
 <<findOffsets, include = TRUE, echo = TRUE>>=
