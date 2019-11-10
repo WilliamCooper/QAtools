@@ -2088,7 +2088,7 @@ server <- function(input, output, session) {
       }
       # If the associated VRPlot has no non-blank variables, skip:
       nvpl <- psq[1, input$plot]
-      if (length(VRPlot[[nvpl]]) < 2 && length(VRPlot[[nvpl]][1]) < 2) {
+      if (length(VRPlot[[nvpl]]) < 2 && (VRPlot[[nvpl]][1] == '' || VRPlot[[nvpl]][1] == 'TASX')) {
         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
         text (0.5, 0.8, 'There are no variables for this panel.')
       } else {

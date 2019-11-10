@@ -75,6 +75,9 @@ RPlot16 <- function (data, Seq=NA, panl=1) {
       ylim = YLMF (1, c(0,2)),
       ylab="PLWCy", 
       legend.position="topright")
+    if (length(va3) == 1) {
+      legend('topright', legend=va3[1], col='blue', lty=1)
+    }
     title ("1-min filter", cex.main = cexmain)
   }
   

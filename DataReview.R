@@ -152,7 +152,7 @@ for (Flight in Flt) {
       C1DC <- NULL
       
       fnumber <- as.numeric (sub('[a-zA-Z]*([0-9]*).nc', '\\1', Flight))
-      ftype <- sub('[A-Z]*(.f)[0-9]*.nc', '\\1', Flight)
+      ftype <- sub('[A-Za-z]*(.f)[0-9]*.nc', '\\1', Flight)
       ## next statement needs to be inside "ALL" loop, in case available variables change
       VRPlot <- loadVRPlot (Project, FALSE, fnumber, psq)  ## get VRPlot list for this project
       Cradeg <- pi/180
@@ -165,6 +165,9 @@ for (Flight in Flt) {
       }
       VarList <- unique (VarList)
       VarList <- VarList[!is.na(VarList)]
+      if ('' %in% VarList) { # '' in VRPlot needs to be removed
+        VarList <- VarList[-which(VarList == '')]
+      }
       
       Data <- getNetCDF(fname, VarList)
       ## set the start and end indices to the first and last time TASX > 65
