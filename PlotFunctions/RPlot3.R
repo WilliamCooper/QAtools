@@ -6,6 +6,8 @@ RPlot3 <- function (data, Seq=NA, panl=1, ...) {
   
   panel11 <- function (data) {
     ylb <- expression (paste ("temperature  ATy  [", degree, "C]"))
+    print(sprintf('panel11, VRPlot[[3]]:'))
+    print(VRPlot[[3]])
     plotWAC (data[, c("Time", VRPlot[[3]])],
       ylab=ylb, lty=c(1,1,1,2), lwd=c(2,1.5,1,2,1),
       legend.position='bottomleft', 

@@ -77,7 +77,7 @@ step <- 60
 PJ <- c('MethaneAIR', 'OTREC', 'ECLIPSE2019', 'OTREC-TEST', 'WECAN', 'SOCRATES', 'WECAN-TEST', 'ECLIPSE', 'ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
   'DEEPWAVE', 'CONTRAST', 'SPRITE-II', 'MPEX', 'DC3', 'HEFT10', 'IDEAS-4', 'FRAPPE',
   'TORERO', 'HIPPO-5', 'HIPPO-4', 'HIPPO-3', 'HIPPO-2', 'DC3-TEST',
-  'HIPPO-1','PREDICT', 'START08', 'PACDEX', 'TREX', 'WINTER', 'NOMADSS')
+  'HIPPO-1','PREDICT', 'START08', 'PACDEX', 'TREX', 'WINTER', 'NOMADSS', 'VOCALS')
 Cradeg <- pi/180
 Project <- PJ[1]
 ProjectPP <- PJ[1]
@@ -1504,6 +1504,8 @@ makeVRPlot <- function (slp, psq) {
 
 ## DPcheck additions:
 VRPlot <- loadVRPlot(Project, FALSE, 1, psq)
+
+DataHR <- data.frame()
 
 VarListTDP <- standardVariables (c('CAVP_DPL', 'BALNC_DPL', 'MIRRTMP_DPL', 'DP_DPL', 'DP_VXL', 'EW_DPL', 'EW_VXL', 'ATX'))
 setNA <- function (.x, .v) {

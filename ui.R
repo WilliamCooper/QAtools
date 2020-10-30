@@ -664,8 +664,10 @@ ui <- fluidPage (
                                             })")),
       navlistPanel (tabPanel ('project, flight, and plot', fluidRow (
         column (3, wellPanel (
-          selectInput (inputId='Project', label=NULL,
-            choices=PJ, width='140px'),
+          fluidRow (
+            column (6, selectInput (inputId='Project', label=NULL,
+              choices=PJ, selected = PJ[6], width='140px')),
+            column (4, checkboxInput ('HR', label='25Hz'))),
           actionButton ('reconfigure', 'save config'))
         ),
         column (5, wellPanel (
@@ -677,7 +679,9 @@ ui <- fluidPage (
             # column (2, checkboxInput ('Production', label='PR')),
             column (3, numericInput (inputId='plot', label='plot', value=1,
               min=1, max=49, step=1, width='80px')),
-            column(3, actionButton ('qcheck', label='quick', icon=icon('file-image-o'), width='80px'))))),
+            column(3, wellPanel (
+              actionButton ('qcheck', label='quick', icon=icon('file-image-o'), width='80px')
+              ))))),
         column(4, wellPanel (
           fluidRow (
             column (4, actionButton (inputId='savePDF', label='PDF', icon=icon('file-pdf-o'))), #, onclick="window.open('latestPlots.pdf')")),
