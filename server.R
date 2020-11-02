@@ -11,6 +11,10 @@ server <- function(input, output, session) {
   
   HRD <- reactiveVal(data.frame())
   VRPT <- reactiveVal(VRPlot)
+  VRPTHR <- reactiveVal(VRPlot)
+  if (Trace) {
+    print('VRPlot at initial store is:'); print(VRPlot)
+  }
   reac <- reactiveValues (newdata=FALSE, newdisplay=FALSE, quick = 0,
     plotFrozen=0, HTMLFrozen=0, newplotTDP=0, HOTplot=0, WIFplot=0, plotYM=0)
   ## RSessions stuff:
@@ -285,7 +289,9 @@ server <- function(input, output, session) {
       print (PVar)
     }
     # reac$newdisplay <- TRUE
-    VRPlot[[jp]] <<- unique(VRPlot[[jp]], PVar)
+    # VRPlot[[jp]] <<- unique(VRPlot[[jp]], PVar)
+    VRPlot[[jp]] <<- PVar
+    VRPT(VRPlot)  ## Save it
   }, priority=50)
   
   observe({                             ## Rplot
@@ -1417,6 +1423,7 @@ server <- function(input, output, session) {
         if (Trace) {print (sprintf ('using file %s for FI', fn))}
       }
       VRPlot <<- loadVRPlot (Project, FALSE, 1, psq)
+      VRPT(VRPlot)
     }
     if (Trace) {toc()}
   }, priority=200)
@@ -1899,7 +1906,7 @@ server <- function(input, output, session) {
         print(fname)
       }
       D <- getNetCDF (fname, VarList)
-      if(Trace) {print(str(D))}
+      # if(Trace) {print(str(D))}
       if (!(is.null(D)) && (ncol (D) > 1)) {
         fname.last <<- fname
         if (Trace) {toc()}
@@ -1920,6 +1927,7 @@ server <- function(input, output, session) {
         if (Trace) {print (sprintf ('fnRdata=%s', fnRdata))}
         FI <<- DataFileInfo (fnRdata)
         VRPlot <<- loadVRPlot (Project, Production=FALSE, input$Flight, psq)
+        VRPT(VRPlot)
         fname.last <<- fname
         # print (sprintf ('data returned with dimensions %d', dim(Data)))
         return (Data)
@@ -2018,15 +2026,16 @@ server <- function(input, output, session) {
       print (reac$newdisplay)
     }
     if (reac$newdisplay) {
-      #input$PlotVar  ## this dependence causes duplicate generation of plots
+      input$PlotVar  ## this dependence causes duplicate generation of plots
       Project <- input$Project
       VRPlot <- VRPT()
       # VRPlot <- VRP ()
       if (Trace) {print ('entered display')}
       # VRPlot <<- VRPlot
       Data <- data()
-      print ('have LR data')
+      if (Trace) {print ('have LR data')}
       VRPT(VRPlot)  ## Save this, so it can be changed if necessary, 25-Hz
+                    ## (Probably not necessary)
       nvpl <- psq[1, input$plot]
       if (input$HR) {  ## get HR data if checkbox is active
         hrfile <- setFileName(input$Project, sprintf('rf%02dh', input$Flight))
@@ -2036,22 +2045,27 @@ server <- function(input, output, session) {
         hrnames <- names(Data)[which(names(Data) %in% FI$Variables)]
         ## just load the variables needed for this plot. Much faster than all.
         hrnames <- hrnames[which(hrnames %in% VRPlot[[nvpl]])]
-        print('hrnames in HR section:')
-        print(hrnames)
+        if (Trace) {
+          print('hrnames in HR section:')
+          print(hrnames)
+        }
         Data <- getNetCDF(hrfile, hrnames, 
                           as.integer(gsub(':', '', formatTime(input$times[1]))), 
                           as.integer(gsub(':', '', formatTime(input$times[2]))))
-        print ('have loaded HR data')
+        if (Trace) {
+          print ('have loaded HR data')
+        }
         # assign('DataHR', Data, envir = .GlobalEnv)
         # DataHR <<- Data
         HRD(Data)  ## Save the data.frame for use by display2, etc.
       } else {
         ## restore VRPlot -- will have to modify VRPlot below for missing vars.
-        VRPlot <<- VRPT()
+        VRPlot <- VRPT()
       }
       DataRef <<- Data
-      if (length (Data) < 2) {
-        if (Trace) {warning (sprintf ('variable error in (%s)', fname))}
+     
+      if (ncol (Data) < 2) {
+        # if (Trace) {warning (sprintf ('variable error in (%s)', fname))}
         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
         text (0.5, 0.8, sprintf ('requested data file (%s) not found', fname))
         return ()
@@ -2076,7 +2090,7 @@ server <- function(input, output, session) {
         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
         text (0.5, 0.8, sprintf ('loading requested data file (%s)', fname))
         reac$newdisplay <- TRUE
-        reac$newdata <- TRUE
+        # reac$newdata <- TRUE
         return()
       } 
       ## see global.R functions:
@@ -2124,13 +2138,16 @@ server <- function(input, output, session) {
       }
       ## Remove missing HR variables from VRPlot:
       if (input$HR) {
-        print(str(VRPlot[[nvpl]]))
+        if (Trace) {print(str(VRPlot[[nvpl]]))}
         VRPlot[[nvpl]] <- VRPlot[[nvpl]][VRPlot[[nvpl]] %in% names(Data)]
-        print ('after mod:')
-        print(str(VRPlot[[nvpl]]))
+        if (Trace) {
+          print ('after mod:')
+          print(str(VRPlot[[nvpl]]))
+        }
       }
       VRPlot <<- VRPlot  ## In case this was modified, need to save as global
                          ## so the RPlot functions will find it.
+      VRPTHR(VRPlot)     ## And save it for other panels
       # If the associated VRPlot has no non-blank variables, skip:
       if (length(VRPlot[[nvpl]]) < 2 && (VRPlot[[nvpl]][1] == '' || VRPlot[[nvpl]][1] == 'TASX')) {
         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
@@ -2163,7 +2180,6 @@ server <- function(input, output, session) {
   }, width=WWidth, height=function() WHeight / dpan[input$plot] # , width=920, height = plotHeight # 1200
   ) #height=680)
   
-  
   output$display2 <- renderPlot ({  ## display
     input$times   ## for dependence on time change
     # # input$typeFlight
@@ -2180,18 +2196,23 @@ server <- function(input, output, session) {
       # input$PlotVar
       Project <- input$Project
       # VRPlot <- VRP ()
-      if (Trace) {print ('entered display2')}
+      if (Trace) {
+        tic('display2')
+        print ('entered display2')
+      }
       # VRPlot <<- VRPlot
       
       if(input$HR) {
         Data <- HRD()
+        VRPlot <- VRPTHR()
       } else {
         Data <- data()
+        VRPlot <- VRPT()
       }
       if (Trace) {print(' after Data call')}
       DataRef <<- Data
       if (length (Data) < 2) {
-        warning (sprintf ('variable error in (%s)', fname))
+        # warning (sprintf ('variable error in (%s)', fname))
         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
         text (0.5, 0.8, sprintf ('requested data file (%s) not found', fname))
         return ()
@@ -2215,7 +2236,7 @@ server <- function(input, output, session) {
         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
         text (0.5, 0.8, sprintf ('loading requested data file (%s)', fname))
         reac$newdisplay <- TRUE
-        reac$newdata <- TRUE
+        # reac$newdata <- TRUE
         return()
       }
       nvpl <- psq[1, input$plot]
@@ -2259,6 +2280,7 @@ server <- function(input, output, session) {
         if (Trace) {print ('finished display2')}
       }
     }
+    if (Trace) {toc()}
   }, width=WWidth, height=function() {
     if (dpan[input$plot] < 2) {
       return(10) 
@@ -2295,7 +2317,7 @@ server <- function(input, output, session) {
       }
       DataRef <<- Data
       if (length (Data) < 2) {
-        warning (sprintf ('variable error in (%s)', fname))
+        # warning (sprintf ('variable error in (%s)', fname))
         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
         text (0.5, 0.8, sprintf ('requested data file (%s) not found', fname))
         return ()
@@ -2319,7 +2341,7 @@ server <- function(input, output, session) {
         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
         text (0.5, 0.8, sprintf ('loading requested data file (%s)', fname))
         reac$newdisplay <- TRUE
-        reac$newdata <- TRUE
+        # reac$newdata <- TRUE
         return()
       }
       nvpl <- psq[1, input$plot]
@@ -2399,7 +2421,7 @@ server <- function(input, output, session) {
       }
       DataRef <<- Data
       if (length (Data) < 2) {
-        warning (sprintf ('variable error in (%s)', fname))
+        # warning (sprintf ('variable error in (%s)', fname))
         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
         text (0.5, 0.8, sprintf ('requested data file (%s) not found', fname))
         return ()
@@ -2423,7 +2445,7 @@ server <- function(input, output, session) {
         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
         text (0.5, 0.8, sprintf ('loading requested data file (%s)', fname))
         reac$newdisplay <- TRUE
-        reac$newdata <- TRUE
+        # reac$newdata <- TRUE
         return()
       }
       nvpl <- psq[1, input$plot]
@@ -2480,6 +2502,9 @@ server <- function(input, output, session) {
     if (Trace) {print ('entered stats')}
     input$times
     Ds <- limitData (data(), input)
+    if (input$HR) {
+      Ds <- limitData (HRD(), input)
+    }
     # Ds <- Ds[, c('Time', slp[[input$plot]])]
     Ds <- Ds[, c('Time', VRPlot[[psq[1, input$plot]]])]
     Ds <- Ds[(Ds$Time >= times[1]) & (Ds$Time <= times[2]), ]
@@ -2489,6 +2514,7 @@ server <- function(input, output, session) {
     Dstats['Time', 3] <- NA
     Dstats['Time', 4] <- formatTime (Ds$Time[1])
     Dstats['Time', 5] <- formatTime (Ds$Time[nrow(Ds)])
+    Dstats['Time', 6] <- NA
     for (nm in names(Ds)) {
       if (nm == 'Time') {next}
       Dstats[nm, 1] <- nm
@@ -2496,11 +2522,13 @@ server <- function(input, output, session) {
       Dstats[nm, 3]   <- sd   (Ds[, nm], na.rm=TRUE)
       Dstats[nm, 4]  <- min  (Ds[, nm], na.rm=TRUE)
       Dstats[nm, 5]  <- max  (Ds[, nm], na.rm=TRUE)
+      Dstats[nm, 6]  <- mean(zoo::rollapply(Ds[, nm], 25, sd, by = 25, 
+                                            fill = rep('extend', 3)), na.rm=TRUE)
     }
-    names(Dstats) <- c('variable', 'mean', 'sd', 'min', 'max')
+    names(Dstats) <- c('variable', 'mean', 'sd', 'min', 'max', 'rollingSD')
     row.names (Dstats) <- names(Ds)
     # Dstats[2:nrow(Dstats), 2:5] <- format(Dstats[2:nrow(Dstats),2:5], digits=5, scientific=FALSE)
-    for (k in 2:5) {
+    for (k in 2:6) {
       Dstats[2:nrow(Dstats), k] <- sprintf('%.3f', as.numeric(Dstats[2:nrow(Dstats), k]))
     }
     if (Trace) {print (str(Dstats))}
@@ -4660,6 +4688,9 @@ server <- function(input, output, session) {
   }, deleteFile = FALSE)
   
   outputOptions (output, 'display', priority=-10)
+  outputOptions (output, 'display2', priority=-10)
+  outputOptions (output, 'display3', priority=-10)
+  outputOptions (output, 'display4', priority=-10)
   outputOptions (output, 'stats', priority=-10)
   outputOptions (output, 'listing', priority=-10)
   outputOptions (output, 'hist', priority=-10)
