@@ -750,7 +750,8 @@ ui <- fluidPage (
           tabPanel ('stats', dataTableOutput ('stats')),
           tabPanel ('histograms', plotOutput (outputId='hist')),
           tabPanel ('soundings', plotOutput (outputId='barWvsZ')),
-          tabPanel ('listing', dataTableOutput ('listing')))))
+          tabPanel ('listing', dataTableOutput ('listing')),
+          tabPanel ('VarSpec', plotOutput (outputId='vspec')))))
     ),
     tabPanel ('Known Problems',
       fluidRow (

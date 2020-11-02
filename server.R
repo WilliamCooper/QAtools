@@ -2045,6 +2045,7 @@ server <- function(input, output, session) {
         hrnames <- names(Data)[which(names(Data) %in% FI$Variables)]
         ## just load the variables needed for this plot. Much faster than all.
         hrnames <- hrnames[which(hrnames %in% VRPlot[[nvpl]])]
+        hrnames <- c(hrnames, 'TASX')  ## include this for VSpec()
         if (Trace) {
           print('hrnames in HR section:')
           print(hrnames)
@@ -2534,6 +2535,21 @@ server <- function(input, output, session) {
     if (Trace) {print (str(Dstats))}
     Dstats
   }, options=list(paging=FALSE, searching=FALSE))
+  
+  output$vspec <- renderPlot({
+    input$PlotVar
+    input$times
+    if (Trace) {print ('entered vspec')}
+    Ds <- limitData (data(), input)
+    if (input$HR) {
+      Ds <- limitData (HRD(), input)
+    }
+    print (names(Ds))
+    # Ds <- Ds[, c('Time', slp[[input$plot]])]
+    Ds <- Ds[, c('Time', 'TASX', VRPlot[[psq[1, input$plot]]])]
+    Ds <- Ds[(Ds$Time > times[1]) & (Ds$Time < times[2]), ]
+    VSpec(Ds, ylim=c(1.e-5,1.)) + theme_WAC()
+  }, width=920, height=680)
   
   output$hist <- renderPlot ({
     input$PlotVar
