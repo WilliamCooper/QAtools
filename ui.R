@@ -1019,6 +1019,27 @@ ui <- fluidPage (
           
         ),
         ##########
+        tabPanel ('Add temperature corrections',
+                  ##########
+                  tags$head(tags$script(HTML('Shiny.addCustomMessageHandler("jsCode",function(message) {eval(message.value);});'))),
+                  fluidRow (
+                    column (6, actionButton ('RunTC', h3("Click Here to Run the CorrectTemperature script"),
+                                             style="color: #fff; background-color: #337ab7; border-color: #2e6da4"))
+                  ),
+                  sidebarLayout(
+                    sidebarPanel(h4('Run Arguments:'),
+                                   column (7, selectInput (inputId='ProjectTC', label=NULL,
+                                                           choices=PJ, selected=PJ[1], width='100px')),
+                                   column (5, numericInput (inputId='FlightTC', label='Flight', value=Flight,
+                                                            min=1, max=99, step=1, width='80px'))
+                                 ),
+                    mainPanel(
+                      textOutput('runTC'),
+                      includeHTML ('HTML/CorrectTemperature.html')
+                    ) 
+                  )
+        ),
+        ##########
         tabPanel ('Add height-above-terrain',
           ##########
           tags$head(tags$script(HTML('Shiny.addCustomMessageHandler("jsCode",function(message) {eval(message.value);});'))),

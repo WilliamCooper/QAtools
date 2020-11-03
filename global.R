@@ -68,13 +68,14 @@ if (Trace) {tic('global')}
 require(numDeriv, quietly = TRUE, warn.conflicts=FALSE) ## needed, KalmanFilter
 
 ## temporary, pending update of Ranadu package:
+source ("./correctT.R")
 # source ("../Ranadu/R/getNetCDF.R")
 # source ('getNetCDF.R')
 minT <- as.POSIXct(0, origin='2012-05-29', tz='UTC')
 maxT <- as.POSIXct(3600*8, origin='2012-05-29', tz='UTC')
 step <- 60
 
-PJ <- c('MethaneAIR', 'OTREC', 'ECLIPSE2019', 'OTREC-TEST', 'WECAN', 'SOCRATES', 'WECAN-TEST', 'ECLIPSE', 'ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
+PJ <- c('WCR-TEST', 'MethaneAIR', 'OTREC', 'ECLIPSE2019', 'OTREC-TEST', 'WECAN', 'SOCRATES', 'WECAN-TEST', 'ECLIPSE', 'ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
   'DEEPWAVE', 'CONTRAST', 'SPRITE-II', 'MPEX', 'DC3', 'HEFT10', 'IDEAS-4', 'FRAPPE',
   'TORERO', 'HIPPO-5', 'HIPPO-4', 'HIPPO-3', 'HIPPO-2', 'DC3-TEST',
   'HIPPO-1','PREDICT', 'START08', 'PACDEX', 'TREX', 'WINTER', 'NOMADSS', 'VOCALS')
@@ -90,7 +91,7 @@ ProjectHOT <- PJ[1]
 FlightHOT <- 1
 ProjectWIF <- PJ[1]
 FlightWIF <- 1
-source('transferAttributes.R')
+# source('transferAttributes.R')
 
 ## for the 'frozen' section:   #################################
 slctd <- 1

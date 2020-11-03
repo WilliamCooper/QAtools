@@ -211,7 +211,7 @@ server <- function(input, output, session) {
     # if (Trace) {print (slp[[input$plot]])}
     updateSelectInput (session, 'addVar', selected='add var')
     selectInput ('PlotVar', label='variables', selectize=FALSE, multiple=TRUE,
-      choices=c('ctl-click to add/delete', chp[[input$plot]]), selected=PVar, size=10)
+      choices=c('ctl-click to add/delete', chp[[input$plot]], newnames), selected=PVar, size=10)
     # if (Trace) {print ('returning from ui2')}
     # Trace <- FALSE
   })
@@ -278,7 +278,7 @@ server <- function(input, output, session) {
       print (sprintf ('PlotVar observer: ncol(data) is %d', ncol(data())))
       # print (sort(names(data())))
     }
-    if ((length(data ()) < 2) || any (!(PVar %in% names (data ())))) {
+    if ((ncol(data ()) < 2) || any (!(PVar %in% names (data ())))) {
       print ('need new data')
       reac$newdata <- TRUE
     } 
@@ -1441,7 +1441,8 @@ server <- function(input, output, session) {
     #     reac$newdisplay
     #     reac$newdisplay <- TRUE
     Data <- data ()
-    if (length (Data) < 2) {
+    if (Trace) {print (sprintf ('Data: %d columns', ncol (Data)))}
+    if (ncol (Data) < 2) {
       reac$newdata <- TRUE
       if (Trace) {print ('error, need data first')}
       return ()
@@ -1452,11 +1453,14 @@ server <- function(input, output, session) {
     maxT <- Data$Time[nrow(Data)]
     maxT <- maxT - as.integer (maxT) %% step + step
     lowT <- minT
-    itx <- which (Data$TASX > 50)
-    lowT <- Data$Time[itx[1]]
-    highT <- Data$Time[itx[length(itx)]]
-    if (Trace) {print (sprintf ('slider values %s %s', formatTime (lowT),
-      formatTime (highT)))}
+    highT <- maxT
+    if (any(Data$TASX > 50, na.rm = TRUE)) {  ## reset time interval to only TASX > 50
+      itx <- which (Data$TASX > 50)
+      lowT <- Data$Time[itx[1]]
+      highT <- Data$Time[itx[length(itx)]]
+      if (Trace) {print (sprintf ('slider values %s %s', formatTime (lowT),
+        formatTime (highT)))}
+    }
     updateSliderInput(session, inputId='times', label=NULL,
       value=c(lowT, highT),
       min=minT, max=maxT)
@@ -2124,7 +2128,10 @@ server <- function(input, output, session) {
       #         text (0.5, 0.8, sprintf ('requested data file (%s) not found', fname))
       #       } else {
       # if (Trace) {print (str(Data))}
+      ist <- which(!(is.na(Data$Time)))[1]
+      # if (!(is.na(ist)) && (ist > 1)) {Data <- Data[ist:nrow(Data), ]}
       SE <- getStartEnd (Data$Time)
+      print (sprintf('ist, SE = %d %s-%s', ist, SE[1], SE[2]))
       i <- getIndex (Data$Time, SE[1])
       FigFooter <<- sprintf("%s %s%02d %s %s-%s UTC,", Project, input$typeFlight,
         input$Flight, strftime(Data$Time[i], format="%Y-%m-%d", tz='UTC'),
@@ -2822,7 +2829,10 @@ server <- function(input, output, session) {
     }
     specialData[, nv] <<- eval(parse(text=nv))
     FI$Variables <<- c(FI$Variables, nv)
-    print (sprintf (' adding %s to FI$Variables', nv))
+    if (Trace) {
+      print (sprintf (' adding %s to FI$Variables', nv))
+      print (input)
+    }
     isolate (plt <- input$plot)
     isolate (pnl <- input$panel)
     isolate (hpnl <- input$hpanel)
@@ -2834,8 +2844,10 @@ server <- function(input, output, session) {
     isolate (blv <- input$blineV)
     isolate (rlv <- input$rvNumber)
     choices <- c('select', 'omit',sort(FI$Variables))
-    print (sprintf (' setting variable choices to this list:'))
-    print (sort(FI$Variables))
+    if (Trace) {
+      print (sprintf (' setting variable choices to this list:'))
+      print (sort(FI$Variables))
+    }
     updateSelectInput (session, 'addVarP', choices=choices,
       selected=plotSpec$Plot[[plt]]$panel[[pnl]]$var[lv])
     updateSelectInput (session, 'haddVarP', choices=choices,
@@ -2993,6 +3005,37 @@ server <- function(input, output, session) {
     progressExists <<- TRUE
     messg <<- sprintf ("%srf%02d.nc",
       input$ProjectWIF, input$FlightWIF)
+    messg <- NULL
+  })
+  
+  observeEvent (input$RunTC, {
+    Data <- data()
+    ninData <- names(Data)
+    Data <- correctT(Data)
+    newnames <- names(Data)
+    newnames <- newnames[!(newnames %in% ninData)]
+    newnames <- newnames[-which(newnames == 'Cp')]
+    newnames <- newnames[-which(newnames == 'DH')]
+    if (Trace) {
+      print ('in RunTC observer: newnames(Data):')
+      print(newnames)
+    }
+    newnames <<- newnames
+    progress$set(message = 'processing is complete', detail=sprintf ('Flight %d', Flight), value=99)
+  })
+  
+  output$runTC <- renderText({
+    if (!progressExists) {
+      progress <- Progress$new(session, min=0, max=100)
+    }
+    # on.exit(progress$close())
+    
+    progress$set(message = 'ready to run')
+    progress$set (value=1)
+    progress <<- progress
+    progressExists <<- TRUE
+    messg <<- sprintf ("%srf%02d.nc",
+                       input$Project, input$Flight)
     messg <- NULL
   })
   
