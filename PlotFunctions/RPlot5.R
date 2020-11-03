@@ -27,7 +27,7 @@ RPlot5 <- function (data, Seq=NA, panl=1) {
     # Plot the differences:
     DP <- c(VRPlot[[5]][grepl ('^DP', VRPlot[[5]])])
     DF <- data[, c('Time', DP[-1])] # use first in list as reference
-    DF <- DF - data[, DP[1]]
+    DF[, -1] <- DF[, -1] - data[, DP[1]]
     plotWAC(DF, ylab=expression(paste (Delta,' [', degree, ']')), 
       ylim = YLMF (2, c(-5, 5)))
     hline (-1, col = 'darkorange'); hline (1, col = 'darkorange')

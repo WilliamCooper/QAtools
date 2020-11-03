@@ -35,7 +35,7 @@ RPlot3 <- function (data, Seq=NA, panl=1, ...) {
       print (VRPlot[[3]])
     }
     DF <- data[, c('Time', labl[-1])]
-    DF <- DF - data[, labl[1]]
+    DF[, -1] <- DF[, -1] - data[, labl[1]]
     plotWAC(DF, ylab=expression(paste (Delta,' [', degree, ']')), ylim = YLMF (2, c(-2, 2)))
     hline (-0.3, col = 'darkorange'); hline (0.3, col = 'darkorange')
     title (sprintf ('differences vs %s', labl[1]), cex.main = cexmain)
