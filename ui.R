@@ -5,7 +5,6 @@
 # http://shiny.rstudio.com
 #
 
-
 ui <- fluidPage (
   # Application title
   titlePanel("QA / QC Tools"),
@@ -666,7 +665,7 @@ ui <- fluidPage (
         column (3, wellPanel (
           fluidRow (
             column (6, selectInput (inputId='Project', label=NULL,
-              choices=PJ, selected = PJ[6], width='140px')),
+              choices=PJ, selected = PJ[1], width='140px')),
             column (4, checkboxInput ('HR', label='25Hz'))),
           actionButton ('reconfigure', 'save config'))
         ),
