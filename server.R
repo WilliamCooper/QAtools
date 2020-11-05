@@ -211,7 +211,7 @@ server <- function(input, output, session) {
     # if (Trace) {print (slp[[input$plot]])}
     updateSelectInput (session, 'addVar', selected='add var')
     selectInput ('PlotVar', label='variables', selectize=FALSE, multiple=TRUE,
-      choices=c('ctl-click to add/delete', chp[[input$plot]], newnames), selected=PVar, size=10)
+      choices=c('ctl-click to add/delete', chp[[input$plot]]), selected=PVar, size=10)
     # if (Trace) {print ('returning from ui2')}
     # Trace <- FALSE
   })
@@ -2185,7 +2185,8 @@ server <- function(input, output, session) {
           eval(parse(text=sprintf("RPlot%d(Data, Seq=%d, panl=1)",
             psq[1, input$plot], psq[2, input$plot])))
         }
-        if (Trace) {print (sprintf ('have called RPlot%d.R', input$plot))}
+        if (Trace) {print (sprintf ('have called RPlot%d.R for plot %d', 
+                                    psq[1, input$plot], input$plot))}
         # }
         #       si <- input$plot
         #       updateSelectInput (session, 'Rplot', selected=st[si])
@@ -5372,17 +5373,18 @@ server <- function(input, output, session) {
   })
   
   output$cavPlot <- renderPlot({
-    fname <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), input$ProjectKP, input$ProjectKP,
-      input$typeFlightKP, input$FlightKP)
-    if (!file.exists (fname)) {
-      fn2 <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), input$ProjectKP, input$ProjectKP,
-        input$FlightKP)
-      if (file.exists (fn2)) {
-        updateRadioButtons(session, 'typeFlightKP', selected='tf')
-        fname <- fn2
-      }
-    }  ## otherwise will fail here:
-    D <- getNetCDF (fname, standardVariables (c('CAVP_DPL', 'CAVP_DPR', 'AKRD')))
+    # fname <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), input$Project, input$Project,
+    #   input$typeFlight, input$Flight)
+    # if (!file.exists (fname)) {
+    #   fn2 <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), input$Project, input$Project,
+    #     input$Flight)
+    #   if (file.exists (fn2)) {
+    #     updateRadioButtons(session, 'typeFlight', selected='tf')
+    #     fname <- fn2
+    #   }
+    # }  ## otherwise will fail here:
+    # D <- getNetCDF (fname, standardVariables (c('CAVP_DPL', 'CAVP_DPR', 'AKRD')))
+    D <- data()
     if ('CAVP_DPL' %in% names(D)) {
       D <- D[!is.na(D$TASX) & D$TASX > 90, ]
       D$PCAV_DPL <- with(D, cavcfL[1]+cavcfL[2]*PSXC+cavcfL[3]*QCXC+cavcfL[4]*MACHX+cavcfL[5]*AKRD)

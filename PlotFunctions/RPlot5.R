@@ -83,9 +83,11 @@ RPlot5 <- function (data, Seq=NA, panl=1) {
     CAVP <- VRPlot[[5]][grepl('^CAVP', VRPlot[[5]])]
     if (any (grepl('P_DPL', VRPlot[[5]]))) {
       if (!("CAVP_DPL" %in% names(data))) {
-        data$CAVP_DPL <- with(data, cavcfL[1] + cavcfL[2] * PSXC + cavcfL[3] * QCXC + cavcfL[4] * MACHX + cavcfL[5] * AKRD)
+        data$CAVP_DPL <- with(data, cavcfL[1] + cavcfL[2] * PSXC + cavcfL[3] * QCXC + cavcfL[4] * MACHX + 
+                                cavcfL[5] * AKRD)
       } else {  # calculate from formula
-        data$CAVPF_DPL <- with(data, cavcfL[1] + cavcfL[2] * PSXC + cavcfL[3] * QCXC + cavcfL[4] * MACHX + cavcfL[5] * AKRD)
+        data$CAVPF_DPL <- with(data, cavcfL[1] + cavcfL[2] * PSXC + cavcfL[3] * QCXC + cavcfL[4] * MACHX + 
+                                 cavcfL[5] * AKRD)
       }
       # if (!("CAVP_DPR" %in% names (data))) {
       #   data$CAVP_DPR <- data$PSXC*(1.0162 +0.003024*data$QCFC
@@ -110,10 +112,10 @@ RPlot5 <- function (data, Seq=NA, panl=1) {
       }
     } else {
       if ("CAVP_DPB" %in% names(data)) {
-        data$CAVPF_DPB <- with(data, PSXC * (1 + cavc[1,1] + 
-            cavc[2,1]*QCXC + cavc[3,1]*MACHX + cavc[4,1]*AKRD))
-        data$CAVPF_DPT <- with(data, PSXC * (1 + cavc[1,2] + 
-            cavc[2,2]*QCXC + cavc[3,2]*MACHX + cavc[4,2]*AKRD))
+        data$CAVPF_DPT <- with(data, PSXC + cavc[1,1] + 
+            cavc[2,1]*QCXC + cavc[3,1]*MACHX + cavc[4,1]*AKRD)
+        data$CAVPF_DPB <- with(data, PSXC + cavc[1,2] + 
+            cavc[2,2]*QCXC + cavc[3,2]*MACHX + cavc[4,2]*AKRD)
         
         CAVP <- c(CAVP, 'CAVPF_DPB', 'CAVPF_DPT')
       }
