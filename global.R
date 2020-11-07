@@ -1604,8 +1604,9 @@ constructDQF <- function (project, flight) {
   Data <- getNetCDF (sprintf ('%s%s/%srf%02d.nc', DataDirectory(), projectDir, project, flight), VarListTDP)
   Data$MIRRTMP_DPL <- setNA (Data$MIRRTMP_DPL, 0)
   Data$DERIV2 <- -signal::filter(signal::sgolay(3,17,2),Data$MIRRTMP_DPL)
-  Data$DPERR <- Data$DERIV2 / (asimTDP * f2simTDP)
-  Data$CBAL <- zoo::rollmean (setNA (Data$BALNC_DPL, 0), 60, fill=0, align='right') / 500
+  Data$DPERR <- zoo::rollmean (setNA (abs(Data$DERIV2) / 
+                     (asimTDP * f2simTDP), 0), 60, fill=0, align='center')
+  Data$CBAL <- zoo::rollmean (setNA (Data$BALNC_DPL, 0), 60, fill=0, align='center') / 500
   Data$DPLQUAL <- ifelse (abs(Data$CBAL) > 3, -10, 0)
   Data$DPLQUAL[abs(Data$CBAL) > 10] <- -20
   ## find candidates for overshooting, but skip if data.frame already exists:
