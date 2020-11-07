@@ -1512,9 +1512,12 @@ server <- function(input, output, session) {
     maxT <- Data$Time[nrow(Data)]
     maxT <- maxT - as.integer (maxT) %% step + step
     lowT <- minT
-    itx <- which (Data$TASX > 50)
-    lowT <- Data$Time[itx[1]]
-    highT <- Data$Time[itx[length(itx)]]
+    highT <- Data$Time[nrow(Data)]
+    if (any(Data$TASX > 50, na.rm = TRUE)) { 
+      itx <- which (Data$TASX > 50)
+      lowT <- Data$Time[itx[1]]
+      highT <- Data$Time[itx[length(itx)]]
+    }
     updateSliderInput(session, inputId='times', label=NULL,
       value=c(lowT, highT),
       min=minT, max=maxT)
