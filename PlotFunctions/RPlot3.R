@@ -6,6 +6,10 @@ RPlot3 <- function (data, Seq=NA, panl=1, ...) {
   
   panel11 <- function (data) {
     ylb <- expression (paste ("temperature  ATy  [", degree, "C]"))
+    if (Trace) {
+      print(sprintf('panel11, VRPlot[[3]]:'))
+      print(VRPlot[[3]])
+    }
     plotWAC (data[, c("Time", VRPlot[[3]])],
       ylab=ylb, lty=c(1,1,1,2), lwd=c(2,1.5,1,2,1),
       legend.position='bottomleft', 
@@ -26,8 +30,12 @@ RPlot3 <- function (data, Seq=NA, panl=1, ...) {
   panel12 <- function (data) {
     # Plot the differences:
     labl <- VRPlot[[3]]
+    if (Trace) {
+      print ('in panel12 of RPlot3')
+      print (VRPlot[[3]])
+    }
     DF <- data[, c('Time', labl[-1])]
-    DF <- DF - data[, labl[1]]
+    DF[, -1] <- DF[, -1] - data[, labl[1]]
     plotWAC(DF, ylab=expression(paste (Delta,' [', degree, ']')), ylim = YLMF (2, c(-2, 2)))
     hline (-0.3, col = 'darkorange'); hline (0.3, col = 'darkorange')
     title (sprintf ('differences vs %s', labl[1]), cex.main = cexmain)

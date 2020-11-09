@@ -52,7 +52,9 @@ RPlot1 <- function (data, Flight=NA, Seq=NA, panl=1) {
     #  type='n')
     # axis(4,tck=0.02) ## this adds a metric axis on the right side at km intervals
     mtext('Altitude [km]', 4, 2, col = 'red')
-    DF <- DF[!is.na(data$TASX) & (data$TASX > 110), ]
+    if (any(DF$TASX > 90)) {
+      DF <- DF[!is.na(data$TASX) & (data$TASX > 90), ]
+    }
     ## This isn't needed any more; it was an old check that pressure altitude was OK.
     ## It's always OK now.
     if (abs (mean (DF$PALTF-DF$PA2, na.rm=TRUE)) > 0.05) {

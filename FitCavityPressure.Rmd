@@ -1,0 +1,169 @@
+---
+title: "Fit Cavity Pressure"
+author: "Al Cooper"
+date: "11/5/2020"
+output: pdf_document
+---
+
+```{r initialization,echo=FALSE,include=FALSE}
+
+library(knitr)
+options(warn=-1)
+opts_chunk$set(echo=FALSE, include=FALSE, fig.lp="fig:", background='#F5F2F8')
+opts_chunk$set(fig.width=6, fig.height=5, fig.align="center", digits=4)
+options(digits=4)
+thisFileName <- "DPpressure"
+library(Ranadu, quietly = TRUE, warn.conflicts=FALSE)
+SaveRData <- sprintf("%s.Rdata", thisFileName)
+
+```
+
+\section*{Background}
+
+The study reported in the algorithm note ``DP\_Pressure\_Correction.pdf''
+applied to the GV and found a representation different from that being
+used in QAtools even for the GV. It appears useful to revisit this
+issue for both aircraft.
+
+\section*{Analysis}
+
+\subsection*{C-130}
+
+For the C-130, all the research flights from WECAN were used except
+rf14, which appeared to provide some outlier values compared to other
+flights. The differences CAVP\_DPT-PSXC and CAVP\_DPB-PSXC were calculated
+and an empirical search for reasonable fits led to a reasonable representation
+of both in terms of QCXC. MACHX, and AKRD where QCXC was the leading
+contribution to the reduction of variance for CAVP\_DPT-PSXC but AKRD
+was by far the most important for CAVP\_DPB-PSXC. The residual error
+for both fits was about 1 hPa. Furthermore, for the C-130 the measured
+pressures differ little (typcally <10~hPa) from the ambient pressure
+so the corrections for these pressure measurements are small.
+
+```{r get-data, echo=FALSE, include=TRUE, fig.height=4}
+
+VarList <- c("CAVP_DPT", "CAVP_DPB", "PSXC", "ATX", "DPXC", "QCXC", 
+  "EWX", "ACINS","GGLAT", "TASX", "ROLL", "AKRD", "SSRD", "MACHX") 
+Data <- getProjectData('WECAN', standardVariables(VarList))
+Data <- Data[Data$RF != 14, ]
+
+Data$DP1 <- Data$CAVP_DPT - Data$PSXC
+Data$DP2 <- Data$CAVP_DPB - Data$PSXC
+Data <- dplyr::filter(Data, TASX > 80, abs(ROLL) < 2)
+f1 <- lm(DP1 ~ QCXC + MACHX + AKRD, data=Data)
+f2 <- lm(DP2 ~ QCXC + MACHX + AKRD, data=Data)
+cf1 <- coef(f1)
+cf2 <- coef(f2)
+Data$CAVP1 <- Data$PSXC + cf1[1] + cf1[2] * Data$QCXC + cf1[3] * Data$MACHX +
+              cf1[4] * Data$AKRD
+Data$CAVP2 <- Data$PSXC + cf2[1] + cf2[2] * Data$QCXC + cf2[3] * Data$MACHX +
+              cf2[4] * Data$AKRD
+Data$DELP1 <- Data$CAVP_DPT - Data$CAVP1
+Data$DELP2 <- Data$CAVP_DPB - Data$CAVP2
+Data %>% dplyr::select(DELP1, RF) %>% 
+    binStats() %>%
+    ggplot(aes(x=xc)) + 
+    geom_point(aes(y=ybar), color='blue', na.rm=TRUE) + 
+    geom_errorbar(aes(ymin=ybar-sigma, ymax=ybar+sigma)) +
+    ylim(c(-5,5)) + ylab('CAVP_DPT-fit') + xlab('WECAN flight number') +
+    theme_WAC() 
+
+Data %>% dplyr::select(DELP2, RF) %>% 
+    binStats() %>%
+    ggplot(aes(x=xc)) + 
+    geom_point(aes(y=ybar), color='forestgreen', na.rm=TRUE) + 
+    geom_errorbar(aes(ymin=ybar-sigma, ymax=ybar+sigma)) +
+    ylim(c(-5,5)) + ylab('CAVP_DPB-fit') + xlab('WECAN flight number') +
+    theme_WAC() 
+#print(cf1)
+#print(cf2)
+
+```
+
+\subsection*{GV:}
+
+The same approach was used for the GV, using the data from the ORCAS
+project, selected because it was recent and yet covered a wider range
+in altitude than SOCRATES. Only ORCAS flights 9--19 were included
+because there seemed to be a shift before this and these appeared
+more consistent. In this case, the measured pressures were significantly
+different from the ambient pressures and the corrections for the measured
+pressures are quite important.
+
+```{r get-data2, echo=FALSE, include=TRUE, fig.height=4}
+
+VarList <- c("CAVP_DPR", "CAVP_DPL", "PSXC", "ATX", "DPXC", "QCXC", 
+  "EWX", "ACINS","GGALT", "TASX", "ROLL", "AKRD", "SSRD", "MACHX") 
+Data <- getProjectData('ORCAS', standardVariables(VarList))
+Data <- Data[Data$RF > 9, ]
+
+
+Data$DP1 <- (Data$CAVP_DPL - Data$PSXC) / Data$PSXC
+Data$DP2 <- (Data$CAVP_DPR - Data$PSXC) / Data$PSXC
+Data <- dplyr::filter(Data, TASX > 110, abs(ROLL) < 2)
+f1g <- lm(DP1 ~ QCXC + MACHX + AKRD, data=Data)
+f2g <- lm(DP2 ~ QCXC + MACHX + AKRD, data=Data)
+cf1g <- coef(f1g)
+cf2g <- coef(f2g)
+Data$CAVP1 <- Data$PSXC * (1 + cf1g[1] + cf1g[2] * Data$QCXC + 
+    cf1g[3] * Data$MACHX + cf1g[4] * Data$AKRD)
+Data$CAVP2 <- Data$PSXC * (1 + cf2g[1] + cf2g[2] * Data$QCXC + 
+    cf2g[3] * Data$MACHX + cf2g[4] * Data$AKRD)
+Data$DELP1 <- Data$CAVP_DPL - Data$CAVP1
+Data$DELP2 <- Data$CAVP_DPR - Data$CAVP2
+Data %>% dplyr::select(DELP1, RF) %>% 
+    binStats(bins=11) %>%
+    ggplot(aes(x=xc)) + 
+    geom_point(aes(y=ybar), color='blue', na.rm=TRUE) + 
+    geom_errorbar(aes(ymin=ybar-sigma, ymax=ybar+sigma)) +
+    ylab('CAVP_DPL-fit') + xlab('ORCAS flight number') +
+    theme_WAC() 
+
+Data %>% dplyr::select(DELP2, RF) %>% 
+    binStats(bins=11) %>%
+    ggplot(aes(x=xc)) + 
+    geom_point(aes(y=ybar), color='forestgreen', na.rm=TRUE) + 
+    geom_errorbar(aes(ymin=ybar-sigma, ymax=ybar+sigma)) +
+    ylab('CAVP_DPR-fit') + xlab('ORCAS flight number') +
+    theme_WAC() 
+
+```
+
+\section*{Recommendations}
+
+For the C-130, the cavity pressures are represented very well (within
+about 1 hPa) by these equations:\\
+\[
+\mathrm{CAVP\_DPT=}\mathrm{PSXC}+a_{0}+a_{1}\mathrm{QCXC+a_{2}\mathrm{MACHX+a_{3}\mathrm{AKRD}}}
+\]
+\[
+\mathrm{CAVP\_DPB=}\mathrm{PSXC}+b_{0}+b_{1}\mathrm{QCXC+b_{2}\mathrm{MACHX+b_{3}\mathrm{AKRD}}}
+\]
+where \{$a_{0-3}$\}=\{`r round(cf1[1], 4)`, `r format(cf1[2], digits=4, nsmall=4)`,
+`r cf1[3]`, `r cf1[4]`\} and \{$b_{0-3}$\}=\{`r cf2[1]`,
+`r cf2[2]`, `r cf2[3]`, `r cf2[4]`\}.
+
+For the GV, the cavity pressures are represented by\\
+\[
+\mathrm{CAVP\_DPL=}\mathrm{PSXC}*(1+c_{0}+c_{1}\mathrm{QCXC+c_{2}\mathrm{MACHX+c_{3}\mathrm{AKRD)}}}
+\]
+\[
+\mathrm{CAVP\_DPR=}\mathrm{PSXC}*(1+d_{0}+d_{1}\mathrm{QCXC+d_{2}\mathrm{MACHX+d_{3}\mathrm{AKRD)}}}
+\]
+where \{$c_{0-3}$\}=\{`r cf1g[1]`, `r cf1g[2]`, `r cf1g[3]`,
+`r cf1g[4]`\} and \{$d_{0-3}$\}=\{`r format(cf2g[1], digits=4, nsmall=4)`,
+`r cf2g[2]`, `r format(cf2g[3], digits=4, nsmall=4)`, `r cf2g[4]`\}.
+In these cases, the standard errors in the resulting representations
+of the cavity pressure are respectively about `r round(sd(Data$CAVP_DPL-Data$CAVP1, na.rm=TRUE),1)`
+and `r round(sd(Data$CAVP_DPR-Data$CAVP2, na.rm=TRUE),1)`~hPa,
+while the average differences between the cavity pressures and the
+ambient pressure are respectively about `r round(mean(Data$CAVP_DPL-Data$PSXC, na.rm=TRUE),0)`
+and `r round(mean(Data$CAVP_DPR-Data$PSXC, na.rm=TRUE),0)`~hPa.
+This indicates that, even though the empirical representation has
+greater standard deviation than would be desirable, it is still important
+to use these if the direct measurement is missing because the influence
+on the measured dewpoint would be significant.
+
+
+
+
