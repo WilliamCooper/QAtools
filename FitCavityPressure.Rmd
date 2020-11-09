@@ -18,19 +18,7 @@ opts_chunk$set(echo=FALSE, include=FALSE, fig.lp="fig:", background='#F5F2F8')
 opts_chunk$set(fig.width=6, fig.height=5, fig.align="center", digits=4)
 options(digits=4)
 thisFileName <- "DPpressure"
-require(Ranadu, quietly = TRUE, warn.conflicts=FALSE)
-require(ggplot2)
-require(grid)
-require(ggthemes)
-library(magrittr)
-library(dplyr)
-library(tibble)
-Directory <- DataDirectory ()
-Flight <- "rf06" 				# XXX change this
-Project = "WECAN"			 # XXX change this
-ProjectDir <- "WECAN"
-fname = sprintf("%s%s/%s%s.nc", Directory,ProjectDir,Project,Flight)
-Data <- getNetCDF (fname, standardVariables(c('UXC', 'VYC', 'TASX', 'TASR', 'QCF', 'QCR')), 235900, 1716)		#XXX set variables needed here
+library(Ranadu, quietly = TRUE, warn.conflicts=FALSE)
 SaveRData <- sprintf("%s.Rdata", thisFileName)
 
 ```
@@ -61,19 +49,9 @@ so the corrections for these pressure measurements are small.
 
 VarList <- c("CAVP_DPT", "CAVP_DPB", "PSXC", "ATX", "DPXC", "QCXC", 
   "EWX", "ACINS","GGLAT", "TASX", "ROLL", "AKRD", "SSRD", "MACHX") 
-Data <- data.frame() 
-Project <- 'WECAN' 
-Fl <- sort (list.files ( ## get list of available flights 
-  sprintf ("%s%s/", DataDirectory(), Project), 
-  sprintf ("%srf...nc$", Project))) 
-for (flt in Fl) { 
-    # flight rf14 looks anomalous
-    if (grepl ('rf14', flt)) {next}
-    fname = sprintf("%s%s/%s", DataDirectory(), Project, flt) 
-    fno <- as.numeric(sub('.*f([0-9]*).nc', '\\1', flt)) 
-    D <- getNetCDF (fname, VarList, F=fno) 
-    Data <- rbind(Data, D) 
-} 
+Data <- getProjectData('WECAN', standardVariables(VarList))
+Data <- Data[Data$RF != 14, ]
+
 Data$DP1 <- Data$CAVP_DPT - Data$PSXC
 Data$DP2 <- Data$CAVP_DPB - Data$PSXC
 Data <- dplyr::filter(Data, TASX > 80, abs(ROLL) < 2)
@@ -121,19 +99,10 @@ pressures are quite important.
 
 VarList <- c("CAVP_DPR", "CAVP_DPL", "PSXC", "ATX", "DPXC", "QCXC", 
   "EWX", "ACINS","GGALT", "TASX", "ROLL", "AKRD", "SSRD", "MACHX") 
-Data <- data.frame() 
-Project <- 'ORCAS' 
-Fl <- sort (list.files ( ## get list of available flights 
-  sprintf ("%s%s/", DataDirectory(), Project), 
-  sprintf ("%srf...nc$", Project))) 
-for (flt in Fl) { 
-    ## omit flights before rf09 (ORCAS)
-    if (as.integer(sub('.*rf','', sub('.nc','', flt))) < 9) {next}
-    fname = sprintf("%s%s/%s", DataDirectory(), Project, flt) 
-    fno <- as.numeric(sub('.*f([0-9]*).nc', '\\1', flt)) 
-    D <- getNetCDF (fname, VarList, F=fno) 
-    Data <- rbind(Data, D) 
-} 
+Data <- getProjectData('ORCAS', standardVariables(VarList))
+Data <- Data[Data$RF > 9, ]
+
+
 Data$DP1 <- (Data$CAVP_DPL - Data$PSXC) / Data$PSXC
 Data$DP2 <- (Data$CAVP_DPR - Data$PSXC) / Data$PSXC
 Data <- dplyr::filter(Data, TASX > 110, abs(ROLL) < 2)
