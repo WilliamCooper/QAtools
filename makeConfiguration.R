@@ -2,8 +2,8 @@
 
 # Start with a sample netCDF file.
 # Specify the new project here; 'WECAN' should be changed to the new project.
-NewProject <- 'ACCLIP-TEST'
-Flight <- 'cf01'  # Specify the model netCDF file
+NewProject <- 'WCR-TEST'
+Flight <- 'nov2'  # Specify the model netCDF file
 fname <- sprintf ('%s%s/%s%s.nc', Ranadu::DataDirectory(),
                   NewProject, NewProject, Flight)
 FI <- Ranadu::DataFileInfo (fname)
@@ -158,7 +158,7 @@ VRX[[6]] <- VRX[[6]][-which(grepl('PSXC', VRX[[6]]))]
 if (any(grepl('DUMPP', VRX[[6]]))) {
   VRX[[6]] <- VRX[[6]][-which(grepl('DUMPP', VRX[[6]]))]
 }
-# These have incorrect Measurands to subtract them:
+# These have incorrect Measurands so remove them:
 if ('QCTF' %in% VRX[[6]]) {
   VRX[[6]] <- VRX[[6]][-which('QCTF' == VRX[[6]])]
 }
