@@ -104,7 +104,7 @@ if (Project == 'MethaneAIR') {
   VRPlot$PV6 <- c('PSFC', 'PS_A', 'PSF', 'PSFF', 'PSTF', 'PSX', 'PS_A2', 'PS_AE')
   VRPlot$PV7 <- c('QCFC', 'TASF', 'MACHF', 'QCF', 'QCR', 'QCRC', 'QC_A', 'TASR', 'TASDRY', 'TAS_A', 'MACHR', 'MACH_A', 'MACH_A2', 'QCTF', 'QCTFC')
   VRPlot$PV8 <- c('PSF', 'QCF', 'PS_A', 'QC_A', 'PSTF', 'QCTF')
-  VRPlot$PV9 <- c('WDC', 'IWD', 'WSC', 'IWS', 'WIC', 'ADIFR', 'WD', 'WS', 'IWD_IE', 'IWD_IRS2', 'IWD_IRS3', 'IWS_IE', 'IWS_IRS2', 'IWS_IRS3', 'WIY')
+  VRPlot$PV9 <- c('WDC', 'IWD', 'WSC', 'IWS', 'WIC', 'ADIFR', 'WD', 'WS', 'IWD_IE', 'IWD_IRS2', 'IWD_IRS3', 'IWS_IE', 'IWS_IRS2', 'IWS_IRS3')
   VRPlot$PV10 <- c('GGVEW', 'VEW', 'GGVNS', 'VNS', 'GGQUAL', 'VEWC', 'VNSC')
   VRPlot$PV11 <- c('AKRD', 'PITCH', 'VSPD_A', 'TASX', 'SSRD', 'WDC', 'WSC', 'GGVEW', 'GGVNS', 'GGVSPD', 'ADIFR', 'BDIFR', 'THDG')
   VRPlot$PV12 <- c('PITCH', 'PITCH_IRS3', 'ROLL', 'ROLL_IRS3', 'THDG', 'THDG_IRS3', 'PITCH_IRS2', 'ROLL_IRS2', 'THDG_IRS2', 'THDG_IE', 'PITCH_IE', 'ROLL_IE')
