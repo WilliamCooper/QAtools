@@ -2045,7 +2045,9 @@ server <- function(input, output, session) {
                     ## (Probably not necessary)
       nvpl <- psq[1, input$plot]
       if (input$HR) {  ## get HR data if checkbox is active
-        hrfile <- setFileName(input$Project, sprintf('rf%02dh', input$Flight))
+        hrfile <- setFileName(input$Project, sprintf('%s%02dh', 
+                                                     input$typeFlight,
+                                                     input$Flight))
         if (Trace) {print(hrfile)}
         FI <- DataFileInfo(hrfile, LLrange = FALSE)
         if (Trace) {print('after DataFileInfo call')}
