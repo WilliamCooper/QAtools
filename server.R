@@ -2169,8 +2169,14 @@ server <- function(input, output, session) {
         print (sprintf ('nvpl=%d, plot is %d', nvpl, input$plot))
         print (psq)
       }
+      if(Trace) {
+        print (sprintf('nvpl is %d for outputDisplay', nvpl))
+        print('VRPlot[[nvpl]]')
+        print (VRPlot[[nvpl]])
+      }
       # if (length(VRPlot[[nvpl]]) < 2 && (is.na(VRPlot[[nvpl]][1]) || VRPlot[[nvpl]][1] == 'TASX')) {
       if (is.na(VRPlot[[nvpl]][1]) || (length(VRPlot[[nvpl]]) < 2)) {
+        if(Trace) {print('There are no variables for this panel in outputDisplay.')}
         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
         text (0.5, 0.8, 'There are no variables for this panel.')
       } else {
@@ -2261,8 +2267,14 @@ server <- function(input, output, session) {
         # reac$newdata <- TRUE
         return()
       }
-      nvpl <- psq[1, input$plot]
+      nvpl <- psq[1, input$plot] 
+      if(Trace) {
+        print (sprintf('nvpl is %d for outputDisplay2', nvpl))
+        print('VRPlot[[nvpl]]')
+        print (VRPlot[[nvpl]])
+      }
       if (is.na(VRPlot[[nvpl]][1]) || (length(VRPlot[[nvpl]]) < 2)) {
+        if(Trace) {print('There are no variables for this panel in outputDisplay2.')}
         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
         text (0.5, 0.8, 'There are no variables for this panel.')
       } else {
@@ -2367,7 +2379,13 @@ server <- function(input, output, session) {
         return()
       }
       nvpl <- psq[1, input$plot]
+      if(Trace) {
+        print (sprintf('nvpl is %d', nvpl))
+        print('VRPlot[[nvpl]]')
+        print (VRPlot[[nvpl]])
+      }
       if (is.na(VRPlot[[nvpl]][1]) || (length(VRPlot[[nvpl]]) < 2)) {
+        if(Trace) {print('There are no variables for this panel in outputDisplay3.')}
         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
         text (0.5, 0.8, 'There are no variables for this panel.')
       } else {
@@ -2471,7 +2489,13 @@ server <- function(input, output, session) {
         return()
       }
       nvpl <- psq[1, input$plot]
+      if(Trace) {
+        print (sprintf('nvpl is %d', nvpl))
+        print('VRPlot[[nvpl]]')
+        print (VRPlot[[nvpl]])
+      }
       if (is.na(VRPlot[[nvpl]][1]) || (length(VRPlot[[nvpl]]) < 2)) {
+        if(Trace) {print('There are no variables for this panel in outputDisplay4.')}
         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
         text (0.5, 0.8, 'There are no variables for this panel.')
       } else {
