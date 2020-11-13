@@ -2568,8 +2568,8 @@ server <- function(input, output, session) {
       Dstats[nm, 3]   <- sd   (Ds[, nm], na.rm=TRUE)
       Dstats[nm, 4]  <- min  (Ds[, nm], na.rm=TRUE)
       Dstats[nm, 5]  <- max  (Ds[, nm], na.rm=TRUE)
-      Dstats[nm, 6]  <- mean(zoo::rollapply(Ds[, nm], 25, sd, by = 25, 
-                                            fill = rep('extend', 3)), na.rm=TRUE)
+      Dstats[nm, 6]  <- ifelse(any(!is.na(Ds[, nm])), mean(zoo::rollapply(Ds[, nm], 25, sd, by = 25, 
+                                            fill = rep('extend', 3)), na.rm=TRUE), NA)
     }
     names(Dstats) <- c('variable', 'mean', 'sd', 'min', 'max', 'rollingSD')
     row.names (Dstats) <- names(Ds)
@@ -2589,10 +2589,16 @@ server <- function(input, output, session) {
     if (input$HR) {
       Ds <- limitData (HRD(), input)
     }
-    print (names(Ds))
+    if(Trace) {print (names(Ds))}
     # Ds <- Ds[, c('Time', slp[[input$plot]])]
     Ds <- Ds[, c('Time', 'TASX', VRPlot[[psq[1, input$plot]]])]
     Ds <- Ds[(Ds$Time > times[1]) & (Ds$Time < times[2]), ]
+    ## Protection against all-NA
+    for (i in ncol(Ds):3) {
+      if (all(is.na(Ds[ ,i]))) {
+        Ds <- Ds[, -i]
+      }
+    }
     VSpec(Ds, ylim=c(1.e-5,1.)) + theme_WAC()
   }, width=920, height=680)
   

@@ -61,7 +61,7 @@ options (stringsAsFactors=FALSE)
 ## indicating which functions are entered, to trace the sequence
 ## of interactions when window entries are changed.
 Trace <- FALSE
-Trace <- TRUE
+# Trace <- TRUE
 
 library(tictoc)
 if (Trace) {tic('global')}
