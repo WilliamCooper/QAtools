@@ -2045,7 +2045,9 @@ server <- function(input, output, session) {
                     ## (Probably not necessary)
       nvpl <- psq[1, input$plot]
       if (input$HR) {  ## get HR data if checkbox is active
-        hrfile <- setFileName(input$Project, sprintf('rf%02dh', input$Flight))
+        hrfile <- setFileName(input$Project, sprintf('%s%02dh', 
+                                                     input$typeFlight,
+                                                     input$Flight))
         if (Trace) {print(hrfile)}
         FI <- DataFileInfo(hrfile, LLrange = FALSE)
         if (Trace) {print('after DataFileInfo call')}
@@ -2167,8 +2169,14 @@ server <- function(input, output, session) {
         print (sprintf ('nvpl=%d, plot is %d', nvpl, input$plot))
         print (psq)
       }
+      if(Trace) {
+        print (sprintf('nvpl is %d for outputDisplay', nvpl))
+        print('VRPlot[[nvpl]]')
+        print (VRPlot[[nvpl]])
+      }
       # if (length(VRPlot[[nvpl]]) < 2 && (is.na(VRPlot[[nvpl]][1]) || VRPlot[[nvpl]][1] == 'TASX')) {
       if (is.na(VRPlot[[nvpl]][1]) || (length(VRPlot[[nvpl]]) < 2)) {
+        if(Trace) {print('There are no variables for this panel in outputDisplay.')}
         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
         text (0.5, 0.8, 'There are no variables for this panel.')
       } else {
@@ -2259,8 +2267,14 @@ server <- function(input, output, session) {
         # reac$newdata <- TRUE
         return()
       }
-      nvpl <- psq[1, input$plot]
+      nvpl <- psq[1, input$plot] 
+      if(Trace) {
+        print (sprintf('nvpl is %d for outputDisplay2', nvpl))
+        print('VRPlot[[nvpl]]')
+        print (VRPlot[[nvpl]])
+      }
       if (is.na(VRPlot[[nvpl]][1]) || (length(VRPlot[[nvpl]]) < 2)) {
+        if(Trace) {print('There are no variables for this panel in outputDisplay2.')}
         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
         text (0.5, 0.8, 'There are no variables for this panel.')
       } else {
@@ -2365,7 +2379,13 @@ server <- function(input, output, session) {
         return()
       }
       nvpl <- psq[1, input$plot]
+      if(Trace) {
+        print (sprintf('nvpl is %d', nvpl))
+        print('VRPlot[[nvpl]]')
+        print (VRPlot[[nvpl]])
+      }
       if (is.na(VRPlot[[nvpl]][1]) || (length(VRPlot[[nvpl]]) < 2)) {
+        if(Trace) {print('There are no variables for this panel in outputDisplay3.')}
         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
         text (0.5, 0.8, 'There are no variables for this panel.')
       } else {
@@ -2469,7 +2489,13 @@ server <- function(input, output, session) {
         return()
       }
       nvpl <- psq[1, input$plot]
+      if(Trace) {
+        print (sprintf('nvpl is %d', nvpl))
+        print('VRPlot[[nvpl]]')
+        print (VRPlot[[nvpl]])
+      }
       if (is.na(VRPlot[[nvpl]][1]) || (length(VRPlot[[nvpl]]) < 2)) {
+        if(Trace) {print('There are no variables for this panel in outputDisplay4.')}
         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
         text (0.5, 0.8, 'There are no variables for this panel.')
       } else {
@@ -2542,8 +2568,8 @@ server <- function(input, output, session) {
       Dstats[nm, 3]   <- sd   (Ds[, nm], na.rm=TRUE)
       Dstats[nm, 4]  <- min  (Ds[, nm], na.rm=TRUE)
       Dstats[nm, 5]  <- max  (Ds[, nm], na.rm=TRUE)
-      Dstats[nm, 6]  <- mean(zoo::rollapply(Ds[, nm], 25, sd, by = 25, 
-                                            fill = rep('extend', 3)), na.rm=TRUE)
+      Dstats[nm, 6]  <- ifelse(any(!is.na(Ds[, nm])), mean(zoo::rollapply(Ds[, nm], 25, sd, by = 25, 
+                                            fill = rep('extend', 3)), na.rm=TRUE), NA)
     }
     names(Dstats) <- c('variable', 'mean', 'sd', 'min', 'max', 'rollingSD')
     row.names (Dstats) <- names(Ds)
@@ -2563,10 +2589,16 @@ server <- function(input, output, session) {
     if (input$HR) {
       Ds <- limitData (HRD(), input)
     }
-    print (names(Ds))
+    if(Trace) {print (names(Ds))}
     # Ds <- Ds[, c('Time', slp[[input$plot]])]
     Ds <- Ds[, c('Time', 'TASX', VRPlot[[psq[1, input$plot]]])]
     Ds <- Ds[(Ds$Time > times[1]) & (Ds$Time < times[2]), ]
+    ## Protection against all-NA
+    for (i in ncol(Ds):3) {
+      if (all(is.na(Ds[ ,i]))) {
+        Ds <- Ds[, -i]
+      }
+    }
     VSpec(Ds, ylim=c(1.e-5,1.)) + theme_WAC()
   }, width=920, height=680)
   

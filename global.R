@@ -61,14 +61,14 @@ options (stringsAsFactors=FALSE)
 ## indicating which functions are entered, to trace the sequence
 ## of interactions when window entries are changed.
 Trace <- FALSE
-Trace <- TRUE
+# Trace <- TRUE
 
 library(tictoc)
 if (Trace) {tic('global')}
 require(numDeriv, quietly = TRUE, warn.conflicts=FALSE) ## needed, KalmanFilter
 
 ## temporary, pending update of Ranadu package:
-source ("./correctT.R")
+# source ("./correctT.R")
 # source ("../Ranadu/R/getNetCDF.R")
 # source ('getNetCDF.R')
 minT <- as.POSIXct(0, origin='2012-05-29', tz='UTC')
