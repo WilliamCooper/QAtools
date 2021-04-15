@@ -2091,6 +2091,8 @@ server <- function(input, output, session) {
       if (length(VRPlot[[nvpl]]) < 2 && length(VRPlot[[nvpl]][1]) < 2) {
         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
         text (0.5, 0.8, 'There are no variables for this panel.')
+      } else if (!file.exists(sprintf('PlotFunctions/RPlot%d.R', nvpl))) {plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+        text (0.5, 0.8, 'This plot function does not exist.')
       } else {
         # Only generate the first panel here:
         # source the plot routine if needed:

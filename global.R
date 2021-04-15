@@ -78,6 +78,36 @@ PJ <- c('ECLIPSE2019', 'OTREC-TEST', 'WECAN', 'SOCRATES', 'WECAN-TEST', 'ECLIPSE
   'DEEPWAVE', 'CONTRAST', 'SPRITE-II', 'MPEX', 'DC3', 'HEFT10', 'IDEAS-4', 'FRAPPE',
   'TORERO', 'HIPPO-5', 'HIPPO-4', 'HIPPO-3', 'HIPPO-2', 'DC3-TEST',
   'HIPPO-1','PREDICT', 'START08', 'PACDEX', 'TREX', 'WINTER', 'NOMADSS')
+### Replace this by constructing a list of available projects
+## by searching the DataDirectory(). That way a new project will
+## be incorporated automatically.
+PJ <- list.dirs(path = DataDirectory(), full.names = FALSE, recursive = FALSE)
+PJ <- PJ[-which('lost+found' == PJ)]
+## Leave in alphabetical order, except for the first which is the latest modified.
+FullPJ <- paste0(DataDirectory(), PJ)
+iw <- which.max(file.mtime(FullPJ))
+PJ <- c(PJ[iw], PJ[-iw])
+## Keep only directories with a rf01 or tf01
+for (P in PJ) {
+  if (grepl('HIPPO', P)) {
+    fn <- sprintf ('%sHIPPO/%srf01.nc', DataDirectory (), P)
+  } else {
+    fn <- sprintf ('%s%s/%srf01.nc', DataDirectory (), P, P)
+    if (!file.exists (fn)) {
+      fn <- sub ('\\.nc', '.Rdata', fn)
+    }
+    if (!file.exists (fn)) {
+      fn <- sprintf ('%s%s/%stf01.nc', DataDirectory (), P, P)
+    }
+    if (!file.exists (fn)) {
+      fn <- sub ('\\.nc', '.Rdata', fn)
+    }
+  }
+  if (!file.exists (fn)) {PJ[PJ==P] <- NA}
+}
+PJ <- PJ[!is.na(PJ)]
+
+
 Cradeg <- pi/180
 Project <- PJ[1]
 ProjectPP <- PJ[1]
