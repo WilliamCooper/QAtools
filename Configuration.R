@@ -604,7 +604,7 @@ if (Project == "CONTRAST") {
   thdg_offset = -0.54
   VRPlot <- list(PV1 = c("LATC", "LONC", "WDC", "WSC"))
   VRPlot$PV2 <- c("LATC", "LONC", "WDC", "WSC", "GGALT", "PALT", "PSXC")
-  VRPlot$PV3 <- c("ATFH1", "ATFH2", "ATHR1", "ATHR2", "AT_A")
+  VRPlot$PV3 <- c("ATH3", "ATH4", "ATH1", "ATH2", "AT_A")
   VRPlot$PV4 <- VRPlot$PV3
   VRPlot$PV5 <- c("DP_VXL", "DP_DPL", "DP_DPR", "ATX", "CAVP_DPL", "CAVP_DPR", "PSXC", "LSRINT_VXL",
                   "EW_DPL", "EW_DPR", "EW_VXL", "MR", "QCXC", "AKRD", "MACHX")
@@ -616,7 +616,7 @@ if (Project == "CONTRAST") {
   VRPlot$PV11 <- c("AKRD", "PITCH", "GGVSPD", "TASX", "SSRD", "WDC", "WSC", "GGVEW", "GGVNS")
   VRPlot$PV12 <- c("PITCH", "PITCH_IRS2", "ROLL", "ROLL_IRS2", "THDG", "THDG_IRS2")
   VRPlot$PV13 <- c("ACINS", "ACINS_IRS2", "VSPD", "GVSPD_A", "GALT_A", "GGALT")
-  VRPlot$PV14 <- c('VISBC', 'VISTC', 'VISTHT')
+  VRPlot$PV14 <- c('VISB', 'VIST', 'VISTHT')
   VRPlot$PV15 <- c("CONC1DC_", "CONCD_", "CONCU100_", "CONCU500_", "CONCU_", "USHFLW_", "USMPFLW_", "UREF_", "USCAT_")
   VRPlot$PV16 <- c("DBAR1DC_", "DBARD_", "DBARU_", "PLWC", "PLWC1DC_", "PLWCC", "PLWCD_", "RICE", "TCNTD_", "REJDOF_", "AVGTRNS_", "CDPLSRP_")
   VRPlot$PV17 <- c("PSXC", "ATX", "DPXC")
