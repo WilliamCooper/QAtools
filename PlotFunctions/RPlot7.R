@@ -68,7 +68,7 @@ RPlot7 <- function (data, Seq=NA, panl=1) {
     DF[, QCD] <- DF[, QCD] - data[, QC[1]]
     plotWAC(DF, ylab=expression(paste (Delta,' [hPa]')), 
       lwd = c(2.5, 2, 1.5, 1),
-      ylim = YLMF (2, c(-5, 5)))
+      ylim = YLMF (2, c(-20, 20)))
     hline (-1); hline (1)
     title (sprintf ('differences vs %s', QC[1]), cex.main = cexmain)
   }

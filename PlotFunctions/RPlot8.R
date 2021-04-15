@@ -13,7 +13,11 @@ RPlot8 <- function (data, Seq=NA, panl=1, ...) {
     if ('PSF' %in% VRPlot[[8]]) { ## only for GV
       pair <- c(which ('PSF' == VRPlot[[8]]), which ('QCF' == VRPlot[[8]]))
       DFP$PST2 <- data[, VRPlot[[8]][pair[1]]] + data[, VRPlot[[8]][pair[2]]]
-    } else {
+      if ('PSTF' %in% VRPlot[[8]]) {
+        pair <- c(which ('PSTF' == VRPlot[[8]]), which ('QCTF' == VRPlot[[8]]))
+        DFP$PST3 <- data[, VRPlot[[8]][pair[1]]] + data[, VRPlot[[8]][pair[2]]]
+      }
+    } else {  # C-130 only
       if ('PSFD' %in% VRPlot[[8]]) {  ## only for C-130
         pair <- c(which ('PSFD' == VRPlot[[8]]), which ('QCF' == VRPlot[[8]]))
         DFP$PST2 <- data[, VRPlot[[8]][pair[1]]] + data[, VRPlot[[8]][pair[2]]]

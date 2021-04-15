@@ -116,9 +116,9 @@ loadVRPlot <- function (Project, Production = FALSE, Flight, psq) {
   chp[[2]] <- c(ALT,'PSXC')
   chp[[3]] <- AT
   chp[[4]] <- chp[[3]]
-  chp[[5]] <- c(DP,'ATX',CAVP,EWW)
+  chp[[5]] <- c(DP,'ATX', CAVP, EWW)
   chp[[6]] <- chp[[5]]
-  chp[[7]] <- chp[[5]]
+  chp[[7]] <- c(chp[[5]], MACH, QC, 'AKRD')
   chp[[8]] <- chp[[5]]
   chp[[9]] <- PS
   chp[[10]] <- c(QC,TAS,MACH)
@@ -141,8 +141,10 @@ loadVRPlot <- function (Project, Production = FALSE, Flight, psq) {
   chp[[26]] <- c('PSXC','ATX', 'DPXC',PS,AT,DP)
   chp[[27]] <- THETA
   chp[[28]] <- THETA
-  chp[[29]] <- FI$Variables[grepl ('CCDP_', FI$Variables) 
-    | grepl ('CS100_', FI$Variables)]
+  chp[[29]] <- c(FI$Variables[grepl ('CCDP_', FI$Variables) | 
+                              grepl ('CS100_', FI$Variables) |
+                              grepl ('CONCD_', FI$Variables) |
+                              grepl ('CONC100_', FI$Variables)], 'TASX')
   chp[[30]] <- chp[[29]]
   chp[[31]] <- chp[[29]]
   chp[[32]] <- chp[[29]]

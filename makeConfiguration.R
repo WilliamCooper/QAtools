@@ -2,8 +2,8 @@
 
 # Start with a sample netCDF file.
 # Specify the new project here; 'WECAN' should be changed to the new project.
-NewProject <- 'OTREC-TEST'
-Flight <- 'tf01'  # Specify the model netCDF file
+NewProject <- 'WCR-TEST'
+Flight <- 'nov2'  # Specify the model netCDF file
 fname <- sprintf ('%s%s/%s%s.nc', Ranadu::DataDirectory(),
                   NewProject, NewProject, Flight)
 FI <- Ranadu::DataFileInfo (fname)
@@ -16,7 +16,7 @@ Data <- Ranadu::getNetCDF(fname, 'ALL')
 PJC130 <- c('WECAN',
   'WECAN-TEST',
   'WINTER',
-  'NOMADSS',
+#  'NOMADSS',
   'FRAPPE')
 PJGV  <- c(
   'ECLIPSE2019',
@@ -130,13 +130,13 @@ VRX[[5]] <- c(VRX[[5]], 'MR', 'LSRINT_VXL')
 # These are written into the new configuration-file section.
 # See "FitCavityPressure.pdf".
 if (Platform == 'GV') {
-  cavc <- c(2.7427, 0.2500, -34.7423, 1.153, 
-           -1.4725, -0.003128, 0.5424, 2.079299)
+  cavc <- c(2.7427, 0.2500, -34.7423, 1.153, -1.4725, -0.003128, 0.5424, 2.079299)
+  cavc <- c(0.3073, 1.7557e-4, -0.9981, 0.0023, 0.1858, 0.0018, -0.9702, 0.0139) # new, OTREC
   dim(cavc) <- c(4, 2)
 } else {
   # QCXC, MACHX, AKRD
   cavc <- c(0.3072830, 0.0001756, -0.9981261, 0.0022720, 
-            0.185774, 0.001836, -0.970169, 0.013895)
+            0.185774, 0.001836, -0.970169, 0.013895)  # needs revision for C-130
   dim(cavc) <- c(4, 2)
 }
 # Add H2OMR_GMD if available
@@ -157,7 +157,7 @@ VRX[[6]] <- VRX[[6]][-which(grepl('PSXC', VRX[[6]]))]
 if (any(grepl('DUMPP', VRX[[6]]))) {
   VRX[[6]] <- VRX[[6]][-which(grepl('DUMPP', VRX[[6]]))]
 }
-# These have incorrect Measurands to subtract them:
+# These have incorrect Measurands so remove them:
 if ('QCTF' %in% VRX[[6]]) {
   VRX[[6]] <- VRX[[6]][-which('QCTF' == VRX[[6]])]
 }

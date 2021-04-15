@@ -38,9 +38,9 @@ RPlot15 <- function(data, Seq=NA, panl=1) {
       
       if (length(va) > 0) {
         plotWAC (data[, c("Time", va)], 
-          logxy='y', 
-          ylim = YLMF (1, c(1, 1.e5)), 
-          ylab=expression (paste ("CONCy [cm"^"-3"*"]")))
+                 logxy='y', 
+                 ylim = YLMF (1, c(1, 1.e5)), 
+                 ylab=expression (paste ("CONCy [cm"^"-3"*"]")))
         title ("1-min filter", cex.main = cexmain)
       } else {
         plot (0,0, xlim=c(data$Time[1], data$Time[nrow(data)]), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
@@ -56,7 +56,7 @@ RPlot15 <- function(data, Seq=NA, panl=1) {
   panel12 <- function(data) {
     C <- VRPlot[[15]]
     C <- C[which("CONC" == substr(C, 1, 4) & "CONCU" != substr(C,1,5) & 
-        "CONCN" != substr(C,1,5) & "CONCP" != substr(C,1,5))]
+                   "CONCN" != substr(C,1,5) & "CONCP" != substr(C,1,5))]
     va2 <- vector()
     for (c in C) {
       nm <- names(data)[grepl(c, names(data))]
@@ -70,9 +70,9 @@ RPlot15 <- function(data, Seq=NA, panl=1) {
     }
     if (length(va2) > 0) {
       plotWAC (data[, c("Time", va2)],
-        logxy='y', 
-        ylim = YLMF (2, c(1.e-4, 1e4)),  
-        ylab=expression(paste("CONCy [cm"^"-3"*"]")))
+               logxy='y', 
+               ylim = YLMF (2, c(1.e-4, 1e4)),  
+               ylab=expression(paste("CONCy [cm"^"-3"*"]")))
       title ("1-min filter", cex.main = cexmain)
     } 
   }
@@ -89,25 +89,31 @@ RPlot15 <- function(data, Seq=NA, panl=1) {
     USMPFLW <- data[, nm7]
     USHF <- USHFLW/10
     plotWAC (data.frame(Time=data$Time, USMPFLW, USHF),
-      ylab="flows", legend.position='topright',
-      ylim = YLMF (1, c(0, 2.5)))
+             ylab="flows", legend.position='topright',
+             ylim = YLMF (1, c(0, 2.5)))
     hline (0.82, 'blue'); hline (1, 'darkgreen'); hline(0.5, 'red'); hline (1.5, 'red')
     legend ("topleft", legend=c("dashed red: limits for FCNC, XICNC, PFLWC", 
-      "dashed blue-green: expected values for corresponding flows"), text.col=c('red', 'blue'), cex=0.55)
+                                "dashed blue-green: expected values for corresponding flows"), text.col=c('red', 'blue'), cex=0.55)
     title ("USHF is USHFLW_RWOOU/10", cex.main = cexmain)
   }
   
   panel22 <- function (data) {
-    nm8 <- names(data)[grepl("UREF_", names(data))]
-    UREF <- data[, nm8]
-    nm9 <- names(data)[grepl("USCAT_", names(data))]
-    USCAT <- data[, nm9]
-    plotWAC (data.frame (Time=data$Time, UREF, USCAT), 
-      ylab="laser V", legend.position='topright', 
-      ylim = YLMF (2, c(0, 10)))
-    hline (2.10, 'blue'); hline (1.90, 'darkgreen'); hline(6, 'red'); hline (9.95, 'red')
-    title ("dashed-blue: lower limit for UREF; dashed-green: upper limit for USCAT", 
-      cex.main = cexmain)
+    nm <- names(data)
+    if (!any(grepl('UREF_', nm)) && !any(grepl('USCAT_', nm))) {
+      plot(c(-1,1), c(-1,1), type='n')
+      text (0,0,labels='no data for this flight')
+    } else {
+      nm8 <- nm[grepl("UREF_", nm)]
+      UREF <- data[, nm8]
+      nm9 <- nm[grepl("USCAT_", nm)]
+      USCAT <- data[, nm9]
+      plotWAC (data.frame (Time=data$Time, UREF, USCAT), 
+               ylab="laser V", legend.position='topright', 
+               ylim = YLMF (2, c(0, 10)))
+      hline (2.10, 'blue'); hline (1.90, 'darkgreen'); hline(6, 'red'); hline (9.95, 'red')
+      title ("dashed-blue: lower limit for UREF; dashed-green: upper limit for USCAT", 
+             cex.main = cexmain)
+    }
   }
   
   
@@ -115,24 +121,24 @@ RPlot15 <- function(data, Seq=NA, panl=1) {
   if (shinyDisplay) {
     nseq <- 2*(Seq-1) + panl
     switch(nseq,
-      {
-        setMargins (2)
-        panel11 (data)
-      },
-      {
-        setMargins (3)
-        panel12 (data)
-        AddFooter ()
-      },
-      {
-        setMargins (2)
-        panel21 (data)
-      },
-      {
-        setMargins (3)
-        panel22 (data)
-        AddFooter ()
-      }
+           {
+             setMargins (2)
+             panel11 (data)
+           },
+           {
+             setMargins (3)
+             panel12 (data)
+             AddFooter ()
+           },
+           {
+             setMargins (2)
+             panel21 (data)
+           },
+           {
+             setMargins (3)
+             panel22 (data)
+             AddFooter ()
+           }
     )
     ############################################################
   } else {

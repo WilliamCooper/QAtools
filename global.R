@@ -68,13 +68,14 @@ if (Trace) {tic('global')}
 require(numDeriv, quietly = TRUE, warn.conflicts=FALSE) ## needed, KalmanFilter
 
 ## temporary, pending update of Ranadu package:
+# source ("./correctT.R")
 # source ("../Ranadu/R/getNetCDF.R")
 # source ('getNetCDF.R')
 minT <- as.POSIXct(0, origin='2012-05-29', tz='UTC')
 maxT <- as.POSIXct(3600*8, origin='2012-05-29', tz='UTC')
 step <- 60
 
-PJ <- c('ECLIPSE2019', 'OTREC-TEST', 'WECAN', 'SOCRATES', 'WECAN-TEST', 'ECLIPSE', 'ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
+PJ <- c('WCR-TEST', 'MethaneAIR', 'ACCLIP-TEST', 'OTREC', 'ECLIPSE2019', 'OTREC-TEST', 'WECAN', 'SOCRATES', 'WECAN-TEST', 'ECLIPSE', 'ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
   'DEEPWAVE', 'CONTRAST', 'SPRITE-II', 'MPEX', 'DC3', 'HEFT10', 'IDEAS-4', 'FRAPPE',
   'TORERO', 'HIPPO-5', 'HIPPO-4', 'HIPPO-3', 'HIPPO-2', 'DC3-TEST',
   'HIPPO-1','PREDICT', 'START08', 'PACDEX', 'TREX', 'WINTER', 'NOMADSS')
@@ -107,7 +108,6 @@ for (P in PJ) {
 }
 PJ <- PJ[!is.na(PJ)]
 
-
 Cradeg <- pi/180
 Project <- PJ[1]
 ProjectPP <- PJ[1]
@@ -120,6 +120,9 @@ ProjectHOT <- PJ[1]
 FlightHOT <- 1
 ProjectWIF <- PJ[1]
 FlightWIF <- 1
+newnames <- ' '
+## This special version is needed for 'specialData' vars; 
+## don't substitute the version in Ranadu::selectTime
 source('transferAttributes.R')
 
 ## for the 'frozen' section:   #################################
@@ -1454,7 +1457,7 @@ seeManual <- function () {
 
 ## get VRPlot and chp/shp:
 ## load a starting-point version
-Project <- 'ECLIPSE2019'
+Project <- 'MethaneAIR'
 source('loadVRPlot.R')
 
 load ('CalibrationExercise/CalData.Rdata')
@@ -1534,6 +1537,8 @@ makeVRPlot <- function (slp, psq) {
 
 ## DPcheck additions:
 VRPlot <- loadVRPlot(Project, FALSE, 1, psq)
+
+DataHR <- data.frame()
 
 VarListTDP <- standardVariables (c('CAVP_DPL', 'BALNC_DPL', 'MIRRTMP_DPL', 'DP_DPL', 'DP_VXL', 'EW_DPL', 'EW_VXL', 'ATX'))
 setNA <- function (.x, .v) {
@@ -1628,8 +1633,9 @@ constructDQF <- function (project, flight) {
   Data <- getNetCDF (sprintf ('%s%s/%srf%02d.nc', DataDirectory(), projectDir, project, flight), VarListTDP)
   Data$MIRRTMP_DPL <- setNA (Data$MIRRTMP_DPL, 0)
   Data$DERIV2 <- -signal::filter(signal::sgolay(3,17,2),Data$MIRRTMP_DPL)
-  Data$DPERR <- Data$DERIV2 / (asimTDP * f2simTDP)
-  Data$CBAL <- zoo::rollmean (setNA (Data$BALNC_DPL, 0), 60, fill=0, align='right') / 500
+  Data$DPERR <- zoo::rollmean (setNA (abs(Data$DERIV2) / 
+                     (asimTDP * f2simTDP), 0), 60, fill=0, align='center')
+  Data$CBAL <- zoo::rollmean (setNA (Data$BALNC_DPL, 0), 60, fill=0, align='center') / 500
   Data$DPLQUAL <- ifelse (abs(Data$CBAL) > 3, -10, 0)
   Data$DPLQUAL[abs(Data$CBAL) > 10] <- -20
   ## find candidates for overshooting, but skip if data.frame already exists:
@@ -1696,3 +1702,4 @@ getDataTDP <- function (project, flight, typeFlight) {
   DataTDP <<- DataTDP
 }
 if (Trace) {toc()}
+
