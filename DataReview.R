@@ -169,7 +169,7 @@ for (Flight in Flt) {
       if ('' %in% VarList) { # '' in VRPlot needs to be removed
         VarList <- VarList[-which(VarList == '')]
       }
-      
+
       Data <- getNetCDF(fname, VarList)
       ## set the start and end indices to the first and last time TASX > 65
       itx <- which(Data$TASX > 65)
@@ -185,6 +185,11 @@ for (Flight in Flt) {
         it2 <- getIndex (Data, EndX)
         if (it2 < 0 || it2 > nrow(Data)) {it2 <- nrow(Data)}
       }
+      if (is.na (it1)) {
+         print("Could not find time period where TASX > 65")
+         quit()
+      }
+
       DataL <- Data[it1:it2, ]
       Data <- transferAttributes(DataL, Data)  ## retain attributes
       times <- c(Data$Time[1], Data$Time[nrow(Data)])
