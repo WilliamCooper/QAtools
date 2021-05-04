@@ -13,7 +13,8 @@ Data <- Ranadu::getNetCDF(fname, 'ALL')
 # Now read the existing Configuration.R and, for the required platform,
 # find all variables that have been used for each plot:
 
-PJC130 <- c('WECAN',
+PJC130 <- c('MethaneAIR',
+  'WECAN',
   'WECAN-TEST',
   'WINTER',
 #  'NOMADSS',
