@@ -2,24 +2,30 @@
 
 # Start with a sample netCDF file.
 # Specify the new project here; 'WECAN' should be changed to the new project.
-NewProject <- 'WCR-TEST'
-Flight <- 'nov2'  # Specify the model netCDF file
+NewProject <- 'SPICULE'
+Flight <- '23APR21'  # Specify the model netCDF file
 fname <- sprintf ('%s%s/%s%s.nc', Ranadu::DataDirectory(),
                   NewProject, NewProject, Flight)
 FI <- Ranadu::DataFileInfo (fname)
+print(FI)
 # get all variables to be able to reference attributes
-Data <- Ranadu::getNetCDF(fname, 'ALL') 
+Data <- Ranadu::getNetCDF(fname, 'ALL')
 
 # Now read the existing Configuration.R and, for the required platform,
 # find all variables that have been used for each plot:
 
-PJC130 <- c('MethaneAIR',
+PJC130 <- c(
+  'WCR-TEST',
   'WECAN',
   'WECAN-TEST',
   'WINTER',
 #  'NOMADSS',
   'FRAPPE')
 PJGV  <- c(
+  'SPICULE',
+  'MethaneAIR',
+  'ACCLIP-TEST',
+  'OTREC',
   'ECLIPSE2019',
   'OTREC-TEST',
   'SOCRATES',
