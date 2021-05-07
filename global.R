@@ -1457,7 +1457,7 @@ seeManual <- function () {
 
 ## get VRPlot and chp/shp:
 ## load a starting-point version
-Project <- 'MethaneAIR'
+Project <- 'SPICULE'
 source('loadVRPlot.R')
 
 load ('CalibrationExercise/CalData.Rdata')
