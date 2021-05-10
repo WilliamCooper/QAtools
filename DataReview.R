@@ -4,6 +4,7 @@ require(Ranadu, quietly = TRUE, warn.conflicts=FALSE)
 require(ggplot2)
 require(grid)
 require(ggthemes)
+require(stringr)
 source("global.R")
 ProjectX <- NA
 FlightX <- NA
@@ -151,9 +152,14 @@ for (Flight in Flt) {
       CFSSP <- NULL
       CUHSAS <- NULL
       C1DC <- NULL
-      
-      fnumber <- as.numeric (sub('[a-zA-Z]*([0-9]*).nc', '\\1', Flight))
-      ftype <- sub('[A-Za-z]*(.f)[0-9]*.nc', '\\1', Flight)
+      if (!(str_detect("[a-zA-Z]*(.f)[0-9]*.nc", Flight))) {
+          print (sprintf ('nonstandard flight string in %s', Flight))
+          print ('Flight string must match [RT]F[0-9][0-9]')
+          quit()
+      } else {
+          fnumber <- as.numeric (sub('[a-zA-Z]*([0-9]*).nc', '\\1', Flight))
+          ftype <- sub('[A-Za-z]*(.f)[0-9]*.nc', '\\1', Flight)
+      }
       ## next statement needs to be inside "ALL" loop, in case available variables change
       VRPlot <- loadVRPlot (Project, FALSE, fnumber, psq)  ## get VRPlot list for this project
       Cradeg <- pi/180
