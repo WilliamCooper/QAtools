@@ -1,9 +1,9 @@
-# Construct Configure.R for a new project
+e# Construct Configure.R for a new project
 
 # Start with a sample netCDF file.
 # Specify the new project here; 'WECAN' should be changed to the new project.
-NewProject <- 'WCR-TEST'
-Flight <- 'nov2'  # Specify the model netCDF file
+NewProject <- 'SPICULE'
+Flight <- '22APR21'  # Specify the model netCDF file
 fname <- sprintf ('%s%s/%s%s.nc', Ranadu::DataDirectory(),
                   NewProject, NewProject, Flight)
 FI <- Ranadu::DataFileInfo (fname)
