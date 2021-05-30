@@ -10,10 +10,17 @@ RPlot3 <- function (data, Seq=NA, panl=1, ...) {
       print(sprintf('panel11, VRPlot[[3]]:'))
       print(VRPlot[[3]])
     }
-    plotWAC (data[, c("Time", VRPlot[[3]])],
+    # Correct for kelvin units:
+    unitK <- lapply(data[, VRPlot[[3]]], attr, which='units')
+    iwk <- which(grepl('K', unitK))
+    dataK <- data[, c('Time', VRPlot[[3]])]
+    if (length(iwk == 1)) {
+      dataK[, VRPlot[[3]][iwk]] <- dataK[, VRPlot[[3]][iwk]] - 273.15
+    }
+    plotWAC (dataK,
       ylab=ylb, lty=c(1,1,1,2), lwd=c(2,1.5,1,2,1),
       legend.position='bottomleft', 
-      ylim=YLMF (1, range (as.matrix (data[, VRPlot[[3]]]), finite=TRUE)))
+      ylim=YLMF (1, range (as.matrix (dataK[, VRPlot[[3]]]), finite=TRUE)))
     # Report T differences in plot title
     # Configuration.R convention is that the first in VRPlot[[3]] is the reference.
     labl <- VRPlot[[3]]
@@ -21,8 +28,8 @@ RPlot3 <- function (data, Seq=NA, panl=1, ...) {
     titl <- "Mean diff. in AT: "
     for (i in 2:length(labl)) {
       titl <- sprintf("%s%s-%s: %.2f; ", titl, labl[i],labl[1],
-        mean(data[, VRPlot[[3]][i]] -
-            data[, VRPlot[[3]][1]], na.rm=TRUE))
+        mean(dataK[, VRPlot[[3]][i]] -
+            dataK[, VRPlot[[3]][1]], na.rm=TRUE))
     }
     title(titl, cex.main = cexmain)   
   }
