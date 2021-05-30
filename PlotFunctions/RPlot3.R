@@ -14,7 +14,7 @@ RPlot3 <- function (data, Seq=NA, panl=1, ...) {
     unitK <- lapply(data[, VRPlot[[3]]], attr, which='units')
     iwk <- which(grepl('K', unitK))
     dataK <- data[, c('Time', VRPlot[[3]])]
-    if (length(iwk > 0)) {
+    if (length(iwk) > 0) {
       dataK[, VRPlot[[3]][iwk]] <- dataK[, VRPlot[[3]][iwk]] - 273.15
     }
     plotWAC (dataK,
