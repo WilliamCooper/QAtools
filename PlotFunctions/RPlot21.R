@@ -30,13 +30,43 @@ RPlot21 <- function (data, Seq=NA, panl=1) {
   # print (sprintf ("start time in RPlot21 is %d and jstart is %d\n",
   #                 StartTime, jstart))
   CV <- nms[grep ('CONCU_', nms)][1]
-  if (is.na(CV)) {
+  C2 <- nms[grep ('CONCP_', nms)][1]
+  if (is.na(CV) && is.na(C2)) {
 	          plot(c(-1,1), c(-1,1), type='n')
-        text (0,0,labels='no data meeting concentration test for this period')
+        text (0,0,labels='no aerosol data for this project')
 	return()
   }
-  iw <- which(data[, CV] > plotTest)  ## get list of indices where CONCU > PlotTest
-  if (length(nm1) > 0) {
+  if(!is.na(CV)) {iw <- which(data[, CV] > plotTest)}  ## get list of indices where CONCU > PlotTest
+  if(!is.na(C2)) {iw2 <- which(data[, C2] > plotTest)}  ## get list of indices where CONCP > PlotTest
+  if (length(nm1) == 0) {  # Case with no UHSAS but CS200 only
+    nm <- nm2[1]
+    for (j in iw2) {
+      if (is.na(data$Time[j])) {next}
+      if (!is.na(data$TASX[j]) && (data$TASX[j] < 60)) {next}
+      CPCASP <- sum(data[j, nm2[1]], na.rm=TRUE)
+      data[j, nm2[1]] <- data[j, nm2[1]] / diff(CellLimitsP)
+      data[j, nm2[1]][data[j, nm2[1]] <= 0] <- 1e-4
+      if ((any(data[j, nm] > 1, na.rm=TRUE))) {
+        kount <- kount + 1
+        if (is.na (Seq) || (kount > (Seq-1)*6)) {
+          ifelse ((kount %% 3), op <- par (mar=c(2,2,1,1)+0.1),
+                  op <- par (mar=c(5.2,2,1,1)+0.1))
+          plot (CellLimitsP, c(1.e-4, data[j, nm]), type='S', ylim=c(1,1.e6),
+              xlab="Diameter [um]", log="y", col='blue', lwd=2)
+        }
+        # lines (CellLimitsP, c(1.e-4,data[j, nm2[1]]), type='S', col='forestgreen', lty=2)
+        legend('bottomright', legend=nm2, text.col=c('blue', 'forestgreen'), 
+               col=c('blue', 'forestgreen'), lty=c(1,2), lwd=c(2,1))
+        title(sprintf("Time=%s CONCP=%.1f", 
+                      strftime (data$Time[j], format="%H:%M:%S", tz='UTC'),
+                      CPCASP), 
+            cex.main = cexmain)
+      if (kount%%6==0)   {AddFooter ()}
+    }
+    if (!is.na(Seq) && (kount >= (Seq*6))) {break}
+    if (kount >= 24) {break}
+  }
+} else { # Case with UHSAS
     nm <- nm1[1]
     # for (j in jstart:length(Time)) {
     for (j in iw) {
@@ -56,6 +86,7 @@ RPlot21 <- function (data, Seq=NA, panl=1) {
         data[j, nm2[1]] <- data[j, nm2[1]] / diff(CellLimitsP)
         data[j, nm2[1]][data[j, nm2[1]] <= 0] <- 1e-4
       }
+      # Do plot for case with UHSAS:
       if ((any(data[j, nm] > 1, na.rm=TRUE))) {
         kount <- kount + 1
         if (is.na (Seq) || (kount > (Seq-1)*6)) {
