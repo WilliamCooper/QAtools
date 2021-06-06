@@ -266,7 +266,7 @@ ui <- fluidPage (
               sidebarLayout(
                 sidebarPanel(
                   fluidRow (
-                    column (6, actionButton (inputId='manual', label = 'More Info',
+                    column (6, actionButton (inputId='manualFit', label = 'More Info',
                       onclick ="window.open('https://drive.google.com/open?id=0B1kIUH45ca5AZWI5QllIdFpFR0U', '_blank')")),
                     column (6, checkboxInput('reverse', label='M=f(x)', value=FALSE))),
                   numericInput ('fitOrder', label='Order of Polynomial',

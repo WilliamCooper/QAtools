@@ -21,6 +21,7 @@ loadVRPlot <- function (Project, Production = FALSE, Flight, psq) {
   #   }
   # } else {
     ProjectDir <- Project
+    if (grepl('HIPPO-', Project) && singleHIPPO) {ProjectDir <- 'HIPPO'}
   # }
   
   if (Project != 'PREDICT') {

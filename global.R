@@ -88,24 +88,35 @@ PJ <- PJ[-which('lost+found' == PJ)]
 FullPJ <- paste0(DataDirectory(), PJ)
 iw <- which.max(file.mtime(FullPJ))
 PJ <- c(PJ[iw], PJ[-iw])
+## This branch supports a single-HIPPO-directory structure,
+## as on /scr/raf_data. The code also accepts individual directories HIPPO-1, etc.
+singleHIPPO <- ifelse(('HIPPO' %in% PJ) && !('HIPPO-1' %in% PJ), TRUE, FALSE)
+if (singleHIPPO) {
+  PJ <- c(PJ[-which(PJ %in% 'HIPPO')], 'HIPPO-1', 'HIPPO-2', 
+                          'HIPPO-3', 'HIPPO-4', 'HIPPO-5')
+} else if ('HIPPO' %in% PJ) {
+  PJ <- PJ[-which(PJ == 'HIPPO')]
+}
+PJ <- unique(PJ)
 ## Keep only directories with a rf01 or tf01
 for (P in PJ) {
-  # if (grepl('HIPPO', P)) {
-  #   fn <- sprintf ('%sHIPPO/%srf01.nc', DataDirectory (), P)
-  # } else {
-  fn <- sprintf ('%s%s/%srf01.nc', DataDirectory (), P, P)
+  if (grepl('HIPPO-', P) && singleHIPPO) {
+    fn <- sprintf ('%sHIPPO/%srf01.nc', DataDirectory (), P)
+  } else {
+    fn <- sprintf ('%s%s/%srf01.nc', DataDirectory (), P, P)
+  }
+  if (!file.exists (fn)) {
+    fn <- sub('rf', 'tf', fn)
+  }
   if (!file.exists (fn)) {
     fn <- sub ('\\.nc', '.Rdata', fn)
   }
   if (!file.exists (fn)) {
-    fn <- sprintf ('%s%s/%stf01.nc', DataDirectory (), P, P)
-  }
-  if (!file.exists (fn)) {
+    fn <- sub ('tf', 'rf', fn)
     fn <- sub ('\\.nc', '.Rdata', fn)
   }
+  if (!file.exists (fn)) {PJ[PJ==P] <- NA}
 }
-if (!file.exists (fn)) {PJ[PJ==P] <- NA}
-# }
 PJ <- PJ[!is.na(PJ)]
 
 Cradeg <- pi/180
@@ -439,12 +450,8 @@ SeekManeuvers <- function (Data) {
 ProjectSeekManeuvers <- function (inp) {
   ## for this project, this replaces the data.frame Maneuvers with a new temporary one
   Project <- inp$ProjectPP
-  # if (grepl ('HIPPO', Project)) {
-  #   ProjDir <- 'HIPPO'
-  # } else {
-    ProjDir <- Project
-  # }
-  # print (ProjectPP)
+  ProjDir <- Project
+  if(grepl('HIPPO-', Project) && singleHIPPO) {ProjDir <- 'HIPPO'}
   Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjDir),
                           sprintf ("%srf...nc$", Project)))
   Fl <- c(Fl, sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjDir),
@@ -839,7 +846,7 @@ runScriptWIF <- function (ssn, ipADDW) {
   system ('rm newWind/newWindlog')
   
   ProjectDir <- ProjectWIF
-  # if ('HIPPO' %in% ProjectDir) {ProjectDir <- 'HIPPO'}
+  if(grepl('HIPPO-', ProjectWIF) && singleHIPPO) {ProjectDir <- 'HIPPO'}
   if (ALLWIF) {
     Flight <- 'All'
     progress$set(message = 'read data, initialize',
@@ -876,7 +883,7 @@ runScriptHOT <- function (ssn) {
   system ('rm ../HeightOfTerrain/HOTlog')
   
   ProjectDir <- ProjectHOT
-  # if ('HIPPO' %in% ProjectDir) {ProjectDir <- 'HIPPO'}
+  if(grepl('HIPPO-', ProjectHOT) && singleHIPPO) {ProjectDir <- 'HIPPO'}
   if (ALLHOT) {
     ## get list of files to process:
     Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjectDir),
@@ -931,7 +938,7 @@ runScript <- function (ssn) {
   }
   
   ProjectDir <- ProjectKF
-  # if ('HIPPO' %in% ProjectDir) {ProjectDir <- 'HIPPO'}
+  if(grepl('HIPPO-', ProjectKF) && singleHIPPO) {ProjectDir <- 'HIPPO'}
   if (ALL) {
     ## get list of files to process:
     Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjectDir),
@@ -1019,7 +1026,7 @@ qualifyData <- function(D) {
 
 makeDataFile <- function(Proj, Flt, Vars) {
   ProjDir <- Proj
-  # if (grepl('HIPPO', Proj)) {ProjDir <- 'HIPPO'}
+  if(grepl('HIPPO-', Proj) && singleHIPPO) {ProjDir <- 'HIPPO'}
   if (Flt == 'ALL') {
     Ft <- 1
   } else {
@@ -1236,30 +1243,9 @@ testPlot <- function (k) {
 
 CHP <- c('recovery factor', 'angle of attack', 'airspeed dependence')
 DataDir <- DataDirectory ()
-for (P in PJ) {
-  # if (grepl('HIPPO', P)) {
-  #   if (grepl ('raf_data', DataDir)) {
-  #     fn <- sprintf ('%sHIPPO/old_nimbus/%srf01.nc', DataDirectory (), P)  
-  #   } else {
-  #     fn <- sprintf ('%sHIPPO/%srf01.nc', DataDirectory (), P)
-  #   }
-  # } else {
-  fn <- sprintf ('%s%s/%srf01.nc', DataDirectory (), P, P)
-  if (!file.exists (fn)) {
-    fn <- sub ('\\.nc', '.Rdata', fn)
-  }
-  if (!file.exists (fn)) {
-    fn <- sprintf ('%s%s/%stf01.nc', DataDirectory (), P, P)
-  }
-  if (!file.exists (fn)) {
-    fn <- sub ('\\.nc', '.Rdata', fn)
-  }
-  # }
-  if (!file.exists (fn)) {PJ[PJ==P] <- NA}
-}
-PJ <- PJ[!is.na(PJ)]
 
-## now test that there is an entry in the Configuration.R file for PJ:
+## Test that there is an entry in the Configuration.R file for PJ,
+## and eliminate any for which there is no Configuration entry:
 lines <- readLines ('Configuration.R')
 for (P in PJ) {
   if (!any (grepl (P, lines))) {PJ[PJ == P] <- NA}
@@ -1450,10 +1436,12 @@ SeekManeuvers <- function (Data) {
 }
 
 seeManual <- function () {
-  if (suppressWarnings(library(rstudio, logical.return=TRUE))) {
-    rstudio::viewer ('./QAtoolsUserGuide.pdf', height='maximize')
-  }
+  URL <- 'QAtoolsUserGuide.pdf'
+  # Use next line to get the repository version instead:
+  # URL <- 'https://github.com/NCAR/aircraft_QAtools/blob/main/QAtoolsUserGuide.pdf'
+  browseURL(URL)
 }
+
 
 ## get VRPlot and chp/shp:
 ## load a starting-point version
@@ -1629,7 +1617,7 @@ f1simTDP <- 0.97; f2simTDP <- 1 - f1simTDP
 
 constructDQF <- function (project, flight) {
   projectDir <- project
-  # if (grepl ('HIPPO', project)) {projectDir <- 'HIPPO'}
+  if(grepl('HIPPO-', project) && singleHIPPO) {projectDir <- 'HIPPO'}
   Data <- getNetCDF (sprintf ('%s%s/%srf%02d.nc', DataDirectory(), projectDir, project, flight), VarListTDP)
   Data$MIRRTMP_DPL <- setNA (Data$MIRRTMP_DPL, 0)
   Data$DERIV2 <- -signal::filter(signal::sgolay(3,17,2),Data$MIRRTMP_DPL)
@@ -1690,6 +1678,7 @@ constructDQF <- function (project, flight) {
 
 getDataTDP <- function (project, flight, typeFlight) {
   projectDir <- project
+  if(grepl('HIPPO-', project) && singleHIPPO) {projectDir <- 'HIPPO'}
   # if (grepl ('HIPPO', project)) {projectDir <- 'HIPPO'}
   DataTDP <- getNetCDF (sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), projectDir, project, 
                                  typeFlight, flight), VarListTDP)
