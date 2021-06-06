@@ -92,7 +92,7 @@ library(reshape2)    ## used with ggplot facet plots
 library(grid)
 options(stringsAsFactors=FALSE)
 
-setwd ('~/RStudio/QAfunctions/maneuvers')
+setwd ('~/RStudio/QAtools/maneuvers')
 Directory <- DataDirectory ()
 
 @
@@ -139,7 +139,7 @@ are needed.
 
 For this study, a set of maneuvers from recent GV projects was compiled
 using the ``SpeedRunSearch()'' and related functions in the directory
-``PlotFunctions'' under the QAfunctions project of RStudio. The
+``PlotFunctions'' under the QAtools project of RStudio. The
 candidate maneuvers obtained in that way are shown in the following
 tables:
 
@@ -1182,7 +1182,7 @@ Anyone can download this from github, but the program makes extensive
 use of 'Ranadu' functions so this should be used with that package,
 also available on barolo and on github. The analysis core from that
 script is incorporated into the circle-maneuver analysis provided
-by the QAfunctions Shiny app.
+by the QAtools Shiny app.
 
 The key equations, with variables $v$ and $\lambda$ representing
 the true wind speed and direction, $v_{m}$ the measured wind speed
