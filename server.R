@@ -337,7 +337,7 @@ server <- function(input, output, session) {
     showNotification ('generating plots: please wait...', action=NULL, duration=NULL, id='plotgenWait',
       type='default', closeButton=FALSE)
     savePDF (Data=data(), inp=input)
-    browseURL('./www/latestPlots.pdf', browser='/usr/bin/evince')
+    browseURL('./www/latestPlots.pdf') #, browser='/usr/bin/evince')
     removeNotification (id='plotgenWait')
   })
   
@@ -467,7 +467,7 @@ server <- function(input, output, session) {
       if (!is.na(item) && item != 'none' && item != 0 && length(item) > 0 && item <= nrow(YM)) {
         itemYM <<- item
         if (Trace) {print (c('item, YM', item, YM[item,]))}
-        if (grepl('HIPPO', ProjDir)) {ProjDir <- 'HIPPO'}
+        if (grepl('HIPPO-', ProjDir) && singleHIPPO) {ProjDir <- 'HIPPO'}
         VL <- c('TASX', 'GGALT', 'SSRD', 'BDIFR', 'QCF', 'WDC', 'WSC', 'THDG', 'VYC',
           'GGVNS', 'GGVEW')
         START <- AddT (as.integer (YM$Start[item]), -120)
@@ -499,7 +499,7 @@ server <- function(input, output, session) {
       if (!is.na(item) && item != 'none' && item != 0 && length(item) > 0 && item <= nrow(RH)) {
         itemRH <<- item
         if (Trace) {print (c('item, RH', item, RH[item,]))}
-        if (grepl('HIPPO', ProjDir)) {ProjDir <- 'HIPPO'}
+        if (grepl('HIPPO-', ProjDir) && singleHIPPO) {ProjDir <- 'HIPPO'}
         VL <- c('LATC', 'LONC', 'TASX', 'GGALT', 'SSLIP', 'BDIFR', 'QCF', 'WDC', 'WSC', 'THDG', 'VYC',
           'GGVNS', 'GGVEW')
         START <- AddT (as.integer (RH$Start[item]), -120)
@@ -535,7 +535,7 @@ server <- function(input, output, session) {
       if (!is.na(item) && item != 'none' && item != 0 && length(item) > 0 && item <= nrow(CR)) {
         itemCR <<- item
         if (Trace) {print (c('item, CR', item, CR[item,]))}
-        if (grepl('HIPPO', ProjDir)) {ProjDir <- 'HIPPO'}
+        if (grepl('HIPPO-', ProjDir) && singleHIPPO) {ProjDir <- 'HIPPO'}
         VL <- c('LATC', 'LONC', 'TASX', 'GGALT', 'PITCH', 'ATTACK', 'ROLL', 'SSLIP', 'SSRD', 'BDIFR', 
           'QCF', 'WDC', 'WSC', 'THDG', 'VYC', 'GGVSPD', 'VEW', 'VNS', 'GGVNS', 'GGVEW')
         START <- AddT (as.integer (CR$Start[item]), -120)
@@ -591,7 +591,7 @@ server <- function(input, output, session) {
       FlightPP <- input$FlightPP
       FLT <- ifelse (input$AllPP, 1, FlightPP)
       ProjDir <- ProjectPP
-      if (grepl('HIPPO', ProjectPP)) {ProjDir <- 'HIPPO'}
+      if (grepl('HIPPO-', ProjectPP) && singleHIPPO) {ProjDir <- 'HIPPO'}
       fnamePP <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), ProjDir, ProjectPP, input$typeFlightPP, FLT)
       if (!file.exists (fnamePP)) {
         ## try tf
@@ -856,7 +856,7 @@ server <- function(input, output, session) {
     Project <- input$ProjectKP
     Flight <- input$FlightKP
     if (Trace) {print (sprintf ('entered getDataFrozen, proj=%s, flight=%d', Project, Flight))}
-    if (grepl('HIPPO', Project)) {
+    if (grepl('HIPPO-', Project) && singleHIPPO) {
       ProjDir <- 'HIPPO'
     } else {
       ProjDir <- Project
@@ -1389,25 +1389,32 @@ server <- function(input, output, session) {
       if (Trace) {print (sprintf ('set new project: %s', Project))}
       typeFlight <<- flightType ()
       
-      if (grepl ('HIPPO', Project)) {
-        if (grepl ('raf_data', DataDir)) {
-          fn <- sprintf ('%sHIPPO/old_nimbus/%srf01.nc', DataDirectory (), Project)  
-        } else {
-          fn <- sprintf ('%sHIPPO/%srf01.nc', DataDirectory (), Project)
-        }
+      # if (grepl ('HIPPO-', Project) && singleHIPPO) {
+      #   if (grepl ('raf_data', DataDir)) {
+      #     fn <- sprintf ('%sHIPPO/old_nimbus/%srf01.nc', DataDirectory (), Project)  
+      #   } else {
+      #     fn <- sprintf ('%sHIPPO/%srf01.nc', DataDirectory (), Project)
+      #   }
+      # } else {
+      if (grepl('HIPPO-', Project) && singleHIPPO) {
+        fn <- sprintf ('%sHIPPO/%srf01.nc', DataDirectory (), Project)
       } else {
         fn <- sprintf ('%s%s/%srf01.nc', DataDirectory (), Project, Project)
       }
+      # }
       if (!file.exists (fn)) {
         fn <- sub ('\\.nc', '.Rdata', fn)
       }
       if (!file.exists (fn)) {
-        if (grepl ('HIPPO', Project)) {
-          if (grepl ('raf_data', DataDir)) {
-            fn <- sprintf ('%sHIPPO/%stf01.nc', DataDirectory (), Project)
-          } else {
-            fn <- sprintf ('%sHIPPO/%stf01.nc', DataDirectory (), Project)
-          }
+        # if (grepl ('HIPPO', Project)) {
+        #   if (grepl ('raf_data', DataDir)) {
+        #     fn <- sprintf ('%sHIPPO/%stf01.nc', DataDirectory (), Project)
+        #   } else {
+        #     fn <- sprintf ('%sHIPPO/%stf01.nc', DataDirectory (), Project)
+        #   }
+        # } else {
+        if (grepl('HIPPO-', Project) && singleHIPPO) {
+          fn <- sprintf ('%sHIPPO/%stf01.nc', DataDirectory (), Project)
         } else {
           fn <- sprintf ('%s%s/%stf01.nc', DataDirectory (), Project, Project)
         }
@@ -1874,20 +1881,16 @@ server <- function(input, output, session) {
     VarList <<- VarList  ## just saving for outside-app use
     ## these would be needed for translation to new cal coefficients
     ## VarList <- c(VarList, "RTH1", "RTH2", "RTF1")
-    if (grepl ('HIPPO', input$Project)) {
-      if (grepl ('raf_data', DataDir)) {
-        fname <<- sprintf ('%sHIPPO/old_nimbus/%s%s%02d.nc', DataDirectory (), input$Project,
-          typeFlight, input$Flight)
-      } else {
-        fname <<- sprintf ('%sHIPPO/%s%s%02d.nc', DataDirectory (), input$Project,
-          typeFlight, input$Flight)
-      }
-    } else if (grepl ('PREDICT', input$Project)) {
+    
+    if (grepl ('PREDICT', input$Project)) {
       fname <<- sprintf ('%sPREDICT/%s%s%02dHW.nc', DataDirectory (), input$Project,
         typeFlight, input$Flight)
+    } else if (grepl ('HIPPO-', input$Project) && singleHIPPO) {
+      fname <<- sprintf ('%sHIPPO/%s%s%02d.nc', DataDirectory (), 
+        input$Project, typeFlight, input$Flight)
     } else {
       fname <<- sprintf ('%s%s/%s%s%02d.nc', DataDirectory (), input$Project,
-        input$Project, typeFlight, input$Flight)
+                         input$Project, typeFlight, input$Flight)
     }
     #     if (input$Production) {
     #       print (sprintf ('Production section, input$Production=%d', input$Production))
@@ -1953,7 +1956,7 @@ server <- function(input, output, session) {
         ## return a substitute to avoid looping
         Project <- input$Project
         ProjectDir <- Project
-        if (grepl('HIPPO', ProjectDir)) {ProjectDir <- 'HIPPO'}
+        if (grepl('HIPPO-', Project) && singleHIPPO) {ProjectDir <- 'HIPPO'}
         Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjectDir),
           sprintf ("%srf...nc", Project)), decreasing = TRUE)[1]
         if (is.na (Fl)) {
@@ -2179,6 +2182,8 @@ server <- function(input, output, session) {
         if(Trace) {print('There are no variables for this panel in outputDisplay.')}
         plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
         text (0.5, 0.8, 'There are no variables for this panel.')
+      } else if (!file.exists(sprintf('PlotFunctions/RPlot%d.R', nvpl))) {plot (0,0, xlim=c(0,1), ylim=c(0,1), type='n', axes=FALSE, ann=FALSE)
+        text (0.5, 0.8, 'This plot function does not exist.')
       } else {
         # Only generate the first panel here:
         # source the plot routine if needed:
@@ -3087,7 +3092,7 @@ server <- function(input, output, session) {
   output$resultPlotWIF <- renderPlot ({
     reac$WIFplot
     Project <- input$ProjectWIF
-    if (grepl ('HIPPO', Project)) {
+    if (grepl ('HIPPO-', Project) && singleHIPPO) {
       ProjectDir <- 'HIPPO'
     } else {
       ProjectDir <- Project
@@ -3314,7 +3319,7 @@ server <- function(input, output, session) {
   
   output$PSplot <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
-    if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
+    if (grepl('HIPPO-', ProjectPPDir) && singleHIPPO) {ProjectPPDir <- 'HIPPO'}
     fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
     if (!file.exists (fnamePP)) {
       fnamePP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
@@ -3413,7 +3418,7 @@ server <- function(input, output, session) {
   
   output$PSSplot <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
-    if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
+    if (grepl('HIPPO-', ProjectPPDir) && singleHIPPO) {ProjectPPDir <- 'HIPPO'}
     fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjectPPDir, input$ProjectPP, input$FlightPP)
     if (!file.exists(fnamePP)) {
       fnamePP <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(), input$ProjectPP, input$ProjectPP, input$FlightPP)
@@ -3493,7 +3498,7 @@ server <- function(input, output, session) {
   
   output$QCplot <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
-    if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
+    if (grepl('HIPPO-', ProjectPPDir) && singleHIPPO) {ProjectPPDir <- 'HIPPO'}
     fnamePP <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), ProjectPPDir, 
       input$ProjectPP, input$typeFlightPP, input$FlightPP)
     if (!file.exists (fnamePP)) {
@@ -3557,7 +3562,7 @@ server <- function(input, output, session) {
   
   output$QCSplot <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
-    if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
+    if (grepl('HIPPO-', ProjectPPDir) && singleHIPPO) {ProjectPPDir <- 'HIPPO'}
     fnamePP <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), input$ProjectPP, 
       input$ProjectPP, input$typeFlightPP, input$FlightPP)
     if (!file.exists (fnamePP)) {
@@ -3628,7 +3633,7 @@ server <- function(input, output, session) {
   
   output$PSHeq <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
-    if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
+    if (grepl('HIPPO-', ProjectPPDir) && singleHIPPO) {ProjectPPDir <- 'HIPPO'}
     fname <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), input$ProjectPP, 
       input$ProjectPP, input$typeFlightPP, input$FlightPP)
     if (checkBad(sprintf ('%srf%02d', input$ProjectPP, input$FlightPP))) {
@@ -3698,7 +3703,7 @@ server <- function(input, output, session) {
   
   output$ATplot <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
-    if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
+    if (grepl('HIPPO-', ProjectPPDir) && singleHIPPO) {ProjectPPDir <- 'HIPPO'}
     fnamePP <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), ProjectPPDir, 
       input$ProjectPP, input$typeFlightPP, input$FlightPP)
     if (!file.exists (fnamePP)) {
@@ -3748,7 +3753,7 @@ server <- function(input, output, session) {
   
   output$ATSplot <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
-    if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
+    if (grepl('HIPPO-', ProjectPPDir) && singleHIPPO) {ProjectPPDir <- 'HIPPO'}
     fnamPP <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), input$ProjectPP, 
       input$ProjectPP, input$typeFlightPP, input$FlightPP)
     if (!file.exists (fnamPP)) {
@@ -3804,7 +3809,7 @@ server <- function(input, output, session) {
   output$ATHeq <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
     ATsel <- input$ATsel
-    if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
+    if (grepl('HIPPO-', ProjectPPDir) && singleHIPPO) {ProjectPPDir <- 'HIPPO'}
     fnamePP <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjectPPDir, 
       input$ProjectPP, input$FlightPP)
     if (!file.exists (fnamePP)) {
@@ -3984,7 +3989,7 @@ server <- function(input, output, session) {
   output$ATcmpr <- renderPlot ({
     ProjectPPDir <- input$ProjectPP
     ATsc <- input$ATsc
-    if (grepl('HIPPO', ProjectPPDir)) {ProjectPPDir <- 'HIPPO'}
+    if (grepl('HIPPO-', ProjectPPDir) && singleHIPPO) {ProjectPPDir <- 'HIPPO'}
     fnamePP <- sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), ProjectPPDir, 
       input$ProjectPP, input$typeFlightPP, input$FlightPP)
     if (!file.exists (fnamePP)) {
@@ -4474,7 +4479,7 @@ server <- function(input, output, session) {
     #   itemYM <<- item
     # }
     # ProjDir <- input$ProjectPP
-    # if (grepl('HIPPO', ProjDir)) {ProjDir <- 'HIPPO'}
+    # if (grepl('HIPPO-', ProjDir) && singleHIPPO) {ProjDir <- 'HIPPO'}
     # VL <- c('TASX', 'GGALT', 'SSRD', 'BDIFR', 'QCF', 'WDC', 'WSC', 'THDG', 'VYC')
     # START <- AddT (as.integer (YM$Start[item]), -120)
     # END <- AddT (as.integer (YM$End[item]), 120)
@@ -4587,7 +4592,7 @@ server <- function(input, output, session) {
       itemPM <<- item
     }
     ProjDir <- input$ProjectPP
-    if (grepl('HIPPO', ProjDir)) {ProjDir <- 'HIPPO'}
+    if (grepl('HIPPO-', ProjDir) && singleHIPPO) {ProjDir <- 'HIPPO'}
     VL <- c('TASX', 'PSXC', 'GGALT', 'PITCH', 'ADIFR', 'QCF', 'AKRD', 'WIC')
     START <- AddT (as.integer (PM$Start[item]), -120)
     END <- AddT (as.integer (PM$End[item]), 120)
@@ -4642,7 +4647,7 @@ server <- function(input, output, session) {
     item <- as.integer(input$selSR)
     if (is.na(item[1]) || length(item) < 1) {return('no plot selected')}
     ProjDir <- input$ProjectPP
-    if (grepl('HIPPO', ProjDir)) {ProjDir <- 'HIPPO'}
+    if (grepl('HIPPO-', ProjDir) && singleHIPPO) {ProjDir <- 'HIPPO'}
     M <- 1
     if (grepl('angle', input$plotTypeSR)) {M <- 2}
     if (grepl('airspeed', input$plotTypeSR)) {
@@ -5148,7 +5153,7 @@ server <- function(input, output, session) {
   getDataIC <- reactive({                     ## data
     Project <- input$ProjectKP
     Flight <- input$FlightKP
-    if (grepl('HIPPO', Project)) {
+    if (grepl('HIPPO-', Project) && singleHIPPO) {
       ProjDir <- 'HIPPO'
     } else {
       ProjDir <- Project

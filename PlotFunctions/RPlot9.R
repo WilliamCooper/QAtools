@@ -77,27 +77,48 @@ RPlot9 <- function (data, Seq = NA, panl = 1) {
       lwd = c(1, 1)
     )
   }
-  
+
+#  ## VERTICAL WIND - plot 13c
+#  panel13 <- function(data) {
+#    WI <- VRPlot[[9]][grepl ('^WI', VRPlot[[9]])]
+#    plotWAC (
+#      data[, c("Time", WI)],
+#      ylab = "vertical wind WIC [m/s]",
+#      cex.axis = 1.5,
+#      cex.lab = 1.5,
+#      ylim = YLMF (3, range (as.matrix (data[, WI]), finite = TRUE))
+#    )
+#    title (sprintf (
+#      "average vertical wind: WIC = %.02f",
+#      mean (data[, WI[1]], na.rm = TRUE)
+#    ),
+#      cex.main = 1.2)
+#    hline (2)
+#    hline (-2)
+#    hline (0, 'red')
+#  }
+ 
   ## VERTICAL WIND - plot 13c
   panel13 <- function(data) {
     WI <- VRPlot[[9]][grepl ('^WI', VRPlot[[9]])]
     plotWAC (
       data[, c("Time", WI)],
-      ylab = "vertical wind WIC [m/s]",
+      ylab = "vertical wind [m/s]",
       cex.axis = 1.5,
       cex.lab = 1.5,
       ylim = YLMF (3, range (as.matrix (data[, WI]), finite = TRUE))
     )
     title (sprintf (
-      "average vertical wind: WIC = %.02f",
-      mean (data[, WI[1]], na.rm = TRUE)
+      "average vertical wind: = %.02f",
+
+      apply(data[, WI], 2, mean,na.rm = TRUE)
     ),
     cex.main = 1.2)
     hline (2)
     hline (-2)
     hline (0, 'red')
   }
-  
+ 
   ## EASTERLY COMPONENT OF THE WIND: plot 14a
   panel21 <- function(data) {
     line.widths <- c(1, 1, 2)

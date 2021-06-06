@@ -13,15 +13,16 @@ loadVRPlot <- function (Project, Production = FALSE, Flight, psq) {
     names(VRPlot) <- nm
   }
   
-  if (grepl ('HIPPO', Project)) {
-    if (grepl ('raf_data', DataDir)) {
-      ProjectDir <- 'HIPPO/old_nimbus'
-    } else {
-      ProjectDir <- 'HIPPO'
-    }
-  } else {
+  # if (grepl ('HIPPO', Project)) {
+  #   if (grepl ('raf_data', DataDir)) {
+  #     ProjectDir <- 'HIPPO/old_nimbus'
+  #   } else {
+  #     ProjectDir <- 'HIPPO'
+  #   }
+  # } else {
     ProjectDir <- Project
-  }
+    if (grepl('HIPPO-', Project) && singleHIPPO) {ProjectDir <- 'HIPPO'}
+  # }
   
   if (Project != 'PREDICT') {
     fn <- sprintf ('%s%s/%srf%02d.nc', DataDirectory (), ProjectDir, Project, Flight)
@@ -148,8 +149,10 @@ loadVRPlot <- function (Project, Production = FALSE, Flight, psq) {
   chp[[30]] <- chp[[29]]
   chp[[31]] <- chp[[29]]
   chp[[32]] <- chp[[29]]
-  chp[[33]] <- FI$Variables[grepl ("CUHSAS_", FI$Variables)]
-  chp[[33]] <- c(chp[[33]], FI$Variables[grepl ('CS200_', FI$Variables)])
+  chp[[33]] <- c(FI$Variables[grepl ("CONCU_", FI$Variables) |
+                              grepl ('CONCP_', FI$Variables)], 'TASX')
+  chp[[33]] <- c(chp[[33]], FI$Variables[grepl ('CS200_', FI$Variables) |
+                                           grepl ('CUHSAS_', FI$Variables)])
   chp[[34]] <- chp[[33]]
   chp[[35]] <- chp[[33]]
   chp[[36]] <- chp[[33]]

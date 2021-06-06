@@ -1,9 +1,9 @@
-# Construct Configure.R for a new project
+e# Construct Configure.R for a new project
 
 # Start with a sample netCDF file.
 # Specify the new project here; 'WECAN' should be changed to the new project.
-NewProject <- 'WCR-TEST'
-Flight <- 'nov2'  # Specify the model netCDF file
+NewProject <- 'SPICULE'
+Flight <- 'tf01'  # Specify the model netCDF file
 fname <- sprintf ('%s%s/%s%s.nc', Ranadu::DataDirectory(),
                   NewProject, NewProject, Flight)
 FI <- Ranadu::DataFileInfo (fname)
@@ -13,7 +13,8 @@ Data <- Ranadu::getNetCDF(fname, 'ALL')
 # Now read the existing Configuration.R and, for the required platform,
 # find all variables that have been used for each plot:
 
-PJC130 <- c('WECAN',
+PJC130 <- c('MethaneAIR',
+  'WECAN',
   'WECAN-TEST',
   'WINTER',
 #  'NOMADSS',
@@ -390,3 +391,4 @@ for (i in 2:length(VRX)) {
 }
 cat('}\n', file = outfile, append = TRUE)
 sink()
+
