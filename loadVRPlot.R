@@ -117,7 +117,7 @@ loadVRPlot <- function (Project, Production = FALSE, Flight, psq) {
   chp[[2]] <- c(ALT,'PSXC')
   chp[[3]] <- AT
   chp[[4]] <- chp[[3]]
-  chp[[5]] <- c(DP,'ATX', CAVP, EWW)
+  chp[[5]] <- c(DP,'ATX', CAVP, EWW, 'QCXC')
   chp[[6]] <- chp[[5]]
   chp[[7]] <- c(chp[[5]], MACH, QC, 'AKRD')
   chp[[8]] <- chp[[5]]
