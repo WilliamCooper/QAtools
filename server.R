@@ -337,7 +337,7 @@ server <- function(input, output, session) {
     showNotification ('generating plots: please wait...', action=NULL, duration=NULL, id='plotgenWait',
       type='default', closeButton=FALSE)
     savePDF (Data=data(), inp=input)
-    browseURL('./www/latestPlots.pdf') #, browser='/usr/bin/evince')
+##    browseURL('./www/latestPlots.pdf') ## browser='/usr/bin/evince')
     removeNotification (id='plotgenWait')
   })
   

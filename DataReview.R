@@ -151,9 +151,14 @@ for (Flight in Flt) {
       CFSSP <- NULL
       CUHSAS <- NULL
       C1DC <- NULL
-      
-      fnumber <- as.numeric (sub('[a-zA-Z]*([0-9]*).nc', '\\1', Flight))
-      ftype <- sub('[A-Za-z]*(.f)[0-9]*.nc', '\\1', Flight)
+      if (!(str_detect(Flight, "[a-zA-Z]*(.f)[0-9]*.nc"))) {
+          print (sprintf ('nonstandard flight string in %s', Flight))
+          print ('Flight string must match [rt]f[0-9][0-9]')
+          quit()
+      } else {
+          fnumber <- as.numeric (sub('[a-zA-Z]*([0-9]*).nc', '\\1', Flight))
+          ftype <- sub('[A-Za-z]*(.f)[0-9]*.nc', '\\1', Flight)
+      }
       ## next statement needs to be inside "ALL" loop, in case available variables change
       VRPlot <- loadVRPlot (Project, FALSE, fnumber, psq)  ## get VRPlot list for this project
       Cradeg <- pi/180
@@ -185,6 +190,11 @@ for (Flight in Flt) {
         it2 <- getIndex (Data, EndX)
         if (it2 < 0 || it2 > nrow(Data)) {it2 <- nrow(Data)}
       }
+      if (is.na (it1)) {
+         print("Could not find time period where TASX > 65")
+         quit()
+      }
+
       DataL <- Data[it1:it2, ]
       Data <- transferAttributes(DataL, Data)  ## retain attributes
       times <- c(Data$Time[1], Data$Time[nrow(Data)])

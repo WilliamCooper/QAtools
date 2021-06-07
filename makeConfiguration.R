@@ -20,6 +20,10 @@ PJC130 <- c('MethaneAIR',
 #  'NOMADSS',
   'FRAPPE')
 PJGV  <- c(
+  'SPICULE',
+  'MethaneAIR',
+  'ACCLIP-TEST',
+  'OTREC',
   'ECLIPSE2019',
   'OTREC-TEST',
   'SOCRATES',
@@ -351,6 +355,7 @@ VRX[[22]] <- unique (c('TASX', V[grepl('CONC1DC', V)],
 # RPlot23: Air chemistry
 VAC <- c(FI$Variables[grepl('Monoxide', FI$LongNames)])
 VAC <- c(VAC, FI$Variables[grepl('PIC', FI$Variables)])
+VAC <- c(VAC, FI$Variables[grepl('WVISO', FI$Variables)])
 VAC <- c(VAC, FI$Variables[grepl('ARI', FI$Variables)])
 VAC <- c(VAC, FI$Variables[grepl('Aerolaser', FI$LongNames)])
 VRX[[23]] <- unique (c(VRX[[23]], VAC))
