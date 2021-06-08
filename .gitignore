@@ -1,1 +1,12 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+PNG
+Stash
+Work
+*.lyx
+*.lyx~
+ATemp
+ATemp/Work.R
 www/latestPlots.pdf

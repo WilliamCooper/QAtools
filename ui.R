@@ -266,7 +266,7 @@ ui <- fluidPage (
               sidebarLayout(
                 sidebarPanel(
                   fluidRow (
-                    column (6, actionButton (inputId='manual', label = 'More Info',
+                    column (6, actionButton (inputId='manualFit', label = 'More Info',
                       onclick ="window.open('https://drive.google.com/open?id=0B1kIUH45ca5AZWI5QllIdFpFR0U', '_blank')")),
                     column (6, checkboxInput('reverse', label='M=f(x)', value=FALSE))),
                   numericInput ('fitOrder', label='Order of Polynomial',
@@ -725,8 +725,9 @@ ui <- fluidPage (
         actionButton ('ncplot', 'see in ncplot'),
         actionButton ('Xanadu', 'see in Xanadu'),
         actionButton ('maneuvers', 'see maneuvers'),
-        actionButton ('manual', 'see manual')),
-        mainPanel( tabsetPanel (tabPanel ('plot', 
+        actionButton ('seeUG', 'see manual')),
+        mainPanel( tabsetPanel (id='reviewTabs',
+                                tabPanel ('plot', 
           verticalLayout(
             plotOutput (outputId='display', 
               dblclick = "plot_dblclick", 
@@ -750,7 +751,8 @@ ui <- fluidPage (
           tabPanel ('histograms', plotOutput (outputId='hist')),
           tabPanel ('soundings', plotOutput (outputId='barWvsZ')),
           tabPanel ('listing', dataTableOutput ('listing')),
-          tabPanel ('VarSpec', plotOutput (outputId='vspec')))))
+          tabPanel ('VarSpec', plotOutput (outputId='vspec')),
+          tabPanel ('PDF viewer', uiOutput('pdfview')))))
     ),
     tabPanel ('Known Problems',
       fluidRow (

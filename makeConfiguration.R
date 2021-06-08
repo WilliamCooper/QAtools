@@ -1,9 +1,9 @@
-# Construct Configure.R for a new project
+e# Construct Configure.R for a new project
 
 # Start with a sample netCDF file.
 # Specify the new project here; 'WECAN' should be changed to the new project.
-NewProject <- 'WCR-TEST'
-Flight <- 'nov2'  # Specify the model netCDF file
+NewProject <- 'SPICULE'
+Flight <- 'tf01'  # Specify the model netCDF file
 fname <- sprintf ('%s%s/%s%s.nc', Ranadu::DataDirectory(),
                   NewProject, NewProject, Flight)
 FI <- Ranadu::DataFileInfo (fname)
@@ -20,6 +20,10 @@ PJC130 <- c('MethaneAIR',
 #  'NOMADSS',
   'FRAPPE')
 PJGV  <- c(
+  'SPICULE',
+  'MethaneAIR',
+  'ACCLIP-TEST',
+  'OTREC',
   'ECLIPSE2019',
   'OTREC-TEST',
   'SOCRATES',
@@ -351,6 +355,7 @@ VRX[[22]] <- unique (c('TASX', V[grepl('CONC1DC', V)],
 # RPlot23: Air chemistry
 VAC <- c(FI$Variables[grepl('Monoxide', FI$LongNames)])
 VAC <- c(VAC, FI$Variables[grepl('PIC', FI$Variables)])
+VAC <- c(VAC, FI$Variables[grepl('WVISO', FI$Variables)])
 VAC <- c(VAC, FI$Variables[grepl('ARI', FI$Variables)])
 VAC <- c(VAC, FI$Variables[grepl('Aerolaser', FI$LongNames)])
 VRX[[23]] <- unique (c(VRX[[23]], VAC))
@@ -391,3 +396,4 @@ for (i in 2:length(VRX)) {
 }
 cat('}\n', file = outfile, append = TRUE)
 sink()
+
