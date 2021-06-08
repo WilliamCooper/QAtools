@@ -725,8 +725,9 @@ ui <- fluidPage (
         actionButton ('ncplot', 'see in ncplot'),
         actionButton ('Xanadu', 'see in Xanadu'),
         actionButton ('maneuvers', 'see maneuvers'),
-        actionButton ('manual', 'see manual')),
-        mainPanel( tabsetPanel (tabPanel ('plot', 
+        actionButton ('seeUG', 'see manual')),
+        mainPanel( tabsetPanel (id='reviewTabs',
+                                tabPanel ('plot', 
           verticalLayout(
             plotOutput (outputId='display', 
               dblclick = "plot_dblclick", 
@@ -750,7 +751,8 @@ ui <- fluidPage (
           tabPanel ('histograms', plotOutput (outputId='hist')),
           tabPanel ('soundings', plotOutput (outputId='barWvsZ')),
           tabPanel ('listing', dataTableOutput ('listing')),
-          tabPanel ('VarSpec', plotOutput (outputId='vspec')))))
+          tabPanel ('VarSpec', plotOutput (outputId='vspec')),
+          tabPanel ('PDF viewer', uiOutput('pdfview')))))
     ),
     tabPanel ('Known Problems',
       fluidRow (

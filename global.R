@@ -1439,7 +1439,9 @@ seeManual <- function () {
   URL <- 'QAtoolsUserGuide.pdf'
   # Use next line to get the repository version instead:
   # URL <- 'https://github.com/NCAR/aircraft_QAtools/blob/main/QAtoolsUserGuide.pdf'
-  browseURL(URL)
+  # browseURL(URL)
+  viewer <- getOption ("viewer")
+  viewer ('QAtoolsUserGuide.pdf', height='maximize')
 }
 
 

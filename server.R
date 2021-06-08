@@ -333,12 +333,25 @@ server <- function(input, output, session) {
   })
   
   observeEvent (input$reconfigure, saveConfig ())
+  observeEvent(input$seeUG, {
+    updateTabsetPanel(session, inputId='whichPanel', selected='Review')
+    updateTabsetPanel(session, inputId='reviewTabs', selected='PDF viewer')
+    output$pdfview <- renderUI({
+      tags$iframe(style="height:600px; width:1000px", src="QAtoolsUserGuide.pdf")
+    })
+  })
   observeEvent (input$savePDF, {
     showNotification ('generating plots: please wait...', action=NULL, duration=NULL, id='plotgenWait',
       type='default', closeButton=FALSE)
     savePDF (Data=data(), inp=input)
-##    browseURL('./www/latestPlots.pdf') ## browser='/usr/bin/evince')
+    ## Comment next line for deployment on a shiny server, which will reject display of pdf file.
+    # browseURL('./www/latestPlots.pdf') ## browser='/usr/bin/evince')
+    output$pdfview <- renderUI({
+      tags$iframe(style="height:600px; width:1000px", src="latestPlots.pdf")
+    })
     removeNotification (id='plotgenWait')
+    updateTabsetPanel(session, inputId='whichPanel', selected='Review')
+    updateTabsetPanel(session, inputId='reviewTabs', selected='PDF viewer')
   })
   
   output$pdfviewer <- renderText({
