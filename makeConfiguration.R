@@ -2,24 +2,31 @@
 
 # Start with a sample netCDF file.
 # Specify the new project here; 'WECAN' should be changed to the new project.
-NewProject <- 'WCR-TEST'
-Flight <- 'nov2'  # Specify the model netCDF file
+NewProject <- 'ASPIRE-TEST'
+Flight <- 'rf01'  # Specify the model netCDF file
 fname <- sprintf ('%s%s/%s%s.nc', Ranadu::DataDirectory(),
                   NewProject, NewProject, Flight)
 FI <- Ranadu::DataFileInfo (fname)
+print(FI)
 # get all variables to be able to reference attributes
-Data <- Ranadu::getNetCDF(fname, 'ALL') 
+Data <- Ranadu::getNetCDF(fname, 'ALL')
 
 # Now read the existing Configuration.R and, for the required platform,
 # find all variables that have been used for each plot:
 
-PJC130 <- c('MethaneAIR',
+PJC130 <- c(
+  'WCR-TEST',
   'WECAN',
   'WECAN-TEST',
   'WINTER',
 #  'NOMADSS',
   'FRAPPE')
 PJGV  <- c(
+  'ASPIRE-TEST',
+  'SPICULE',
+  'MethaneAIR',
+  'ACCLIP-TEST',
+  'OTREC',
   'ECLIPSE2019',
   'OTREC-TEST',
   'SOCRATES',
@@ -351,6 +358,7 @@ VRX[[22]] <- unique (c('TASX', V[grepl('CONC1DC', V)],
 # RPlot23: Air chemistry
 VAC <- c(FI$Variables[grepl('Monoxide', FI$LongNames)])
 VAC <- c(VAC, FI$Variables[grepl('PIC', FI$Variables)])
+VAC <- c(VAC, FI$Variables[grepl('WVISO', FI$Variables)])
 VAC <- c(VAC, FI$Variables[grepl('ARI', FI$Variables)])
 VAC <- c(VAC, FI$Variables[grepl('Aerolaser', FI$LongNames)])
 VRX[[23]] <- unique (c(VRX[[23]], VAC))

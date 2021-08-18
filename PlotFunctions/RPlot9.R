@@ -110,8 +110,8 @@ RPlot9 <- function (data, Seq = NA, panl = 1) {
     )
     title (sprintf (
       "average vertical wind: = %.02f",
-
-      apply(data[, WI], 2, mean,na.rm = TRUE)
+      mean(data[, WI[1]], na.rm = TRUE)
+      ## apply(data[, WI], 2, mean,na.rm = TRUE) -- temporary - WAC
     ),
     cex.main = 1.2)
     hline (2)
