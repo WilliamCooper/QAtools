@@ -75,7 +75,7 @@ minT <- as.POSIXct(0, origin='2012-05-29', tz='UTC')
 maxT <- as.POSIXct(3600*8, origin='2012-05-29', tz='UTC')
 step <- 60
 
-PJ <- c('ASPIRE-TEST', 'SPICULE', 'WCR-TEST', 'MethaneAIR', 'ACCLIP-TEST', 
+PJ <- c('MethaneAIR21','ASPIRE-TEST', 'SPICULE', 'WCR-TEST', 'MethaneAIR', 'ACCLIP-TEST', 
   'OTREC', 'ECLIPSE2019', 'OTREC-TEST', 'WECAN', 'SOCRATES', 'WECAN-TEST', 
   'ECLIPSE', 'ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
   'DEEPWAVE', 'CONTRAST', 'SPRITE-II', 'MPEX', 'DC3', 'HEFT10', 'IDEAS-4', 'FRAPPE',
