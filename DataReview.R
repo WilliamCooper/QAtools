@@ -151,7 +151,8 @@ for (Flight in Flt) {
       CFSSP <- NULL
       CUHSAS <- NULL
       C1DC <- NULL
-      if (!(str_detect(Flight, "[a-zA-Z]*(.f)[0-9]*.nc"))) {
+      if (!grepl("[a-zA-Z]*(.f)[0-9]*.nc", Flight)) {
+      # if (!(str_detect(Flight, "[a-zA-Z]*(.f)[0-9]*.nc"))) {
           print (sprintf ('nonstandard flight string in %s', Flight))
           print ('Flight string must match [rt]f[0-9][0-9]')
           quit()
