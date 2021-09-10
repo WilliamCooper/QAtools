@@ -222,7 +222,7 @@ for (Flight in Flt) {
       GitRepo=sprintf(system("git config --get remote.origin.url", intern = TRUE))
       GitCommit=sprintf(system("git rev-parse --short HEAD", intern = TRUE))
       GitBranch=sprintf(system("git rev-parse --abbrev-ref HEAD", intern = TRUE))
-      GitTag=sprintf(system)"git describe --tags", intern = TRUE))
+      GitTag=sprintf(system("git describe --tags", intern = TRUE))
       FigFooter=sprintf("%s %s%02d %s %s-%s UTC,", Project, ftype,
         fnumber, strftime(Data$Time[i], format="%Y-%m-%d", tz='UTC'),
         strftime(Data$Time[i], format="%H:%M:%S", tz='UTC'),
