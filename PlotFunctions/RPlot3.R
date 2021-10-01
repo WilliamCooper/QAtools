@@ -10,7 +10,7 @@ RPlot3 <- function (data, Seq=NA, panl=1, ...) {
       print(sprintf('panel11, VRPlot[[3]]:'))
       print(VRPlot[[3]])
     }
-    # Correct for kelvin units:
+    # Correct for kelvin units: 
     unitK <- lapply(data[, VRPlot[[3]]], attr, which='units')
     iwk <- which(grepl('K', unitK))
     dataK <- data[, c('Time', VRPlot[[3]])]

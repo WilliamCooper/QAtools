@@ -151,11 +151,21 @@ for (Flight in Flt) {
       CFSSP <- NULL
       CUHSAS <- NULL
       C1DC <- NULL
-      if (!(str_detect(Flight, "[a-zA-Z]*(.f)[0-9]*.nc"))) {
+      if (!grepl("[a-zA-Z]*(.f)[0-9]*.nc", Flight)) {
+      # if (!(str_detect(Flight, "[a-zA-Z]*(.f)[0-9]*.nc"))) {
           print (sprintf ('nonstandard flight string in %s', Flight))
           print ('Flight string must match [rt]f[0-9][0-9]')
           quit()
       } else {
+          fnumber <- as.numeric (sub('[a-zA-Z]*([0-9]*).nc', '\\1', Flight))
+          ftype <- sub('[A-Za-z]*(.f)[0-9]*.nc', '\\1', Flight)
+      }
+
+#      if (!(str_detect(Flight, "[a-zA-Z]*(.f)[0-9]*.nc"))) {
+#          print (sprintf ('nonstandard flight string in %s', Flight))
+#          print ('Flight string must match [rt]f[0-9][0-9]')
+#          quit()
+#      } else {
 ##          fnumber <- as.numeric (sub('[a-zA-Z]*([0-9]*).nc', '\\1', Flight))
 ##          ftype <- sub('[A-Za-z]*(.f)[0-9]*.nc', '\\1', Flight)
 # 210712, BBS: the above was not handling hyphens in project names (e.g. WCR-TEST or ASPIRE-TEST), added hyphens:
@@ -163,10 +173,10 @@ for (Flight in Flt) {
 ##            ftype <- sub('[A-Za-z-]*(.f)[0-9]*.nc', '\\1', Flight)
 # 210729, BBS: now causing problems for MethaneAIR21 because of the numbers in the project name. . .
 # 210802, TMT: this fix relies on a flight argument, but it will work for MethaneAIR
-        flight_info <- strsplit(FlightX, 0)
-        ftype <- flight_info[[1]][1]
-        fnumber <- as.numeric(flight_info[[1]][2])
-      }
+#        flight_info <- strsplit(FlightX, 0)
+#        ftype <- flight_info[[1]][1]
+#        fnumber <- as.numeric(flight_info[[1]][2])
+#      }
       ## next statement needs to be inside "ALL" loop, in case available variables change
       VRPlot <- loadVRPlot (Project, FALSE, fnumber, psq)  ## get VRPlot list for this project
       Cradeg <- pi/180

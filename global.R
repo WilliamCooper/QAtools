@@ -26,12 +26,12 @@ cexmain <- 1  # standard size of the title text.
 # the bottom panel but all panels have abscissa labels.
 setMargins <- function(panel = 1) {
   switch (panel,
-    op <- par (mar = c(5, 5, 1, 1) + 0.1, oma = c(1.1, 0, 0, 0)), 
-    op <- par (mar = c(2, 5, 1, 1) + 0.1),
-    op <- par (mar = c(5, 5, 1, 1) + 0.1, oma = c(1.1, 0, 0, 0)),
-    op <- par (mar = c(2, 5, 1, 1) + 0.1, oma = c(1.1, 0, 0, 0)),
-    op <- par (mar = c(5, 5, 1, 1) + 0.1)
-    )
+          op <- par (mar = c(5, 5, 1, 1) + 0.1, oma = c(1.1, 0, 0, 0)), 
+          op <- par (mar = c(2, 5, 1, 1) + 0.1),
+          op <- par (mar = c(5, 5, 1, 1) + 0.1, oma = c(1.1, 0, 0, 0)),
+          op <- par (mar = c(2, 5, 1, 1) + 0.1, oma = c(1.1, 0, 0, 0)),
+          op <- par (mar = c(5, 5, 1, 1) + 0.1)
+  )
 }
 
 # The next function is used to set ordinate limits including "brush" changes:
@@ -46,7 +46,7 @@ YLMF <- function (panel, defaultRange) {
 
 ## for these plots, disable "brush":
 noBrush <- c(1, 4, 6, 26, 28, 29, 30, 31, 32, 
-  33, 34, 35, 36, 37, 38, 39, 40, 45)
+             33, 34, 35, 36, 37, 38, 39, 40, 45)
 #setwd('~/RStudio/QAtools')
 suppressMessages (
   library(shiny, quietly=TRUE, warn.conflicts=FALSE)
@@ -75,9 +75,7 @@ minT <- as.POSIXct(0, origin='2012-05-29', tz='UTC')
 maxT <- as.POSIXct(3600*8, origin='2012-05-29', tz='UTC')
 step <- 60
 
-PJ <- c('MethaneAIR21','ASPIRE-TEST', 'SPICULE', 'WCR-TEST', 'MethaneAIR', 'ACCLIP-TEST', 
-  'OTREC', 'ECLIPSE2019', 'OTREC-TEST', 'WECAN', 'SOCRATES', 'WECAN-TEST', 
-  'ECLIPSE', 'ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
+PJ <- c('SPICULE', 'WCR-TEST', 'MethaneAIR', 'ACCLIP-TEST', 'OTREC', 'ECLIPSE2019', 'OTREC-TEST', 'WECAN', 'SOCRATES', 'WECAN-TEST', 'ECLIPSE', 'ARISTO2017', 'ORCAS', 'CSET', 'NOREASTER', 'HCRTEST',
   'DEEPWAVE', 'CONTRAST', 'SPRITE-II', 'MPEX', 'DC3', 'HEFT10', 'IDEAS-4', 'FRAPPE',
   'TORERO', 'HIPPO-5', 'HIPPO-4', 'HIPPO-3', 'HIPPO-2', 'DC3-TEST',
   'HIPPO-1','PREDICT', 'START08', 'PACDEX', 'TREX', 'WINTER', 'NOMADSS')
@@ -90,21 +88,32 @@ PJ <- PJ[-which('lost+found' == PJ)]
 FullPJ <- paste0(DataDirectory(), PJ)
 iw <- which.max(file.mtime(FullPJ))
 PJ <- c(PJ[iw], PJ[-iw])
+## This branch supports a single-HIPPO-directory structure,
+## as on /scr/raf_data. The code also accepts individual directories HIPPO-1, etc.
+singleHIPPO <- ifelse(('HIPPO' %in% PJ) && !('HIPPO-1' %in% PJ), TRUE, FALSE)
+if (singleHIPPO) {
+  PJ <- c(PJ[-which(PJ %in% 'HIPPO')], 'HIPPO-1', 'HIPPO-2', 
+                          'HIPPO-3', 'HIPPO-4', 'HIPPO-5')
+} else if ('HIPPO' %in% PJ) {
+  PJ <- PJ[-which(PJ == 'HIPPO')]
+}
+PJ <- unique(PJ)
 ## Keep only directories with a rf01 or tf01
 for (P in PJ) {
-  if (grepl('HIPPO', P)) {
+  if (grepl('HIPPO-', P) && singleHIPPO) {
     fn <- sprintf ('%sHIPPO/%srf01.nc', DataDirectory (), P)
   } else {
     fn <- sprintf ('%s%s/%srf01.nc', DataDirectory (), P, P)
-    if (!file.exists (fn)) {
-      fn <- sub ('\\.nc', '.Rdata', fn)
-    }
-    if (!file.exists (fn)) {
-      fn <- sprintf ('%s%s/%stf01.nc', DataDirectory (), P, P)
-    }
-    if (!file.exists (fn)) {
-      fn <- sub ('\\.nc', '.Rdata', fn)
-    }
+  }
+  if (!file.exists (fn)) {
+    fn <- sub('rf', 'tf', fn)
+  }
+  if (!file.exists (fn)) {
+    fn <- sub ('\\.nc', '.Rdata', fn)
+  }
+  if (!file.exists (fn)) {
+    fn <- sub ('tf', 'rf', fn)
+    fn <- sub ('\\.nc', '.Rdata', fn)
   }
   if (!file.exists (fn)) {PJ[PJ==P] <- NA}
 }
@@ -199,7 +208,7 @@ if (file.exists('frozen/frozenEvents.Rdata')) {
     for (i in 1:nrow(frozenEvents)) {
       u <- ifelse (frozenEvents$Rej[i], 'Y', 'N')
       print (s <- sprintf ('%s %d %s rf%02d %s-%s', u, i, frozenEvents$Project[i], frozenEvents$Flight[i],
-        formatTime(frozenEvents$Start[i]), formatTime(frozenEvents$End[i])))
+                           formatTime(frozenEvents$Start[i]), formatTime(frozenEvents$End[i])))
       chFrozen[i] <- sprintf ('%d', i)
       names(chFrozen)[i] <- s
     }
@@ -270,13 +279,13 @@ checkBad <- function (fn) {
 
 ## all possible temperature variables
 ATVARS <- c('ATX', 'AT_A', 'AT_A2', 'ATH1', 'ATH2', 'ATH3', 'ATH4', 'ATF1', 'ATF2',
-  'ATHR1', 'ATHR2', 'ATHL1', 'ATHL2', 'ATFH1', 'ATFH2')
+            'ATHR1', 'ATHR2', 'ATHL1', 'ATHL2', 'ATFH1', 'ATFH2')
 
 ## function for minimization in 'optim':
 fr <- function (x, DF) {
   rf <- 0.988 + with(DF, 
-    0.053 * log10(MACHX) + 0.090* (log10(MACHX))^2 
-    + 0.091 * (log10(MACHX))^3)
+                     0.053 * log10(MACHX) + 0.090* (log10(MACHX))^2 
+                     + 0.091 * (log10(MACHX))^3)
   At <- (x[1] + (1 + x[2]) * DF$RTX + x[3] * DF$RTX^2 + 273.15) / (1 + rf * DF$MACHX^2 * DF$Ra / (2 * DF$cv))
   dif <- with (DF, (Ra * At * DLP / Grav + DZ)^2)
   DF$Valid[abs(dif) > 20] <- FALSE
@@ -441,16 +450,12 @@ SeekManeuvers <- function (Data) {
 ProjectSeekManeuvers <- function (inp) {
   ## for this project, this replaces the data.frame Maneuvers with a new temporary one
   Project <- inp$ProjectPP
-  if (grepl ('HIPPO', Project)) {
-    ProjDir <- 'HIPPO'
-  } else {
-    ProjDir <- Project
-  }
-  # print (ProjectPP)
+  ProjDir <- Project
+  if(grepl('HIPPO-', Project) && singleHIPPO) {ProjDir <- 'HIPPO'}
   Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjDir),
-    sprintf ("%srf...nc$", Project)))
+                          sprintf ("%srf...nc$", Project)))
   Fl <- c(Fl, sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjDir),
-    sprintf ("%stf...nc$", Project))))
+                                sprintf ("%stf...nc$", Project))))
   # print (Fl)
   if (!is.na (Fl[1])) {
     print (sprintf ('Maneuvers for project %s', Project))
@@ -570,7 +575,7 @@ ALLWIF <- FALSE
 
 getNext <- function(Project) {
   Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), Project),
-    sprintf ("%srf..KF.nc", Project)), decreasing = TRUE)[1]
+                          sprintf ("%srf..KF.nc", Project)), decreasing = TRUE)[1]
   if (is.na (Fl)) {
     Flight <- 1
   } else {
@@ -583,7 +588,7 @@ getNext <- function(Project) {
 
 getNextHOT <- function(Project) {
   Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), Project),
-    sprintf ("%srf..Z.nc", Project)), decreasing = TRUE)[1]
+                          sprintf ("%srf..Z.nc", Project)), decreasing = TRUE)[1]
   if (is.na (Fl)) {
     Flight <- 1
   } else {
@@ -604,14 +609,14 @@ ShowProgress <- function(NSTEP, progress, Flight) {
     if (grepl ('main loop', M)) {
       PLOOP <- FALSE
       progress$set(message = 'main-loop progress',
-        detail = sprintf('flight %d', Flight), value=1)
+                   detail = sprintf('flight %d', Flight), value=1)
       next
     }
     if (grepl('IRU loop', M)) {
       P <- sub ('.*loop ', '', sub ('% do.*', '', M))
       # print (sprintf ('progress is %d', as.integer(P)))
       progress$set(message = 'retrieve IRU msrmts',
-        detail = sprintf('flight %d', Flight), value=as.integer (P))
+                   detail = sprintf('flight %d', Flight), value=as.integer (P))
     }
   }
   PLOOP <- 1
@@ -628,7 +633,7 @@ ShowProgress <- function(NSTEP, progress, Flight) {
       P <- sub ('.*loop ', '', sub ('% do.*', '', M))
       # print (sprintf ('progress is %d', as.integer(P)))
       progress$set(message = 'main-loop progress',
-        detail = sprintf('flight %d', Flight), value=as.integer (P))
+                   detail = sprintf('flight %d', Flight), value=as.integer (P))
     }
   }
   PLOOP <- 1
@@ -645,7 +650,7 @@ ShowProgress <- function(NSTEP, progress, Flight) {
       P <- sub ('.*figures ', '', sub ('% do.*', '', M))
       # print (sprintf ('progress is %d', as.integer(P)))
       progress$set(message = 'generating figures',
-        detail = sprintf('flight %d', Flight), value=as.integer (P))
+                   detail = sprintf('flight %d', Flight), value=as.integer (P))
     }
   }
   progress$set(message = 'creating new netCDF file', value=0)
@@ -663,7 +668,7 @@ ShowProgress <- function(NSTEP, progress, Flight) {
       P <- sub ('.*new-netcdf ', '', sub ('% do.*', '', M))
       # print (sprintf ('progress is %d', as.integer(P)))
       progress$set(message = 'creating new netCDF file',
-        detail = sprintf('flight %d', Flight), value=as.integer (P))
+                   detail = sprintf('flight %d', Flight), value=as.integer (P))
     }
   }
   # PLOOP <- 1
@@ -702,13 +707,13 @@ ShowProgressWIF <- function(progress, Flight) {
         Fl <- as.integer (sub ('.*rf', '', sub ('.nc.*', '', M[iw[1]])))
         P <- P +  4
         progress$set(message = 'reading data',
-          detail = sprintf('flight %d', Fl), value=P)
+                     detail = sprintf('flight %d', Fl), value=P)
       }
       if (any (grepl ('calculate new', M))) {
         PLOOP <- FALSE
         P <- 30
         progress$set(message = 'calculate new variables',
-          detail = sprintf('flight %d', Fl), value=P)
+                     detail = sprintf('flight %d', Fl), value=P)
       } 
     }
     PLOOP <- 1
@@ -722,11 +727,11 @@ ShowProgressWIF <- function(progress, Flight) {
         PLOOP <- FALSE
         P <- 60
         progress$set(message = 'set up netCDF variables',
-          detail = sprintf('flight %d', Fl), value=P)
+                     detail = sprintf('flight %d', Fl), value=P)
       } else {
         P <- P + 2
         progress$set(message = 'calculate new variables',
-          detail = sprintf('flight %d', Fl), value=P)
+                     detail = sprintf('flight %d', Fl), value=P)
       }
     }
     PLOOP <- 1
@@ -740,7 +745,7 @@ ShowProgressWIF <- function(progress, Flight) {
         PLOOP <- FALSE
         P <- 65
         progress$set (message = 'write new netCDF file',
-          detail = sprintf ('flight %d', Fl), value=P)
+                      detail = sprintf ('flight %d', Fl), value=P)
       }
     }
     PLOOP <- 1
@@ -754,7 +759,7 @@ ShowProgressWIF <- function(progress, Flight) {
         PLOOP <- FALSE
         P <- 99
         progress$set(message = 'Finished',
-          detail = sprintf('flight %d', Fl), value=P)
+                     detail = sprintf('flight %d', Fl), value=P)
       } else {
         P <- P + 2
         P <- sub ('.*netCDF ', '', M[3])
@@ -762,18 +767,18 @@ ShowProgressWIF <- function(progress, Flight) {
         P <- as.integer(P)
         P <- 65 + 35 * P/100
         progress$set(message = 'write new netCDF file',
-          detail = sprintf('flight %d', Fl), value=P)
+                     detail = sprintf('flight %d', Fl), value=P)
       }
     }
-
+    
     progress$set(message = '  -- DONE -- ',
-      detail = sprintf('flight %d', Fl), value=100)
+                 detail = sprintf('flight %d', Fl), value=100)
     ## read again (time to write all-done message)
     M <- system('tail -n 5 newWind/newWindlog', intern=TRUE)
     if (any (grepl ('Done', M))) {
       AllDone <- TRUE
       progress$set(message = 'newWind script has finished',
-        detail = sprintf ('flight %s', Fl))
+                   detail = sprintf ('flight %s', Fl))
     }
     if (AllDone) {break}
   }
@@ -791,14 +796,14 @@ ShowProgressHOT <- function(progress, Flight) {
     if (any (grepl ('download done', M))) {
       PLOOP <- FALSE
       progress$set(message = 'calc. new variables',
-        detail = sprintf('flight %d', Flight), value=80)
+                   detail = sprintf('flight %d', Flight), value=80)
     } else if (any (grepl('SRTM data', M))) {
       MM <- which (grepl ('SRTM data', M))
       M <- M[MM[length(MM)]]
       P <- sub ('.*data ', '', sub ('% do.*', '', M))
       # print (sprintf ('progress is %d', as.integer(P)))
       progress$set(message = 'retrieve SRTM',
-        detail = sprintf('flight %d', Flight), value=as.integer (0.8 * as.integer (P)))
+                   detail = sprintf('flight %d', Flight), value=as.integer (0.8 * as.integer (P)))
     }
   }
   PLOOP <- 1
@@ -810,7 +815,7 @@ ShowProgressHOT <- function(progress, Flight) {
     M <- system('tail -n 5 ../HeightOfTerrain/HOTlog', intern=TRUE)
     if (any (grepl ('modify netCDF', M))) {
       progress$set(message = 'write new netCDF',
-        detail = sprintf('flight %d', Flight), value=96)
+                   detail = sprintf('flight %d', Flight), value=96)
       break
     }
     if (any (grepl ('find SFC', M))) {
@@ -818,8 +823,8 @@ ShowProgressHOT <- function(progress, Flight) {
       M <- M[MM[length(MM)]]
       P <- sub ('.*SFC ', '', sub ('% do.*', '', M))
       progress$set(message = 'calculate SFC',
-        detail = sprintf('flight %d', Flight), 
-        value=80 + as.integer (0.16 * as.integer(P)))
+                   detail = sprintf('flight %d', Flight), 
+                   value=80 + as.integer (0.16 * as.integer(P)))
     }
   }
   PLOOP <- 1
@@ -833,7 +838,7 @@ ShowProgressHOT <- function(progress, Flight) {
     }
   }
   progress$set(message = '  -- DONE -- ',
-    detail = sprintf('flight %d', Flight), value=100)
+               detail = sprintf('flight %d', Flight), value=100)
 }
 
 runScriptWIF <- function (ssn, ipADDW) {
@@ -841,28 +846,28 @@ runScriptWIF <- function (ssn, ipADDW) {
   system ('rm newWind/newWindlog')
   
   ProjectDir <- ProjectWIF
-  if ('HIPPO' %in% ProjectDir) {ProjectDir <- 'HIPPO'}
+  if(grepl('HIPPO-', ProjectWIF) && singleHIPPO) {ProjectDir <- 'HIPPO'}
   if (ALLWIF) {
     Flight <- 'All'
     progress$set(message = 'read data, initialize',
-      detail = sprintf('flight %s', Flight),
-      value=0)
+                 detail = sprintf('flight %s', Flight),
+                 value=0)
     cmd <- sprintf ('cd newWind;Rscript newWind.R %s %s %s %s %s %s| tee -a newWindlog',
-      ProjectWIF, Flight, ipADDW[1], ipADDW[2], ipADDW[3], ipADDW[4])
+                    ProjectWIF, Flight, ipADDW[1], ipADDW[2], ipADDW[3], ipADDW[4])
   } else if (NEXTWIF) {
     Flight <- 'NEXT'
     progress$set(message = 'read data, initialize',
-      detail = sprintf('flight %s', Flight),
-      value=0)
+                 detail = sprintf('flight %s', Flight),
+                 value=0)
     cmd <- sprintf ('cd newWind;Rscript newWind.R %s %s %s %s %s %s| tee -a newWindlog',
-      ProjectWIF, Flight, ipADDW[1], ipADDW[2], ipADDW[3], ipADDW[4])
+                    ProjectWIF, Flight, ipADDW[1], ipADDW[2], ipADDW[3], ipADDW[4])
   } else {
     Flight <- FlightWIF
     progress$set(message = 'read data, initialize',
-      detail = sprintf('flight %d', Flight),
-      value=0)
+                 detail = sprintf('flight %d', Flight),
+                 value=0)
     cmd <- sprintf ('cd newWind;Rscript newWind.R %s %d %s %s %s %s| tee -a newWindlog',
-      ProjectWIF, Flight, ipADDW[1], ipADDW[2], ipADDW[3], ipADDW[4])
+                    ProjectWIF, Flight, ipADDW[1], ipADDW[2], ipADDW[3], ipADDW[4])
     print (ipADDW)
   }
   system (cmd, wait=FALSE)
@@ -878,16 +883,16 @@ runScriptHOT <- function (ssn) {
   system ('rm ../HeightOfTerrain/HOTlog')
   
   ProjectDir <- ProjectHOT
-  if ('HIPPO' %in% ProjectDir) {ProjectDir <- 'HIPPO'}
+  if(grepl('HIPPO-', ProjectHOT) && singleHIPPO) {ProjectDir <- 'HIPPO'}
   if (ALLHOT) {
     ## get list of files to process:
     Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjectDir),
-      sprintf ("%srf...nc", ProjectHOT)))
+                            sprintf ("%srf...nc", ProjectHOT)))
     if (!is.na (Fl[1])) {
       for (Flt in Fl) {
         FltHOT <- sub ('.nc$', 'Z.nc', Flt)
         if (file.exists (sprintf ("%s%s/%s",
-          DataDirectory (), ProjectDir, FltHOT))) {next}
+                                  DataDirectory (), ProjectDir, FltHOT))) {next}
         if (file.exists ('../HeightOfTerrain/HOTplots/Track.png')) {
           system('rm ../HeightOfTerrain/HOTplots/*png')
         }
@@ -895,10 +900,10 @@ runScriptHOT <- function (ssn) {
         Flight <- as.numeric (Flight)
         updateNumericInput (ssn, 'FlightHOT', value=Flight)
         progress$set(message = 'read data, initialize',
-          detail = sprintf('flight %d', Flight),
-          value=0)
+                     detail = sprintf('flight %d', Flight),
+                     value=0)
         cmd <- sprintf('cd ../HeightOfTerrain;Rscript HeightOfTerrain.R %s %d | tee -a HOTlog',
-          ProjectHOT, Flight)
+                       ProjectHOT, Flight)
         # print (sprintf ('run command: %s', cmd))
         system (cmd, wait=FALSE)
         # print (sprintf ('returned from command %s', cmd))
@@ -909,18 +914,18 @@ runScriptHOT <- function (ssn) {
     Flight <- getNextHOT(ProjectHOT)
     updateNumericInput (ssn, 'FlightHOT', value=Flight)
     progress$set(message = 'read data, initialize',
-      detail = sprintf('flight %d', Flight),
-      value=0)
+                 detail = sprintf('flight %d', Flight),
+                 value=0)
     cmd <- sprintf('cd ../HeightOfTerrain;Rscript HeightOfTerrain.R %s %d %s | tee -a HOTlog',
-      ProjectHOT, Flight, genPlotHOT)
+                   ProjectHOT, Flight, genPlotHOT)
     system (cmd, wait=FALSE)
     ShowProgressHOT (progress, Flight)
   } else {
     progress$set(message = 'read data, initialize',
-      detail = sprintf('flight %d', FlightHOT),
-      value=0)
+                 detail = sprintf('flight %d', FlightHOT),
+                 value=0)
     cmd <- sprintf('cd ../HeightOfTerrain;Rscript HeightOfTerrain.R %s %d %s | tee -a HOTlog',
-      ProjectHOT, FlightHOT, genPlotHOT)
+                   ProjectHOT, FlightHOT, genPlotHOT)
     system (cmd, wait=FALSE)
     ShowProgressHOT (progress, FlightHOT)
   }
@@ -933,16 +938,16 @@ runScript <- function (ssn) {
   }
   
   ProjectDir <- ProjectKF
-  if ('HIPPO' %in% ProjectDir) {ProjectDir <- 'HIPPO'}
+  if(grepl('HIPPO-', ProjectKF) && singleHIPPO) {ProjectDir <- 'HIPPO'}
   if (ALL) {
     ## get list of files to process:
     Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjectDir),
-      sprintf ("%srf...nc", ProjectKF)))
+                            sprintf ("%srf...nc", ProjectKF)))
     if (!is.na (Fl[1])) {
       for (Flt in Fl) {
         FltKF <- sub ('.nc$', 'KF.nc', Flt)
         if (file.exists (sprintf ("%s%s/%s",
-          DataDirectory (), ProjectDir, FltKF))) {next}
+                                  DataDirectory (), ProjectDir, FltKF))) {next}
         if (file.exists ('~/RStudio/KalmanFilter/KFplots/Position.png')) {
           system('rm ~/RStudio/KalmanFilter/KFplots/*png')
         }
@@ -950,10 +955,10 @@ runScript <- function (ssn) {
         Flight <- as.numeric (Flight)
         updateNumericInput (ssn, 'FlightKF', value=Flight)
         progress$set(message = 'read data, initialize',
-          detail = sprintf('flight %d', Flight),
-          value=0)
+                     detail = sprintf('flight %d', Flight),
+                     value=0)
         cmd <- sprintf('cd ~/RStudio/KalmanFilter;Rscript KalmanFilter.R %s %d %s %s %s %d %s | tee -a KFlog',
-          Project, Flight, newAK, newSS, simple, NSTEP, genPlot)
+                       Project, Flight, newAK, newSS, simple, NSTEP, genPlot)
         print (sprintf ('run commnad: %s', cmd))
         system (cmd, wait=FALSE)
         ShowProgress (NSTEP, progress, Flight)
@@ -963,18 +968,18 @@ runScript <- function (ssn) {
     Flight <- getNext(ProjectKF)
     updateNumericInput (ssn, 'FlightKF', value=Flight)
     progress$set(message = 'read data, initialize',
-      detail = sprintf('flight %d', Flight),
-      value=0)
+                 detail = sprintf('flight %d', Flight),
+                 value=0)
     cmd <- sprintf('cd ~/RStudio/KalmanFilter;Rscript KalmanFilter.R %s %d %s %s %s %d %s | tee -a KFlog',
-      ProjectKF, Flight, newAK, newSS, simple, NSTEP, genPlot)
+                   ProjectKF, Flight, newAK, newSS, simple, NSTEP, genPlot)
     system (cmd, wait=FALSE)
     ShowProgress (NSTEP, progress, Flight)
   } else {
     progress$set(message = 'read data, initialize',
-      detail = sprintf('flight %d', FlightKF),
-      value=0)
+                 detail = sprintf('flight %d', FlightKF),
+                 value=0)
     cmd <- sprintf('cd ~/RStudio/KalmanFilter;Rscript KalmanFilter.R %s %d %s %s %s %d %s | tee -a KFlog',
-      ProjectKF, FlightKF, newAK, newSS, simple, NSTEP, genPlot)
+                   ProjectKF, FlightKF, newAK, newSS, simple, NSTEP, genPlot)
     system (cmd, wait=FALSE)
     ShowProgress (NSTEP, progress, FlightKF)
   }
@@ -1021,7 +1026,7 @@ qualifyData <- function(D) {
 
 makeDataFile <- function(Proj, Flt, Vars) {
   ProjDir <- Proj
-  if (grepl('HIPPO', Proj)) {ProjDir <- 'HIPPO'}
+  if(grepl('HIPPO-', Proj) && singleHIPPO) {ProjDir <- 'HIPPO'}
   if (Flt == 'ALL') {
     Ft <- 1
   } else {
@@ -1082,9 +1087,9 @@ makeDataFile <- function(Proj, Flt, Vars) {
   if (Flt == 'ALL') {
     ## loop through all the flights in this project:
     Flrf <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjDir),
-      sprintf ("%srf...nc$", Proj)))
+                              sprintf ("%srf...nc$", Proj)))
     Fltf <- sort (list.files (sprintf ("%s%s/", DataDirectory (), ProjDir),
-      sprintf ("%stf...nc$", Proj)))
+                              sprintf ("%stf...nc$", Proj)))
     D <- data.frame()
     if (!is.na (Fltf[1])) {
       ## eliminate any variables that are not present for all flights:
@@ -1093,7 +1098,7 @@ makeDataFile <- function(Proj, Flt, Vars) {
         if (checkBad (Ftemp <- sprintf ('%stf%02d', Proj, Ft))) {
         } else {
           FII <- DataFileInfo (sprintf ('%s%s/%stf%02d.nc', DataDirectory(), ProjDir, 
-            Proj, Ft), LLrange=FALSE)
+                                        Proj, Ft), LLrange=FALSE)
           im <- match (Vars, FII$Variables)
           if (any(is.na(im))) {
             Vars <- Vars[-which(is.na(im))]
@@ -1108,7 +1113,7 @@ makeDataFile <- function(Proj, Flt, Vars) {
         if (checkBad (Ftemp <- sprintf ('%srf%02d', Proj, Ft))) {
         } else {
           FII <- DataFileInfo (sprintf ('%s%s/%srf%02d.nc', DataDirectory(), ProjDir, 
-            Proj, Ft), LLrange=FALSE)
+                                        Proj, Ft), LLrange=FALSE)
           im <- match (Vars, FII$Variables)
           if (any(is.na(im))) {
             Vars <- Vars[-which(is.na(im))]
@@ -1123,7 +1128,7 @@ makeDataFile <- function(Proj, Flt, Vars) {
         next
       }
       fname <- sprintf ('%s%s/%stf%02d.nc', DataDirectory(),
-        ProjDir, Proj, Ft)
+                        ProjDir, Proj, Ft)
       D <- rbind (D, getNetCDF (fname, Vars, F=Ft+50))
     }
     if (exists ('FltPP2')) {
@@ -1134,7 +1139,7 @@ makeDataFile <- function(Proj, Flt, Vars) {
           next
         }
         fname <- sprintf ('%s%s/%srf%02d.nc', DataDirectory(),
-          ProjDir, Proj, Ft)
+                          ProjDir, Proj, Ft)
         D <- rbind (D, getNetCDF (fname, Vars, F=Ft))
       }
     }
@@ -1187,15 +1192,15 @@ nplots <- c(1, 3:17, 19:23)    # project default
 # so for example pan[11] refers to the number of panels generated
 # for the second plot produced by RPlot7.R
 psq <- c(1,1, 1,2, 3,1, 4,1, 5,1, 5,2, 5,3, 5,4, 6,1, 7,1, 7,2,  #11
-  8,1, 9,1, 9,2, 10,1, 10,2, 11,1, 12,1, 13,1, 14,1, 15,1, 15,2, #22
-  16,1, 16,2, 16,3, 17,1, 19,1, 19,2, #28
-  20,1, 20,2, 20,3, 20,4, 21,1, 21,2, 21,3, 21,4, #36
-  22,1, 22,2, 22,3, 22,4, 23,1, 23,2, #42
-  24,1, 25,1, 26,1, 27,1, 28,1, 29,1, 30,1) #49
+         8,1, 9,1, 9,2, 10,1, 10,2, 11,1, 12,1, 13,1, 14,1, 15,1, 15,2, #22
+         16,1, 16,2, 16,3, 17,1, 19,1, 19,2, #28
+         20,1, 20,2, 20,3, 20,4, 21,1, 21,2, 21,3, 21,4, #36
+         22,1, 22,2, 22,3, 22,4, 23,1, 23,2, #42
+         24,1, 25,1, 26,1, 27,1, 28,1, 29,1, 30,1) #49
 dpan <- c(1, 3, 2, 1, 2, 1, 2, 3, 3, 3, 3, #11
-  2, 3, 2, 3, 2, 4, 3, 3, 4, 2, 2,        #22
-  3, 3, 3, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  # 40
-  4, 1, 2, 1, 1, 1, 1, 1, 1)  #49
+          2, 3, 2, 3, 2, 4, 3, 3, 4, 2, 2,        #22
+          3, 3, 3, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  # 40
+          4, 1, 2, 1, 1, 1, 1, 1, 1)  #49
 PlotTypes <- c(      
   'flight track' = 1,
   'altitude, heading'= 2,
@@ -1238,30 +1243,9 @@ testPlot <- function (k) {
 
 CHP <- c('recovery factor', 'angle of attack', 'airspeed dependence')
 DataDir <- DataDirectory ()
-for (P in PJ) {
-  if (grepl('HIPPO', P)) {
-    if (grepl ('raf_data', DataDir)) {
-      fn <- sprintf ('%sHIPPO/old_nimbus/%srf01.nc', DataDirectory (), P)  
-    } else {
-      fn <- sprintf ('%sHIPPO/%srf01.nc', DataDirectory (), P)
-    }
-  } else {
-    fn <- sprintf ('%s%s/%srf01.nc', DataDirectory (), P, P)
-    if (!file.exists (fn)) {
-      fn <- sub ('\\.nc', '.Rdata', fn)
-    }
-    if (!file.exists (fn)) {
-      fn <- sprintf ('%s%s/%stf01.nc', DataDirectory (), P, P)
-    }
-    if (!file.exists (fn)) {
-      fn <- sub ('\\.nc', '.Rdata', fn)
-    }
-  }
-  if (!file.exists (fn)) {PJ[PJ==P] <- NA}
-}
-PJ <- PJ[!is.na(PJ)]
 
-## now test that there is an entry in the Configuration.R file for PJ:
+## Test that there is an entry in the Configuration.R file for PJ,
+## and eliminate any for which there is no Configuration entry:
 lines <- readLines ('Configuration.R')
 for (P in PJ) {
   if (!any (grepl (P, lines))) {PJ[PJ == P] <- NA}
@@ -1270,7 +1254,7 @@ PJ <- PJ[!is.na(PJ)]
 rm (lines)
 
 times <- c(as.POSIXct(0, origin='2012-05-29', tz='UTC'),
-  as.POSIXct(3600*8, origin='2012-05-29', tz='UTC'))
+           as.POSIXct(3600*8, origin='2012-05-29', tz='UTC'))
 
 ## make plot functions available
 # for (np in 1:2) {
@@ -1321,7 +1305,7 @@ saveConfig <- function() {
     }
     if (length (v) > 1) {
       linesOut <- c(linesOut, 
-        paste(sprintf ('  VRPlot$PV%d <- ',i),list(v),sep=''))
+                    paste(sprintf ('  VRPlot$PV%d <- ',i),list(v),sep=''))
     } else {
       if (is.na(v) || (length (v) == 0)) {
         linesOut <- c(linesOut, sprintf ('  VRPlot$PV%d <- c(NA)', i))
@@ -1347,7 +1331,7 @@ savePNG <- function(Data, inp) {
   # cairo_pdf (filename = plotfile, onefile=TRUE)
   ## enable something like the next to get individual png files instead of one large pdf
   png (file = sprintf ("./PNG/%s%s%02dPlot%%02d.png", inp$Project, 
-    inp$typeFlight, inp$Flight), width=800, height=800)
+                       inp$typeFlight, inp$Flight), width=800, height=800)
   print (sprintf ("saving png plots to subdirectory PNG"))
   DataV <- limitData (Data, inp)
   t1 <- times[1]
@@ -1379,8 +1363,8 @@ savePNG <- function(Data, inp) {
 saveRdata <- function (Data, inp) {
   print ('entered saveRdata')
   netCDFfile <- nc_open (sprintf ('%s%s/%s%s%02d.nc', DataDirectory (),
-    inp$Project, inp$Project, inp$typeFlight,
-    inp$Flight))
+                                  inp$Project, inp$Project, inp$typeFlight,
+                                  inp$Flight))
   nms <- c('Time', 'TASX')
   Time <- ncvar_get (netCDFfile, "Time")
   TASX <- ncvar_get (netCDFfile, "TASX")
@@ -1429,8 +1413,8 @@ saveRdata <- function (Data, inp) {
     attr (C1DC, 'CellLimits') <- CellLimits
   }
   fn <- sprintf ('%s%s/%s%s%02d.Rdata', DataDirectory (),
-    inp$Project, inp$Project, inp$typeFlight,
-    inp$Flight)
+                 inp$Project, inp$Project, inp$typeFlight,
+                 inp$Flight)
   size.distributions <- mget (nms)
   save (Data, size.distributions, file=fn)
   print (sprintf ('saved data.frame and size distributions to %s', fn))
@@ -1452,16 +1436,18 @@ SeekManeuvers <- function (Data) {
 }
 
 seeManual <- function () {
-  # URL <- 'QAtoolsUserGuide.pdf'
+  URL <- 'QAtoolsUserGuide.pdf'
   # Use next line to get the repository version instead:
-  URL <- 'https://github.com/NCAR/aircraft_QAtools/blob/main/QAtoolsUserGuide.pdf'
-  browseURL(URL)
+  # URL <- 'https://github.com/NCAR/aircraft_QAtools/blob/main/QAtoolsUserGuide.pdf'
+  # browseURL(URL)
+  viewer <- getOption ("viewer")
+  viewer ('QAtoolsUserGuide.pdf', height='maximize')
 }
 
 
 ## get VRPlot and chp/shp:
 ## load a starting-point version
-Project <- 'ASPIRE-TEST'
+Project <- 'SPICULE'
 source('loadVRPlot.R')
 
 load ('CalibrationExercise/CalData.Rdata')
@@ -1560,7 +1546,7 @@ if (file.exists('BadCloudEvents.Rdata')) {
     for (i in 1:nrow(BadCloudEvents)) {
       u <- ifelse (BadCloudEvents$Rej[i], 'Y', 'N')
       print (s <- sprintf ('%s %d %s rf%02d %s-%s', u, i, BadCloudEvents$Project[i], BadCloudEvents$Flight[i],
-        formatTime(BadCloudEvents$Start[i]), formatTime(BadCloudEvents$End[i])))
+                           formatTime(BadCloudEvents$Start[i]), formatTime(BadCloudEvents$End[i])))
       chIC[i] <- sprintf ('%d', i)
       names(chIC)[i] <- s
     }
@@ -1633,12 +1619,12 @@ f1simTDP <- 0.97; f2simTDP <- 1 - f1simTDP
 
 constructDQF <- function (project, flight) {
   projectDir <- project
-  if (grepl ('HIPPO', project)) {projectDir <- 'HIPPO'}
+  if(grepl('HIPPO-', project) && singleHIPPO) {projectDir <- 'HIPPO'}
   Data <- getNetCDF (sprintf ('%s%s/%srf%02d.nc', DataDirectory(), projectDir, project, flight), VarListTDP)
   Data$MIRRTMP_DPL <- setNA (Data$MIRRTMP_DPL, 0)
   Data$DERIV2 <- -signal::filter(signal::sgolay(3,17,2),Data$MIRRTMP_DPL)
   Data$DPERR <- zoo::rollmean (setNA (abs(Data$DERIV2) / 
-                     (asimTDP * f2simTDP), 0), 60, fill=0, align='center')
+                                        (asimTDP * f2simTDP), 0), 60, fill=0, align='center')
   Data$CBAL <- zoo::rollmean (setNA (Data$BALNC_DPL, 0), 60, fill=0, align='center') / 500
   Data$DPLQUAL <- ifelse (abs(Data$CBAL) > 3, -10, 0)
   Data$DPLQUAL[abs(Data$CBAL) > 10] <- -20
@@ -1658,10 +1644,10 @@ constructDQF <- function (project, flight) {
     i2 <- which (Data$DPERR[i1:iL] <= Elim)[1]-1+i1
     if (mean(Data$MIRRTMP_DPL[i1:i2], na.rm=TRUE) > -20) {
       print (sprintf ('overshoot candidate %s--%s', 
-        Data$Time[i1], Data$Time[i2]))
+                      Data$Time[i1], Data$Time[i2]))
       DQF <- rbind (DQF, data.frame(Start=Data$Time[i1], End=Data$Time[i2], 
-        qfStart=Data$Time[i1], qfEnd=Data$Time[i2], 
-        Use=FALSE, Flag=0, Type='overshoot'))
+                                    qfStart=Data$Time[i1], qfEnd=Data$Time[i2], 
+                                    Use=FALSE, Flag=0, Type='overshoot'))
       # with(Data[(i1-120):(i2+120),], plotWAC (data.frame (Time, MIRRTMP_DPL, MT_DPL,
       #                                                     DPERR, ATX)))
       # abline(h=15, lty=3, lwd=2, col='magenta')
@@ -1679,10 +1665,10 @@ constructDQF <- function (project, flight) {
     i2 <- which (Data$SS[i1:iL] <= 2)[1]-1+i1
     if (mean(Data$MIRRTMP_DPL[i1:i2], na.rm=TRUE) > -20) {
       print (sprintf ('supersaturation candidate %s--%s', 
-        Data$Time[i1], Data$Time[i2]))
+                      Data$Time[i1], Data$Time[i2]))
       DQF <- rbind (DQF, data.frame(Start=Data$Time[i1], End=Data$Time[i2], 
-        qfStart=Data$Time[i1], qfEnd=Data$Time[i2], 
-        Use=FALSE, Flag=0, Type='supersaturation'))
+                                    qfStart=Data$Time[i1], qfEnd=Data$Time[i2], 
+                                    Use=FALSE, Flag=0, Type='supersaturation'))
     }
   }
   ## sort and remove duplicates, keeping 1st (from file)
@@ -1694,9 +1680,10 @@ constructDQF <- function (project, flight) {
 
 getDataTDP <- function (project, flight, typeFlight) {
   projectDir <- project
-  if (grepl ('HIPPO', project)) {projectDir <- 'HIPPO'}
+  if(grepl('HIPPO-', project) && singleHIPPO) {projectDir <- 'HIPPO'}
+  # if (grepl ('HIPPO', project)) {projectDir <- 'HIPPO'}
   DataTDP <- getNetCDF (sprintf ('%s%s/%s%s%02d.nc', DataDirectory(), projectDir, project, 
-    typeFlight, flight), VarListTDP)
+                                 typeFlight, flight), VarListTDP)
   DataTDP$MIRRTMP_DPL <- setNA (DataTDP$MIRRTMP_DPL, 0)
   DataTDP$DERIV2 <- -signal::filter(signal::sgolay(3,17,2),DataTDP$MIRRTMP_DPL)
   DataTDP$DPERR <- DataTDP$DERIV2 / (asimTDP * f2simTDP)
@@ -1706,4 +1693,3 @@ getDataTDP <- function (project, flight, typeFlight) {
   DataTDP <<- DataTDP
 }
 if (Trace) {toc()}
-
