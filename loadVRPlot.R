@@ -13,15 +13,16 @@ loadVRPlot <- function (Project, Production = FALSE, Flight, psq) {
     names(VRPlot) <- nm
   }
   
-  if (grepl ('HIPPO', Project)) {
-    if (grepl ('raf_data', DataDir)) {
-      ProjectDir <- 'HIPPO/old_nimbus'
-    } else {
-      ProjectDir <- 'HIPPO'
-    }
-  } else {
+  # if (grepl ('HIPPO', Project)) {
+  #   if (grepl ('raf_data', DataDir)) {
+  #     ProjectDir <- 'HIPPO/old_nimbus'
+  #   } else {
+  #     ProjectDir <- 'HIPPO'
+  #   }
+  # } else {
     ProjectDir <- Project
-  }
+    if (grepl('HIPPO-', Project) && singleHIPPO) {ProjectDir <- 'HIPPO'}
+  # }
   
   if (Project != 'PREDICT') {
     fn <- sprintf ('%s%s/%srf%02d.nc', DataDirectory (), ProjectDir, Project, Flight)
@@ -116,7 +117,7 @@ loadVRPlot <- function (Project, Production = FALSE, Flight, psq) {
   chp[[2]] <- c(ALT,'PSXC')
   chp[[3]] <- AT
   chp[[4]] <- chp[[3]]
-  chp[[5]] <- c(DP,'ATX', CAVP, EWW)
+  chp[[5]] <- c(DP,'ATX', CAVP, EWW, 'QCXC')
   chp[[6]] <- chp[[5]]
   chp[[7]] <- c(chp[[5]], MACH, QC, 'AKRD')
   chp[[8]] <- chp[[5]]

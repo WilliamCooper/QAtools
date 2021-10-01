@@ -1,4 +1,4 @@
-# Construct Configure.R for a new project
+e# Construct Configure.R for a new project
 
 # Start with a sample netCDF file.
 # Specify the new project here; 'WECAN' should be changed to the new project.
@@ -398,3 +398,4 @@ for (i in 2:length(VRX)) {
 }
 cat('}\n', file = outfile, append = TRUE)
 sink()
+
