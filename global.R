@@ -84,6 +84,9 @@ PJ <- c('SPICULE', 'WCR-TEST', 'MethaneAIR', 'ACCLIP-TEST', 'OTREC', 'ECLIPSE201
 ## be incorporated automatically.
 PJ <- list.dirs(path = DataDirectory(), full.names = FALSE, recursive = FALSE)
 PJ <- PJ[-which('lost+found' == PJ)]
+if ('lost+found' %in% PJ) {
+  PJ <- PJ[-which('lost+found' == PJ)]
+} 
 ## Leave in alphabetical order, except for the first which is the latest modified.
 FullPJ <- paste0(DataDirectory(), PJ)
 iw <- which.max(file.mtime(FullPJ))
