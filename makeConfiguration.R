@@ -2,7 +2,7 @@ e# Construct Configure.R for a new project
 
 # Start with a sample netCDF file.
 # Specify the new project here; 'WECAN' should be changed to the new project.
-NewProject <- 'SPICULE'
+NewProject <- 'ASPIRE'
 Flight <- 'tf01'  # Specify the model netCDF file
 fname <- sprintf ('%s%s/%s%s.nc', Ranadu::DataDirectory(),
                   NewProject, NewProject, Flight)
@@ -22,6 +22,8 @@ PJC130 <- c(
 #  'NOMADSS',
   'FRAPPE')
 PJGV  <- c(
+  'MethaneAIR21',
+  'ASPIRE-TEST',
   'SPICULE',
   'MethaneAIR',
   'ACCLIP-TEST',
