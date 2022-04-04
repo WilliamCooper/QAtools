@@ -40,6 +40,9 @@ YLMF <- function (panel, defaultRange) {
   if (exists(s)) {
     return (get (s, inherits = TRUE))
   } else {
+    if (any(is.infinite(defaultRange))) {
+      defaultRange <- c(0.1, 1)
+    }
     return (defaultRange)
   }
 }

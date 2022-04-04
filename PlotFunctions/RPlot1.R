@@ -72,12 +72,17 @@ RPlot1 <- function (data, Flight=NA, Seq=NA, panl=1) {
     }
   }
   
-  panel23 <- function (data) 
+  panel23 <- function (data) {
     if ('GGQUAL' %in% names(data)) {
-      plotWAC(data[,c("Time", "GGQUAL")], ylim=c(0,10))
+      if ('GGNSAT' %in% names(data)) {
+        plotWAC(data[,c("Time", "GGQUAL", 'GGNSAT')], ylim=c(0,12))
+      } else {
+        plotWAC(data[,c("Time", "GGQUAL")], ylim=c(0,10))
+      }
       title('GPS Quality: 5 = TerraStar corrected, 2 = TerraStar converging, 9 = WAAS, 1 = Standard GPS, 0 = No FIX',
         cex.main = cexmain)
     }
+  }
   
   ####################################################
   if (shinyDisplay) {
