@@ -1,4 +1,3 @@
-
 # This is the server logic for the QAtool Shiny app.
 # You can find out more about building applications with Shiny here:
 #

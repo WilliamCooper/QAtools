@@ -3,7 +3,7 @@
 # Start with a sample netCDF file.
 # Specify the new project here; 'WECAN' should be changed to the new project.
 NewProject <- 'TI3GER'
-Flight <- 'tf02'  # Specify the model netCDF file
+Flight <- 'rf01'  # Specify the model netCDF file
 fname <- sprintf ('%s%s/%s%s.nc', Ranadu::DataDirectory(),
                   NewProject, NewProject, Flight)
 FI <- Ranadu::DataFileInfo (fname)
@@ -399,4 +399,3 @@ for (i in 2:length(VRX)) {
 }
 cat('}\n', file = outfile, append = TRUE)
 sink()
-
