@@ -151,14 +151,14 @@ for (Flight in Flt) {
       CFSSP <- NULL
       CUHSAS <- NULL
       C1DC <- NULL
-      if (!grepl("[a-zA-Z]*(.f)[0-9]*.nc", Flight)) {
+      if (!grepl("[a-zA-Z0-9]*([rt]f)[0-9]*.nc", Flight)) {
       # if (!(str_detect(Flight, "[a-zA-Z]*(.f)[0-9]*.nc"))) {
           print (sprintf ('nonstandard flight string in %s', Flight))
           print ('Flight string must match [rt]f[0-9][0-9]')
           quit()
       } else {
-          fnumber <- as.numeric (sub('[a-zA-Z-]*([0-9]*).nc', '\\1', Flight))
-          ftype <- sub('[A-Za-z-]*(.f)[0-9]*.nc', '\\1', Flight)
+          fnumber <- as.numeric (sub('[a-zA-Z0-9]*[rt]f([0-9]*).nc', '\\1', Flight))
+          ftype <- sub('[A-Za-z0-9]*([rt]f)[0-9]*.nc', '\\1', Flight)
       }
       ## next statement needs to be inside "ALL" loop, in case available variables change
       VRPlot <- loadVRPlot (Project, FALSE, fnumber, psq)  ## get VRPlot list for this project
@@ -232,4 +232,3 @@ for (Flight in Flt) {
     }
   }
 }
-
