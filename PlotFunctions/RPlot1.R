@@ -75,7 +75,7 @@ RPlot1 <- function (data, Flight=NA, Seq=NA, panl=1) {
   panel23 <- function (data) {
     if ('GGQUAL' %in% names(data)) {
       if ('GGNSAT' %in% names(data)) {
-        plotWAC(data[,c("Time", "GGQUAL", 'GGNSAT')], ylim=c(0,12))
+        plotWAC(data[,c("Time", "GGQUAL", 'GGNSAT')], ylim=c(0,20))
       } else {
         plotWAC(data[,c("Time", "GGQUAL")], ylim=c(0,10))
       }
