@@ -679,13 +679,13 @@ ui <- fluidPage (
             column (3, numericInput (inputId='plot', label='plot', value=1,
               min=1, max=49, step=1, width='80px')),
             column(3, wellPanel (
-              actionButton ('qcheck', label='quick', icon=icon('file-image-o'), width='80px')
+              actionButton ('qcheck', label='quick', icon=icon('file-image'), width='80px')
               ))))),
         column(4, wellPanel (
           fluidRow (
-            column (4, actionButton (inputId='savePDF', label='PDF', icon=icon('file-pdf-o'))), #, onclick="window.open('latestPlots.pdf')")),
-            column (4, actionButton (inputId='savePNG', label='PNG', icon=icon('file-image-o'))),
-            column (4, actionButton (inputId='saveRdata', label='R', icon=icon('file-archive-o')))
+            column (4, actionButton (inputId='savePDF', label='PDF', icon=icon('file-pdf'))), #, onclick="window.open('latestPlots.pdf')")),
+            column (4, actionButton (inputId='savePNG', label='PNG', icon=icon('file-image'))),
+            column (4, actionButton (inputId='saveRdata', label='R', icon=icon('file-archive')))
           ),
           # fluidRow (
           #   actionButton("vpdf", "show", onclick = "window.open('latestPlots.pdf')")

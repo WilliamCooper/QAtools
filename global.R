@@ -1453,7 +1453,7 @@ seeManual <- function () {
 
 ## get VRPlot and chp/shp:
 ## load a starting-point version
-Project <- 'ASPIRE-TEST'
+Project <- 'TI3GER'
 source('loadVRPlot.R')
 
 load ('CalibrationExercise/CalData.Rdata')
