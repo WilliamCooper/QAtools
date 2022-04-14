@@ -74,6 +74,9 @@ RPlot15 <- function(data, Seq=NA, panl=1) {
                ylim = YLMF (2, c(1.e-4, 1e4)),  
                ylab=expression(paste("CONCy [cm"^"-3"*"]")))
       title ("1-min filter", cex.main = cexmain)
+      if (length(va2) == 1) {  ## force a legend
+	legend('bottomright', legend=va2[1], col='blue')
+      }
     } 
   }
   

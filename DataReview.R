@@ -33,11 +33,11 @@ if (!interactive()) {  ## can run interactively or via Rscript with or without a
     }
   }
 } else {
-  x <- readline (sprintf ("Project name [cr for detault=WECAN]:"))
+  x <- readline (sprintf ("Project name [cr for detault=TI3GER]:"))
   if (nchar(x) > 1) {
     ProjectX <- x
   } else {
-    ProjectX <- 'WECAN'
+    ProjectX <- 'TI3GER'
   }
   x <- readline (sprintf ("Flight in format like rf07, or cr for latest, or ALL: "))
   if (nchar(x) > 1) {
@@ -162,6 +162,31 @@ for (Flight in Flt) {
       }
       ## next statement needs to be inside "ALL" loop, in case available variables change
       VRPlot <- loadVRPlot (Project, FALSE, fnumber, psq)  ## get VRPlot list for this project
+      ## This is special for TI3GER, for which the location of the CDP changed
+      ## from RWOO to LWOO before ff01.
+      if (Project == 'TI3GER') {
+        ## Check if _RWOO:
+        FITI3 <- DataFileInfo(fname, LLrange = FALSE)
+        if (grepl('LWOO', FITI3$Variables[which(grepl('CONCD_', FITI3$Variables))])) {
+          for (i in 1:length(VRPlot)) {
+            if (length(VRPlot[[i]]) < 1) {next}
+            for (j in 1:length(VRPlot[[i]])) {
+              if (grepl('_RWOO', VRPlot[[i]][j])) {
+                VRPlot[[i]][j] <- sub('RWOO', 'LWOO', VRPlot[[i]][j])
+              }
+            }
+          }
+        } else if (grepl('RWOO', FITI3$Variables[which(grepl('CONCD_', FITI3$Variables))])) {
+          for (i in 1:length(VRPlot)) {
+            if (length(VRPlot[[i]]) < 1) {next}
+            for (j in 1:length(VRPlot[[i]])) {
+              if (grepl('_LWOO', VRPlot[[i]][j])) {
+                VRPlot[[i]][j] <- sub('LWOO', 'RWOO', VRPlot[[i]][j])
+              }
+            }
+          }
+        }
+      }
       Cradeg <- pi/180
       ## next load the data.frame
       VarList <- vector()

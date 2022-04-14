@@ -279,6 +279,7 @@ server <- function(input, output, session) {
     }
     if ((ncol(data ()) < 2) || any (!(PVar %in% names (data ())))) {
       print ('need new data')
+      print ('PVar:'); print(PVar)
       reac$newdata <- TRUE
     } 
     jp <- psq[1, np]
@@ -1890,6 +1891,69 @@ server <- function(input, output, session) {
       VarList <- VarList[-which(VarList == '')]
     }
     VarList <- VarList[!is.na(VarList)]
+    ## This is special for TI3GER, for which the location of the CDP changed
+    ## from RWOO to LWOO before ff01.
+    if (Project == 'TI3GER') {
+      ## Check if _RWOO:
+      FITI3 <- DataFileInfo(setFileName(Project, sprintf('%s%02d', input$typeFlight, input$Flight)))
+      if (grepl('LWOO', FITI3$Variables[which(grepl('CONCD_', FITI3$Variables))])) {
+        for (i in 1:length(VarList)) {
+          if (grepl('_RWOO', VarList[i])) {
+            VarList[i] <- sub('RWOO', 'LWOO', VarList[i])
+          }
+        }
+        ## Make the same change to VRPlot and slp:
+        for (i in 1:length(VRPlot)) {
+          for (j in 1:length(VRPlot[[i]])) {
+            if (grepl('_RWOO', VRPlot[[i]][j])) {
+              VRPlot[[i]][j] <- sub('RWOO', 'LWOO', VRPlot[[i]][j])
+            }
+          }
+        }
+        VRPlot <<- VRPlot
+        VRPT(VRPlot)  ## Save it
+        for (i in 1:length(slp)) {
+          for (j in 1:length(slp[[i]])) {
+            slp[[i]][j] <- sub('RWOO', 'LWOO', slp[[i]][j])
+          }
+          if (length(chp[[i]]) > 0) {
+            for (j in 1:length(chp[[i]])) {
+              chp[[i]][j] <- sub('RWOO', 'LWOO', chp[[i]][j])
+            }
+          }
+        }
+        slp <<- slp
+        chp <<- chp
+      } else if (grepl('RWOO', FITI3$Variables[which(grepl('CONCD_', FITI3$Variables))])) {
+          for (i in 1:length(VarList)) {
+            if (grepl('_LWOO', VarList[i])) {
+              VarList[i] <- sub('LWOO', 'RWOO', VarList[i])
+            }
+          }
+          ## Make the same change to VRPlot and slp:
+          for (i in 1:length(VRPlot)) {
+            for (j in 1:length(VRPlot[[i]])) {
+              if (grepl('_LWOO', VRPlot[[i]][j])) {
+                VRPlot[[i]][j] <- sub('LWOO', 'RWOO', VRPlot[[i]][j])
+              }
+            }
+          }
+          VRPlot <<- VRPlot
+          VRPT(VRPlot)  ## Save it
+          for (i in 1:length(slp)) {
+            for (j in 1:length(slp[[i]])) {
+              slp[[i]][j] <- sub('LWOO', 'RWOO', slp[[i]][j])
+            }
+            if (length(chp[[i]]) > 0) {
+              for (j in 1:length(chp[[i]])) {
+                chp[[i]][j] <- sub('LWOO', 'RWOO', chp[[i]][j])
+              }
+            }
+          }
+          slp <<- slp
+          chp <<- chp
+      }
+    }
     VarList <<- VarList  ## just saving for outside-app use
     ## these would be needed for translation to new cal coefficients
     ## VarList <- c(VarList, "RTH1", "RTH2", "RTF1")
@@ -1923,9 +1987,9 @@ server <- function(input, output, session) {
     reac$newdisplay <- TRUE
     if (file.exists(fname)) {
       if (Trace) {
-        print('VarList:')
-        print(sort(VarList))
         print(fname)
+        print('VarList in data():')
+        print(sort(VarList))
       }
       D <- getNetCDF (fname, VarList)
       # if(Trace) {print(str(D))}
