@@ -7,7 +7,9 @@ RPlot4 <- function (data, ...) {
   ## otherwise first in VRPlot[[4]] list:
   ir <- which ('ATX' == VRPlot[[4]])
   if (length(ir) != 1) {ir = 1}
-  for (i in 1:length(VRPlot[[4]])) {
+  print(sprintf('plot 4 %s %s %s %s %s %s', VRPlot[[4]][1], VRPlot[[4]][2], 
+                VRPlot[[4]][3], VRPlot[[4]][4], VRPlot[[4]][5], VRPlot[[4]][6]))
+  for (i in 1:min(c(5, length(VRPlot[[4]])))) {
     if (i == ir) {next}
     # protection against all-bad:
     if (any(!is.na(data[, VRPlot[[4]][ir]]) & !is.na(data[, VRPlot[[4]][i]]))) {
