@@ -108,7 +108,11 @@ RPlot9 <- function (data, Seq = NA, panl = 1) {
       cex.lab = 1.5,
       ylim = YLMF (3, range (as.matrix (data[, WI]), finite = TRUE))
     )
-    if (length(WI) == 2) {
+    if (length(WI) >= 3) {
+      title (sprintf (
+        "averages: %s= %.02f, %s = %0.02f %s=%.02f", WI[1], mean(data[, WI[1]], na.rm = TRUE),
+        WI[2], mean(data[, WI[2]], na.rm = TRUE), WI[3], mean(data[, WI[3]], na.rm = TRUE)), cex.main = 1.2)  
+    } else if (length(WI) == 2) {
       title (sprintf (
         "averages: %s= %.02f, %s = %0.02f", WI[1], mean(data[, WI[1]], na.rm = TRUE),
         WI[2], mean(data[, WI[2]], na.rm = TRUE)), cex.main = 1.2)  
