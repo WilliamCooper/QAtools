@@ -121,6 +121,10 @@ loadVRPlot <- function (Project, Production = FALSE, Flight, psq) {
   chp[[5]] <- c(DP,'ATX', CAVP, EWW, 'QCXC')
   chp[[6]] <- chp[[5]]
   chp[[7]] <- c(chp[[5]], MACH, QC, 'AKRD')
+  V <- names(data)[grepl('LSRINT_VXL', names(data))]
+  if (length(V) > 0) {
+    chp[[7]] <- c(chp[[7]], V)
+  }
   chp[[8]] <- chp[[5]]
   chp[[9]] <- PS
   chp[[10]] <- c(QC,TAS,MACH)

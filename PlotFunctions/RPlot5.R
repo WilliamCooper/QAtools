@@ -10,7 +10,7 @@ RPlot5 <- function (data, Seq=NA, panl=1) {
     plotWAC (data[, c("Time", DP)], 
       ylab=expression (paste ("dew point  DPy  [", degree, "C]")), 
       lty=c(1,1,2,1), lwd=c(2,1.5,1,3), legend.position='bottom', 
-      col=c('blue', 'red', 'forestgreen', 'black'), ylim = YLMF (1, c(-90, 30)))
+      col=c('blue', 'red', 'forestgreen', 'black'), ylim = YLMF (1, c(-90, 40)))
     labl <- sub("DP_", "", DP)
     titl <- "Mean diff vs DPXC: "
     ## assume DPXC is always present:
@@ -142,10 +142,9 @@ RPlot5 <- function (data, Seq=NA, panl=1) {
   
   ## VCSEL LASER INTENSITY - plot 7b
   panel32 <- function(data) {
-    if ("LSRINT_VXL" %in% names(data)) {
-      # if (exists ('panel2ylim')) {ylm <- panel2ylim}
-      # else {ylm <- c(0, 4000)}
-      plotWAC (data[, c("Time", "LSRINT_VXL")], 
+    V <- names(data)[grepl('LSRINT_VXL', names(data))]
+    if (length(V) > 0) {
+      plotWAC (data[, c("Time", V)], 
         ylim = YLMF (2, c(0, 4000)),
         ylab="LSRINT_VXL")
       abline (h=1000, col='red', lty=2); abline (h=2700, col='red', lty=2)
@@ -244,8 +243,9 @@ RPlot5 <- function (data, Seq=NA, panl=1) {
         panel21 (data)
         AddFooter ()
       }, 
-      {
-        if ("LSRINT_VXL" %in% names(data)) {
+      {   
+        V <- names(data)[grepl('LSRINT_VXL', names(data))]
+        if (length(V) > 0) {
           setMargins (2)
           panel31 (data)
         } else {
@@ -296,8 +296,9 @@ RPlot5 <- function (data, Seq=NA, panl=1) {
     if (is.na(Seq) || Seq == 3) {
       # if (Trace) {print (c('RPlot5: names in data:', names(data)))}
       # DP cavity pressures and VCSEL laser intensity:
-      layout(matrix(1:2, ncol = 1), widths = 1, heights = c(6,5))
-      if ("LSRINT_VXL" %in% names(data)) {
+      layout(matrix(1:2, ncol = 1), widths = 1, heights = c(6,5))   
+      V <- names(data)[grepl('LSRINT_VXL', names(data))]
+      if (length(V) > 0) {
         setMargins (4)
         panel31 (data)
         setMargins (5)
