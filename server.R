@@ -1968,6 +1968,9 @@ server <- function(input, output, session) {
       fname <<- sprintf ('%s%s/%s%s%02d.nc', DataDirectory (), input$Project,
                          input$Project, typeFlight, input$Flight)
     }
+    
+    ## Save Flight for stew-T-plot title:
+    FlightPDF <<- sprintf('%s%02d', typeFlight, input$Flight)
     #     if (input$Production) {
     #       print (sprintf ('Production section, input$Production=%d', input$Production))
     #       dr <- sprintf ('%s../raf/Prod_Data/%s', DataDirectory (), Project)

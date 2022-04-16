@@ -68,7 +68,7 @@ RPlot16 <- function (data, Seq=NA, panl=1) {
         va <- c(va, v)
       }
       plotWAC(data[, c("Time", va)], 
-        ylab = bquote('2D DBAR [' * mu * 'm]'), legend_position = 'topright',
+        ylab = bquote('2D DBAR [' * mu * 'm]'), legend.position = 'topright',
         ylim = YLMF (3, range (as.matrix (data[, va]), finite=TRUE)))
       if (length(nm) == 1) {
         legend('topright', legend=va[1], col='blue')

@@ -5,12 +5,14 @@ RPlot17 <- function (data, Flight=NA, Seq=NA, panl=1, ...) {
   op <- par (mfrow=c(1,1), mar=c(5,5,2,2)+0.1,oma=c(1.1,0,0,0))
   DF <- data[, c("PSXC", "ATX", "DPXC")]
   colnames(DF) <- c("Pressure", "Temperature", "DewPoint")
+  SE <- getStartEnd(data)
+  SE <- gsub('(..$)', ':\\1', gsub('(....$)', ":\\1", SE))
   if (grepl ('130', FI$Platform)) {
     print(SkewTSounding (DF, AverageInterval=5, BackgroundSpecs="skewTDiagramC130.Rdata") +
-      ggtitle(sprintf("Flight %s, selected-time-interval-average", Flight)))
+      ggtitle(sprintf("Flight %s average %s to %s. Change time range by adjusting time slider.", Flight, SE[1], SE[2])))
   } else {
   print(SkewTSounding (DF, AverageInterval=5, BackgroundSpecs="skewTDiagram.Rdata") +
-    ggtitle(sprintf("Flight %s, selected-time-interval-flight-average", Flight)))
+      ggtitle(sprintf("Flight %s average %s to %s. Change time range by adjusting time slider.", Flight, SE[1], SE[2])))
   }
   ### this Footer command crashes knitr for some reason (works to make pdf, and for html if plot 17 run alone, 
   ### but if plot17 run with other plots (e.g. -1 or 16:17) then knitr crashes. 
