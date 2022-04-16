@@ -61,12 +61,19 @@ RPlot16 <- function (data, Seq=NA, panl=1) {
   panel13 <- function (data) {
     if (any(grepl("DBAR1DC_", VRPlot[[16]])) || any(grepl("DBARS_", VRPlot[[16]]))) {
       nm <- names(data)[grepl("DBAR1DC_", names(data)) | grepl("DBARS_", names(data))]
-      plotWAC(data[, c("Time", nm)], 
-        ylab = bquote('2D DBAR [' * mu * 'm]'), legend_position = 'topright',
-        ylim = YLMF (3, range (as.matrix (data[, nm]), finite=TRUE)))
-      if (length(nm) == 1) {
-        legend('topright', legend=nm[1], col='blue')
+      va <- vector()
+      for (c in nm) {
+        v <- sub("_.*", "", c)
+        data[, v] <- SmoothInterp(data[, c], .order=1)
+        va <- c(va, v)
       }
+      plotWAC(data[, c("Time", va)], 
+        ylab = bquote('2D DBAR [' * mu * 'm]'), legend_position = 'topright',
+        ylim = YLMF (3, range (as.matrix (data[, va]), finite=TRUE)))
+      if (length(nm) == 1) {
+        legend('topright', legend=va[1], col='blue')
+      }
+      title ("1-min filter", cex.main = cexmain) 
     }
   }
   
