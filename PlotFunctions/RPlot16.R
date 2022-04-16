@@ -26,8 +26,11 @@ RPlot16 <- function (data, Seq=NA, panl=1) {
     if (length (va) > 0) {
       plotWAC (data[, c("Time", va)], 
         ylim = YLMF (1, c(0, 0.5)), 
-        ylab="DBARU/P", 
+        ylab=bquote("aerosol DBAR [" * mu * "m]"), 
         legend.position="topright")
+      if (length (va) == 1) {
+        legend('topright', legend=va[1], col='blue')
+      }
     }
     title ("1-min filter", cex.main = cexmain)
   }
@@ -35,28 +38,35 @@ RPlot16 <- function (data, Seq=NA, panl=1) {
   panel12 <- function (data) {
     DB <- VRPlot[[16]]
     DB <- DB[which (("DBAR" == substr(DB, 1, 4)) & ("DBARU" != substr(DB, 1, 5))
-      & ("DBARP" != substr(DB, 1, 5)))]
+      & ("DBARP" != substr(DB, 1, 5)) & ("DBARS" != substr(DB, 1, 5)))]
     va <- vector()
     for (c in DB) {
       nm <- names(data)[grepl(c, names(data))]
-      v <- sub("_", "", c)
+      v <- sub("_.*", "", c)
       data[, v] <- SmoothInterp(data[, nm])
       va <- c(va, v)
     }
     if (length (va) > 0) {
       plotWAC(data[, c("Time", va)], 
         ylim = YLMF (2, c(0, 30)), 
-        ylab="DBAR", 
+        ylab=bquote("cloud-droplet DBAR ]" * mu * "m]"), 
         legend.position="topright")
+      if (length (va) == 1) {
+        legend('topright', legend=va[1], col='blue')
+      }
       title ("1-min filter", cex.main = cexmain) 
     }
   }
   
   panel13 <- function (data) {
-    if (any(grepl("DBAR1DC_", VRPlot[[16]]))) {
-      nm <- names(data)[grepl("DBAR1DC_", names(data))]
+    if (any(grepl("DBAR1DC_", VRPlot[[16]])) || any(grepl("DBARS_", VRPlot[[16]]))) {
+      nm <- names(data)[grepl("DBAR1DC_", names(data)) | grepl("DBARS_", names(data))]
       plotWAC(data[, c("Time", nm)], 
+        ylab = bquote('2D DBAR [' * mu * 'm]'), legend_position = 'topright',
         ylim = YLMF (3, range (as.matrix (data[, nm]), finite=TRUE)))
+      if (length(nm) == 1) {
+        legend('topright', legend=nm[1], col='blue')
+      }
     }
   }
   
@@ -182,7 +192,7 @@ RPlot16 <- function (data, Seq=NA, panl=1) {
     ###############################################################
   } else {
     if (is.na (Seq) || Seq == 1) {
-      if (any(grepl("DBAR1DC_", VRPlot[[16]]))) {
+      if (any(grepl("DBAR1DC_", VRPlot[[16]])) || any(grepl("DBARS_", VRPlot[[16]]))) {
         layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,6))
       } else {
         layout(matrix(1:2, ncol = 1), widths = 1, heights = c(5,6))
