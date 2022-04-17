@@ -3566,8 +3566,8 @@ server <- function(input, output, session) {
       if (xlow > -2) {xlow <- -2}
       g <- g + xlim(xlow, xhigh) + theme_WAC()
       g <- g + xlab('PSXC-PSFIT [hPa]') + ylab('PSXC [hPa]') + ylim(1050, 100) 
-      g <- g + geom_point (aes (x=bs$ybar, y=bs$xc), size=3, colour='blue', na.rm=TRUE)
-      g <- g + geom_label (aes (x=1.9, y=bs$xc, label=sprintf('%d', bs$nb)))
+      g <- g + geom_point (aes (x=ybar, y=xc), size=3, colour='blue', na.rm=TRUE)
+      g <- g + geom_label (aes (x=1.9, y=xc, label=sprintf('%d', nb)))
     }
     print (g)
     
@@ -3704,8 +3704,8 @@ server <- function(input, output, session) {
       if (xlow > -2) {xlow <- -2}
       g <- g + xlim(xlow, xhigh) + theme_WAC()
       g <- g + xlab('QCXC-QCFIT [hPa]') + ylab('QCXC [hPa]') + ylim(200, 50) 
-      g <- g + geom_point (aes (x=bs$ybar, y=bs$xc), size=3, colour='blue', na.rm=TRUE)
-      g <- g + geom_label (aes (x=1.9, y=bs$xc, label=sprintf('%d', bs$nb)))
+      g <- g + geom_point (aes (x=ybar, y=xc), size=3, colour='blue', na.rm=TRUE)
+      g <- g + geom_label (aes (x=1.9, y=xc, label=sprintf('%d', nb)))
     }
     print (g)
   })
@@ -3880,8 +3880,8 @@ server <- function(input, output, session) {
     } else {
       g <- g + xlab('ATX-ATFIT [deg. C]') + ylab('PSXC [hPa]') + ylim(1050, 80) 
     }
-    g <- g + geom_point (aes (x=bs$ybar, y=bs$xc), size=3, colour='blue', na.rm=TRUE)
-    g <- g + geom_label (aes (x=1.9, y=bs$xc, label=sprintf('%d', bs$nb)))
+    g <- g + geom_point (aes (x=ybar, y=xc), size=3, colour='blue', na.rm=TRUE)
+    g <- g + geom_label (aes (x=1.9, y=xc, label=sprintf('%d', nb)))
     print (g)
   })
   
@@ -4029,8 +4029,8 @@ server <- function(input, output, session) {
     if (xlow > -2) {xlow <- -2}
     g <- g + xlim(xlow, xhigh) + ylim (ymax, ymin) + theme_WAC() 
     g <- g + xlab('ATHE-ATx [deg. C]') + ylab('ATx [deg. C]') 
-    g <- g + geom_point (aes (x=bs$ybar, y=bs$xc), size=3, colour='blue', na.rm=TRUE)
-    g <- g + geom_label (aes (x=3.9, y=bs$xc, label=sprintf('%d', bs$nb)))
+    g <- g + geom_point (aes (x=ybar, y=xc), size=3, colour='blue', na.rm=TRUE)
+    g <- g + geom_label (aes (x=3.9, y=xc, label=sprintf('%d', nb)))
     g <- g + ggtitle (sprintf ('mean %.2f +/- %.2f', mean(DBS[, 1], na.rm=TRUE),
       sd(DBS[, 1], na.rm=TRUE)/sqrt(nrow(DBS))))
     g <- g + theme (plot.title=element_text(size=14))
