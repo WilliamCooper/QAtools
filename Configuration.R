@@ -31,7 +31,7 @@ if (Project == 'TI3GER') {
   VRPlot$PV7 <- c('QCFC', 'TASF', 'MACHF', 'QCF', 'QCR', 'QCRC', 'QC_A', 'TASR', 'TASDRY', 'TAS_A', 'MACHR', 'MACH_A', 'MACH_A2', 'QCTF', 'QCTFC')
   VRPlot$PV8 <- c('PSF', 'QCF', 'PS_A', 'QC_A', 'PSTF', 'QCTF')
   VRPlot$PV9 <- c('WDC', 'IWD', 'WSC', 'IWS', 'WIC', 'ADIFR', 'WD', 'WS', 'WIY', 'IWD_IRS2', 'IWD_IRS3', 'IWS_IRS2', 'IWS_IRS3', 'WIX')
-  VRPlot$PV10 <- c('GGVEW', 'VEW', 'GGVNS', 'VNS', 'GGQUAL', 'VEWC', 'VNSC')
+  VRPlot$PV10 <- c('GGVEW', 'VEW', 'GGVNS', 'VNS', 'GGQUAL', 'VEWC', 'VNSC','GGNSAT') # Stuart requested GGQUAL and GGNSAT, so added GGNSAT not sure why GGQUAL was not plotting
   VRPlot$PV11 <- c('AKRD', 'PITCH', 'VSPD_A', 'TASX', 'SSRD', 'WDC', 'WSC', 'GGVEW', 'GGVNS', 'GGVSPD', 'ADIFR', 'BDIFR', 'THDG')
   VRPlot$PV12 <- c('PITCH', 'PITCH_IRS3', 'ROLL', 'ROLL_IRS3', 'THDG', 'THDG_IRS3', 'PITCH_IRS2', 'ROLL_IRS2', 'THDG_IRS2')
   VRPlot$PV13 <- c('ACINS', 'ACINS_IRS3', 'VSPD', 'VSPD_A', 'GGALT', 'ALT_A', 'ACINS_IRS2', 'GGVSPD', 'GGVSPD_232', 'VSPD_A2', 'VSPD_IRS2', 'VSPD_IRS3', 'ALT', 'ALT_A2', 'ALT_IRS2', 'ALT_IRS3', 'GEOPTH', 'GEOPTH_232', 'GGALT_232')
